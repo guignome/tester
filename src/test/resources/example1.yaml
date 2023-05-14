@@ -1,0 +1,19 @@
+client:
+  endpoint:
+    host: localhost
+    port: 8080
+  scenarios:
+  - name: scenario1
+    steps:
+    - GET: /hello
+    - GET: /bye
+server:
+  endpoint:
+    port: 8080
+  handlers:
+    - path: /hello
+      method: GET
+      response: Hello how are you
+    - path: /bye
+      method: GET
+      response: Good Bye!
