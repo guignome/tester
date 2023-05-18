@@ -1,5 +1,7 @@
 package com.redhat;
 
+import java.io.IOException;
+
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
@@ -30,7 +32,7 @@ public class ServerRunner {
       router.route(HttpMethod.valueOf(handler.method), handler.path).handler(context -> {
         // Get the address of the request
 
-        // Write a json response
+        // Write a response
         context.end(handler.response);
       });
     }
@@ -44,6 +46,11 @@ public class ServerRunner {
         // Print the port
         .onSuccess(server -> System.out.println(
             "HTTP server started on port " + server.actualPort()));
+    try {
+      System.in.read();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   public void setModel(ConfigurationModel model) {

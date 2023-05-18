@@ -1,0 +1,7 @@
+server:
+  endpoint:
+    port: 8090
+  handlers:
+    - path: /*
+      method: POST
+      response: Hello how are you

@@ -27,22 +27,20 @@ public class ClientRunner {
     Vertx vertx;
 
     public void run() {
+        if (model.client == null) {
+            return;
+        }
         WebClient client = WebClient.create(vertx);
 
         for (Scenario scenario : model.client.scenarios) {
             for (Step step : scenario.steps) {
                 client.get(
-                      model.client.endpoint.port, model.client.endpoint.host, step.GET).send()
-                    .onSuccess(response -> System.out
-                            .println("Received response: " + response.bodyAsString()))
-                    .onFailure(err -> System.out.println("Something went wrong " + err.getMessage()));
+                        model.client.endpoint.port, model.client.endpoint.host, step.GET).send()
+                        .onSuccess(response -> System.out
+                                .println("Received response: " + response.bodyAsString()))
+                        .onFailure(err -> System.out.println("Something went wrong " + err.getMessage()));
             }
         }
 
-        try {
-            System.in.read();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
