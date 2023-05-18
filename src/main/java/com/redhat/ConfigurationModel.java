@@ -43,6 +43,7 @@ public class ConfigurationModel {
         public static class Handlers {
             public String path;
             public String method;
+            public int delay = 0;
             public String response;
         }
 

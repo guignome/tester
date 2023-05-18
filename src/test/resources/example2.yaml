@@ -4,4 +4,5 @@ server:
   handlers:
     - path: /*
       method: POST
+      delay: 2000
       response: Hello how are you

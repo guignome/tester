@@ -30,10 +30,7 @@ public class ServerRunner {
     // Mount the handler for all incoming requests at every path and HTTP method
     for (Handlers handler : model.server.handlers) {
       router.route(HttpMethod.valueOf(handler.method), handler.path).handler(context -> {
-        // Get the address of the request
-
-        // Write a response
-        context.end(handler.response);
+        context.vertx().setTimer(handler.delay, tid -> context.end(handler.response));
       });
     }
 
