@@ -1,19 +1,23 @@
 package com.redhat;
 
-import java.io.IOException;
-
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-
 import com.redhat.ConfigurationModel.ClientConfiguration.Scenario;
 import com.redhat.ConfigurationModel.ClientConfiguration.Scenario.Step;
 
+import io.quarkus.logging.Log;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 
-@Dependent
-public class ClientRunner {
+public class ClientRunner extends Thread{
     private ConfigurationModel model;
+    private Vertx vertx;
+
+    public Vertx getVertx() {
+        return vertx;
+    }
+
+    public void setVertx(Vertx vertx) {
+        this.vertx = vertx;
+    }
 
     public ConfigurationModel getModel() {
         return model;
@@ -23,24 +27,22 @@ public class ClientRunner {
         this.model = model;
     }
 
-    @Inject
-    Vertx vertx;
-
+    @Override
     public void run() {
         if (model.client == null) {
             return;
         }
         WebClient client = WebClient.create(vertx);
 
-        for (Scenario scenario : model.client.scenarios) {
-            for (Step step : scenario.steps) {
-                client.get(
-                        model.client.endpoint.port, model.client.endpoint.host, step.GET).send()
-                        .onSuccess(response -> System.out
-                                .println("Received response: " + response.bodyAsString()))
-                        .onFailure(err -> System.out.println("Something went wrong " + err.getMessage()));
+        for (int i = 0; i < model.client.topology.local.repeat; i++) {
+            for (Scenario scenario : model.client.scenarios) {
+                for (Step step : scenario.steps) {
+                    client.get(
+                            model.client.endpoint.port, model.client.endpoint.host, step.GET).send()
+                            .onSuccess(response -> Log.info("Received response: " + response.bodyAsString()))
+                            .onFailure(err -> Log.error("Something went wrong! ", err));
+                }
             }
         }
-
     }
 }

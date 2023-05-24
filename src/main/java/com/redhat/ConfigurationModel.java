@@ -17,9 +17,18 @@ public class ConfigurationModel {
     public ServerConfiguration server;
 
     public static class ClientConfiguration {
+        public Topology topology = new Topology();
         public Endpoint endpoint;
         public List<Scenario> scenarios =new ArrayList<>();
 
+        public static class Topology {
+            public Local local = new Local();
+
+            public static class Local {
+                public int parallel=1;
+                public int repeat = 1;
+            }
+        }
         public static class Endpoint{
             public String host="localhost";
             public int port=80;
@@ -43,7 +52,7 @@ public class ConfigurationModel {
         public static class Handlers {
             public String path;
             public String method;
-            public int delay = 0;
+            public int delay = 1;
             public String response;
         }
 

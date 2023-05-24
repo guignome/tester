@@ -1,7 +1,11 @@
 client:
+  topology:
+    local:
+      parallel: 2
+      repeat: 3
   endpoint:
     host: localhost
-    port: 8080
+    port: 8090
   scenarios:
   - name: scenario1
     steps:
@@ -9,7 +13,7 @@ client:
     - GET: /bye
 server:
   endpoint:
-    port: 8080
+    port: 8090
   handlers:
     - path: /hello
       method: GET

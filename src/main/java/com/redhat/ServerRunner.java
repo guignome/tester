@@ -1,25 +1,35 @@
 package com.redhat;
 
-import java.io.IOException;
-
-import javax.enterprise.context.Dependent;
-import javax.inject.Inject;
-
 import com.redhat.ConfigurationModel.ServerConfiguration.Handlers;
 
+import io.quarkus.logging.Log;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 
-@Dependent
-public class ServerRunner {
+public class ServerRunner extends Thread {
 
-  @Inject
-  Vertx vertx;
+  private Vertx vertx;
+  private ConfigurationModel model;
+  private boolean isReady = false;
 
-  ConfigurationModel model;
+  
+  
+  public Vertx getVertx() {
+    return vertx;
+  }
 
+  public void setVertx(Vertx vertx) {
+    this.vertx = vertx;
+  }
+
+  public ConfigurationModel getModel() {
+    return model;
+  }
+
+  @Override
   public void run() {
     if (model.server == null) {
       return;
@@ -35,22 +45,27 @@ public class ServerRunner {
     }
 
     // Create the HTTP server
-    vertx.createHttpServer()
+    Future<HttpServer> future = vertx.createHttpServer()
         // Handle every request using the router
         .requestHandler(router)
         // Start listening
-        .listen(model.server.endpoint.port)
-        // Print the port
-        .onSuccess(server -> System.out.println(
-            "HTTP server started on port " + server.actualPort()));
+        .listen(model.server.endpoint.port);
+    future.onSuccess(h->{
+      Log.info("Server started on port: "+ h.actualPort());
+      isReady=true;
+    });
     try {
-      System.in.read();
-    } catch (IOException e) {
-      e.printStackTrace();
+      Thread.sleep(0);
+    } catch (InterruptedException e) {
+      Log.error("Interrupted", e);
     }
   }
 
   public void setModel(ConfigurationModel model) {
     this.model = model;
+  }
+
+  public boolean isReady() {
+    return isReady;
   }
 }
