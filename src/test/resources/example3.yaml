@@ -1,0 +1,9 @@
+client:
+  endpoint:
+    host: localhost
+    port: 8090
+  scenarios:
+  - name: scenario1
+    steps:
+    - path: /hello
+      method: GET

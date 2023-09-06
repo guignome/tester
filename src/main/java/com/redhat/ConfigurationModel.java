@@ -18,7 +18,7 @@ public class ConfigurationModel {
 
     public static class ClientConfiguration {
         public Topology topology = new Topology();
-        public Endpoint endpoint;
+        public Endpoint endpoint = new Endpoint();
         public List<Scenario> scenarios =new ArrayList<>();
 
         public static class Topology {
@@ -39,7 +39,8 @@ public class ConfigurationModel {
             public List<Step> steps = new ArrayList<>();
 
             public static class Step {
-                public String GET;
+                public String method = "GET";
+                public String path = "/";
             }
         }
     }

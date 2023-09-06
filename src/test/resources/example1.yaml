@@ -9,8 +9,10 @@ client:
   scenarios:
   - name: scenario1
     steps:
-    - GET: /hello
-    - GET: /bye
+    - path: /hello
+      method: GET
+    - path: /bye
+      method: POST
 server:
   endpoint:
     port: 8090

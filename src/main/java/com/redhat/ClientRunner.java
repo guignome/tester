@@ -5,6 +5,7 @@ import com.redhat.ConfigurationModel.ClientConfiguration.Scenario.Step;
 
 import io.quarkus.logging.Log;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.client.WebClient;
 
 public class ClientRunner extends Thread{
@@ -37,8 +38,10 @@ public class ClientRunner extends Thread{
         for (int i = 0; i < model.client.topology.local.repeat; i++) {
             for (Scenario scenario : model.client.scenarios) {
                 for (Step step : scenario.steps) {
-                    client.get(
-                            model.client.endpoint.port, model.client.endpoint.host, step.GET).send()
+
+                    client.request(
+                        HttpMethod.valueOf(step.method),
+                            model.client.endpoint.port, model.client.endpoint.host, step.path).send()
                             .onSuccess(response -> Log.info("Received response: " + response.bodyAsString()))
                             .onFailure(err -> Log.error("Something went wrong! ", err));
                 }

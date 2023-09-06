@@ -36,7 +36,8 @@ class EntryCommand implements Runnable {
     @Option(names = { "-f", "--file" }, description = "The file name")
     File file;
 
-    @Option(names = { "-v", "--verbose"}, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
+    @Option(names = { "-v",
+            "--verbose" }, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
     private boolean[] verbose;
 
     @Inject
@@ -51,38 +52,43 @@ class EntryCommand implements Runnable {
             Log.error("Couldn't initialize model: ", e);
         }
 
-        //Create clients
+        // Create clients
         List<ClientRunner> clients = new ArrayList<>();
-        if(model.client != null) {
+        if (model.client != null) {
             ClientRunner currentClient;
-            for(int i=0;i< model.client.topology.local.parallel; i++){
+            for (int i = 0; i < model.client.topology.local.parallel; i++) {
                 currentClient = factory.createClientRunner();
                 currentClient.setModel(model);
                 clients.add(currentClient);
             }
         }
-        
-        //Create server
-        ServerRunner server = factory.createServerRunner();
-        server.setModel(model);
 
-        //Run instances.
-        server.start();
+        // Create server
+        ServerRunner server = null;
+        if (model.server != null) {
+            server = factory.createServerRunner();
+            server.setModel(model);
 
-        //Wait for the server to be started
-        while(!server.isReady()) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Log.error("Interrupted", e);
+            // Run instances.
+            server.start();
+
+            // Wait for the server to be started
+            while (!server.isReady()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Log.error("Interrupted", e);
+                }
             }
         }
         clients.forEach(Thread::start);
-        
-        //Wait for completion
+
+        // Wait for completion
         try {
-            server.join();
-            clients.forEach(c->{
+            if (server != null) {
+                server.join();
+            }
+            clients.forEach(c -> {
                 try {
                     c.join();
                 } catch (InterruptedException e) {
@@ -92,11 +98,11 @@ class EntryCommand implements Runnable {
         } catch (InterruptedException e) {
             Log.error("Interrupted", e);
         }
-        try {
-            System.in.read();
-        } catch (IOException e) {
-            Log.error("IO Error", e);
-        }
+        // try {
+        //     System.in.read();
+        // } catch (IOException e) {
+        //     Log.error("IO Error", e);
+        // }
     }
 
     private ConfigurationModel createModelFromOptions() throws StreamReadException, DatabindException, IOException {
@@ -107,11 +113,11 @@ class EntryCommand implements Runnable {
         model.client = new ClientConfiguration();
         model.client.endpoint = new Endpoint();
         model.client.endpoint.host = url.getHost();
-        model.client.endpoint.port = url.getPort();
+        model.client.endpoint.port = url.getPort() == -1 ? 80 : url.getPort();
 
         Scenario scenario = new Scenario();
         Step step = new Step();
-        step.GET = url.getPath();
+        step.path = url.getPath();
 
         model.client.scenarios.add(scenario);
         scenario.steps.add(step);
