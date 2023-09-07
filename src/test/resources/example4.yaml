@@ -1,0 +1,21 @@
+client:
+  topology:
+    local:
+      parallel: 10
+      repeat: 2
+  endpoint:
+    host: localhost
+    port: 8090
+  scenarios:
+  - name: scenario1
+    steps:
+    - path: /hello
+      method: GET
+    - path: /hi
+      method: GET
+  - name: scenario2
+    steps:
+    - path: /bonjour
+      method: GET
+    - path: /salut
+      method: GET

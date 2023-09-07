@@ -3,6 +3,6 @@ server:
     port: 8090
   handlers:
     - path: /*
-      method: POST
+      method: GET
       delay: 2000
       response: Hello how are you

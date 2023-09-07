@@ -35,11 +35,31 @@ public class ConfigurationModelTest {
         assertNotNull(model3);
     }
 
-    //@Disabled
     @Test
     public void testCLI() {
         CommandLine cmd = new CommandLine(entryCommand);
         int exitCode = cmd.execute("http://www.google.com");
+        assertEquals(0, exitCode, "Non 0 exit code.");
+    }
+
+    @Test
+    public void testScenario1() {
+        CommandLine cmd = new CommandLine(entryCommand);
+        int exitCode = cmd.execute("-f","src/test/resources/example1.yaml");
+        assertEquals(0, exitCode, "Non 0 exit code.");
+    }
+
+    @Test
+    public void testScenario2() {
+        CommandLine cmd = new CommandLine(entryCommand);
+        int exitCode = cmd.execute("-f","src/test/resources/example2.yaml");
+        assertEquals(0, exitCode, "Non 0 exit code.");
+    }
+
+    @Test
+    public void testScenario3() {
+        CommandLine cmd = new CommandLine(entryCommand);
+        int exitCode = cmd.execute("-f","src/test/resources/example3.yaml");
         assertEquals(0, exitCode, "Non 0 exit code.");
     }
 }

@@ -90,12 +90,18 @@ class EntryCommand implements Runnable {
                 clientFutures.add(client.run());
             }
         }
-        CompositeFuture allClientsFuture = CompositeFuture.all(clientFutures);
-        allClientsFuture.onSuccess(h -> {
-            Quarkus.asyncExit(0);
-        }).onFailure(h -> {
-            Quarkus.asyncExit(1);
-        });
+        if (clientFutures.size() > 0) {
+            CompositeFuture allClientsFuture = CompositeFuture.all(clientFutures);
+            allClientsFuture.onSuccess(h -> {
+                Log.debug("All clients succeeded, exiting.");
+                Quarkus.asyncExit(0);
+            }).onFailure(h -> {
+                Log.debug("All clients failed, exiting.");
+                Quarkus.asyncExit(1);
+            });
+        }
+
+        Log.debug("Waiting For Exit.");
         Quarkus.waitForExit();
 
     }
