@@ -9,14 +9,12 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 
-public class ServerRunner extends Thread {
+public class ServerRunner {
 
   private Vertx vertx;
   private ConfigurationModel model;
   private boolean isReady = false;
 
-  
-  
   public Vertx getVertx() {
     return vertx;
   }
@@ -29,10 +27,9 @@ public class ServerRunner extends Thread {
     return model;
   }
 
-  @Override
-  public void run() {
+  public Future<HttpServer> run() {
     if (model.server == null) {
-      return;
+      return Future.succeededFuture();
     }
 
     Router router = Router.router(vertx);
@@ -50,15 +47,7 @@ public class ServerRunner extends Thread {
         .requestHandler(router)
         // Start listening
         .listen(model.server.endpoint.port);
-    future.onSuccess(h->{
-      Log.info("Server started on port: "+ h.actualPort());
-      isReady=true;
-    });
-    try {
-      Thread.sleep(0);
-    } catch (InterruptedException e) {
-      Log.error("Interrupted", e);
-    }
+    return future;
   }
 
   public void setModel(ConfigurationModel model) {

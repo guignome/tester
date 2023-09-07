@@ -1,14 +1,22 @@
 package com.redhat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.redhat.ConfigurationModel.ClientConfiguration.Scenario;
 import com.redhat.ConfigurationModel.ClientConfiguration.Scenario.Step;
 
 import io.quarkus.logging.Log;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 
-public class ClientRunner extends Thread{
+public class ClientRunner {
     private ConfigurationModel model;
     private Vertx vertx;
 
@@ -28,24 +36,32 @@ public class ClientRunner extends Thread{
         this.model = model;
     }
 
-    @Override
-    public void run() {
+    public Future<HttpResponse<Buffer>> run() {
         if (model.client == null) {
-            return;
+            return Future.succeededFuture();
         }
         WebClient client = WebClient.create(vertx);
-
+        Future<HttpResponse<Buffer>> future = null;
         for (int i = 0; i < model.client.topology.local.repeat; i++) {
             for (Scenario scenario : model.client.scenarios) {
                 for (Step step : scenario.steps) {
-
-                    client.request(
-                        HttpMethod.valueOf(step.method),
-                            model.client.endpoint.port, model.client.endpoint.host, step.path).send()
-                            .onSuccess(response -> Log.info("Received response: " + response.bodyAsString()))
-                            .onFailure(err -> Log.error("Something went wrong! ", err));
+                    HttpRequest<Buffer> request = client.request(
+                            HttpMethod.valueOf(step.method),
+                            model.client.endpoint.port, model.client.endpoint.host, step.path);
+                    if (future == null) {
+                        future = request.send().onComplete(ar -> {
+                            Log.debug("Client response received: " + ar.result().bodyAsString());
+                        });
+                    } else {
+                        future = future.compose(v -> {
+                            return request.send().onComplete(ar -> {
+                            Log.debug("Client response received: " + ar.result().bodyAsString());
+                        });
+                        });
+                    }
                 }
             }
         }
+        return future;
     }
 }

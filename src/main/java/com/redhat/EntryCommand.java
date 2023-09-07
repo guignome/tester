@@ -21,6 +21,10 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import io.quarkus.logging.Log;
+import io.quarkus.runtime.Quarkus;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.http.HttpServer;
 
 @CommandLine.Command(name = "tester", mixinStandardHelpOptions = true, description = "Starts the HTTP client.")
 class EntryCommand implements Runnable {
@@ -65,44 +69,35 @@ class EntryCommand implements Runnable {
 
         // Create server
         ServerRunner server = null;
+        Future<HttpServer> serverFuture = null;
         if (model.server != null) {
             server = factory.createServerRunner();
             server.setModel(model);
 
             // Run instances.
-            server.start();
-
-            // Wait for the server to be started
-            while (!server.isReady()) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    Log.error("Interrupted", e);
-                }
-            }
+            serverFuture = server.run();
         }
-        clients.forEach(Thread::start);
-
-        // Wait for completion
-        try {
-            if (server != null) {
-                server.join();
-            }
-            clients.forEach(c -> {
-                try {
-                    c.join();
-                } catch (InterruptedException e) {
-                    Log.error("Interrupted", e);
+        // Wait for the server to be started
+        List<Future> clientFutures = new ArrayList<>();
+        if (serverFuture != null) {
+            serverFuture.andThen((e) -> {
+                for (ClientRunner client : clients) {
+                    clientFutures.add(client.run());
                 }
             });
-        } catch (InterruptedException e) {
-            Log.error("Interrupted", e);
+        } else {
+            for (ClientRunner client : clients) {
+                clientFutures.add(client.run());
+            }
         }
-        // try {
-        //     System.in.read();
-        // } catch (IOException e) {
-        //     Log.error("IO Error", e);
-        // }
+        CompositeFuture allClientsFuture = CompositeFuture.all(clientFutures);
+        allClientsFuture.onSuccess(h -> {
+            Quarkus.asyncExit(0);
+        }).onFailure(h -> {
+            Quarkus.asyncExit(1);
+        });
+        Quarkus.waitForExit();
+
     }
 
     private ConfigurationModel createModelFromOptions() throws StreamReadException, DatabindException, IOException {
