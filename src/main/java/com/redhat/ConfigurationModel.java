@@ -19,7 +19,7 @@ public class ConfigurationModel {
     public static class ClientConfiguration {
         public Topology topology = new Topology();
         public Endpoint endpoint = new Endpoint();
-        public List<Scenario> scenarios =new ArrayList<>();
+        public List<Suite> suites =new ArrayList<>();
 
         public static class Topology {
             public Local local = new Local();
@@ -34,8 +34,8 @@ public class ConfigurationModel {
             public int port=80;
         }
 
-        public static class Scenario {
-            public String name = "scenario";
+        public static class Suite {
+            public String name = "suite1";
             public List<Step> steps = new ArrayList<>();
 
             public static class Step {

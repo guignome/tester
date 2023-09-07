@@ -3,8 +3,8 @@ package com.redhat;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.redhat.ConfigurationModel.ClientConfiguration.Scenario;
-import com.redhat.ConfigurationModel.ClientConfiguration.Scenario.Step;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
 
 import io.quarkus.logging.Log;
 import io.vertx.core.AsyncResult;
@@ -59,7 +59,7 @@ public class ClientRunner {
         };
 
         for (int i = 0; i < model.client.topology.local.repeat; i++) {
-            for (Scenario scenario : model.client.scenarios) {
+            for (Suite scenario : model.client.suites) {
                 for (Step step : scenario.steps) {
                     HttpRequest<Buffer> request = client.request(
                             HttpMethod.valueOf(step.method),

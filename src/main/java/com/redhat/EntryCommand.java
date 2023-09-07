@@ -12,8 +12,8 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.redhat.ConfigurationModel.ClientConfiguration;
 import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
-import com.redhat.ConfigurationModel.ClientConfiguration.Scenario;
-import com.redhat.ConfigurationModel.ClientConfiguration.Scenario.Step;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
 import com.redhat.ConfigurationModel.ClientConfiguration.Topology.Local;
 
 import picocli.CommandLine;
@@ -116,11 +116,11 @@ class EntryCommand implements Runnable {
         model.client.endpoint.host = url.getHost();
         model.client.endpoint.port = url.getPort() == -1 ? 80 : url.getPort();
 
-        Scenario scenario = new Scenario();
+        Suite scenario = new Suite();
         Step step = new Step();
         step.path = url.getPath();
 
-        model.client.scenarios.add(scenario);
+        model.client.suites.add(scenario);
         scenario.steps.add(step);
 
         return model;
