@@ -52,7 +52,7 @@ public class ClientRunner {
                 if(ar.result() == null) {
                     Log.debug("Client response received: null");
                 } else {
-                    Log.debug("Client response received: " + ar.result().bodyAsString());
+                    Log.debug("Client response received: \n" + renderResponse(ar.result()));
                 }
                 
             }
@@ -76,5 +76,16 @@ public class ClientRunner {
         }
         Log.debug("ClientRunner started.");
         return future;
+    }
+
+    public String renderResponse(HttpResponse<Buffer> response) {
+        StringBuilder sb = new StringBuilder()
+          .append("-- Headers --\n");
+          response.headers().forEach(
+            (k,v)->{sb.append(k + " : " + v + "\n");}
+          );
+          sb.append("-- Body --  " + "\n")
+            .append(response.bodyAsString() + "\n");
+            return sb.toString();
     }
 }

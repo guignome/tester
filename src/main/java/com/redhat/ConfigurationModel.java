@@ -44,6 +44,12 @@ public class ConfigurationModel {
                 public String path = "/";
                 public String body;
                 public List<Header> headers;
+                public List<Assertion> assertions;
+            }
+
+            public static class Assertion {
+                String name;
+                String body;
             }
         }
     }
