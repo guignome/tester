@@ -74,6 +74,7 @@ public class ClientRunner {
                 }
             }
         }
+        Log.debug("ClientRunner started.");
         return future;
     }
 }

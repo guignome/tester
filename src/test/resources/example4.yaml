@@ -12,7 +12,18 @@ client:
     - path: /hello
       method: GET
     - path: /hi
-      method: GET
+      method: POST
+      body: This is my body
+      headers:
+      - name: header1
+        value: myvalue1
+      - name: header2
+        value: myvalue2
+      assertions:
+      - name: assertion1
+        body: This is my body
+        headers:
+
   - name: testSuite2
     steps:
     - path: /bonjour

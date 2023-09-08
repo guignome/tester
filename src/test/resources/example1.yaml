@@ -1,8 +1,8 @@
 client:
   topology:
     local:
-      parallel: 2
-      repeat: 3
+      parallel: 1
+      repeat: 1
   endpoint:
     host: localhost
     port: 8090

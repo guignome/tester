@@ -47,6 +47,7 @@ public class ServerRunner {
         .requestHandler(router)
         // Start listening
         .listen(model.server.endpoint.port);
+    Log.debug("ServerRunner started.");
     return future;
   }
 

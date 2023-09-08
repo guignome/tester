@@ -19,19 +19,20 @@ public class ConfigurationModel {
     public static class ClientConfiguration {
         public Topology topology = new Topology();
         public Endpoint endpoint = new Endpoint();
-        public List<Suite> suites =new ArrayList<>();
+        public List<Suite> suites = new ArrayList<>();
 
         public static class Topology {
             public Local local = new Local();
 
             public static class Local {
-                public int parallel=1;
+                public int parallel = 1;
                 public int repeat = 1;
             }
         }
-        public static class Endpoint{
-            public String host="localhost";
-            public int port=80;
+
+        public static class Endpoint {
+            public String host = "localhost";
+            public int port = 80;
         }
 
         public static class Suite {
@@ -41,6 +42,8 @@ public class ConfigurationModel {
             public static class Step {
                 public String method = "GET";
                 public String path = "/";
+                public String body;
+                public List<Header> headers;
             }
         }
     }
@@ -57,15 +60,20 @@ public class ConfigurationModel {
             public String response;
         }
 
-
         public static class Endpoint {
             public int port;
         }
     }
 
-    public static  ConfigurationModel loadFromFile(File file) throws StreamReadException, DatabindException, IOException {
+    public static class Header {
+        public String name = "";
+        public String value = "";
+    }
+
+    public static ConfigurationModel loadFromFile(File file)
+            throws StreamReadException, DatabindException, IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         return mapper.readValue(file, ConfigurationModel.class);
     }
-    
+
 }

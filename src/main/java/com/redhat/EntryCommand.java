@@ -47,6 +47,9 @@ class EntryCommand implements Runnable {
     @Inject
     Factory factory;
 
+    List<ClientRunner> clients = new ArrayList<>();
+    ServerRunner server = null;
+
     @Override
     public void run() {
         ConfigurationModel model = null;
@@ -57,7 +60,6 @@ class EntryCommand implements Runnable {
         }
 
         // Create clients
-        List<ClientRunner> clients = new ArrayList<>();
         if (model.client != null) {
             ClientRunner currentClient;
             for (int i = 0; i < model.client.topology.local.parallel; i++) {
@@ -68,7 +70,6 @@ class EntryCommand implements Runnable {
         }
 
         // Create server
-        ServerRunner server = null;
         Future<HttpServer> serverFuture = null;
         if (model.server != null) {
             server = factory.createServerRunner();
@@ -80,15 +81,23 @@ class EntryCommand implements Runnable {
         // Wait for the server to be started
         List<Future> clientFutures = new ArrayList<>();
         if (serverFuture != null) {
-            serverFuture.andThen((e) -> {
-                for (ClientRunner client : clients) {
-                    clientFutures.add(client.run());
-                }
+            serverFuture.onComplete(h -> {
+                Log.debug("Server startup Completed.");
+                clientFutures.addAll(startClients());
             });
         } else {
-            for (ClientRunner client : clients) {
-                clientFutures.add(client.run());
-            }
+            clientFutures.addAll(startClients());
+        }
+
+        Log.debug("Waiting For Exit.");
+        Quarkus.waitForExit();
+
+    }
+
+    private List<Future> startClients() {
+        List<Future> clientFutures = new ArrayList<>();
+        for (ClientRunner client : clients) {
+            clientFutures.add(client.run());
         }
         if (clientFutures.size() > 0) {
             CompositeFuture allClientsFuture = CompositeFuture.all(clientFutures);
@@ -100,10 +109,7 @@ class EntryCommand implements Runnable {
                 Quarkus.asyncExit(1);
             });
         }
-
-        Log.debug("Waiting For Exit.");
-        Quarkus.waitForExit();
-
+        return clientFutures;
     }
 
     private ConfigurationModel createModelFromOptions() throws StreamReadException, DatabindException, IOException {
