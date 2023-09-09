@@ -31,18 +31,29 @@ class EntryCommand implements Runnable {
     @Parameters(index = "0", description = "URL of the resource", defaultValue = "http://localhost:8080")
     URL url;
 
-    @Option(names = { "-p", "--port" }, description = "The port number")
+    @Option(names = { "-p", "--port" }, description = "The port number.")
     int port;
 
-    @Option(names = { "-h", "--host" }, description = "The host name")
+    @Option(names = { "-h", "--host" }, description = "The host name.")
     String host;
 
-    @Option(names = { "-f", "--file" }, description = "The file name")
+    @Option(names = { "-f", "--file" }, description = "The file name.")
     File file;
 
     @Option(names = { "-v",
             "--verbose" }, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
     private boolean[] verbose;
+
+    @Option(names = { "-P", "--parallel" }, description = "The number of parallel calls.")
+    int parallel = 1;
+
+    @Option(names = { "-R", "--repeat" }, description = "The number of times to repeat the calls for each thread.")
+    int repeat = 1;
+
+    @Option(names = { "-m", "--method" }, description = "The HTTP Method to use.")
+    String method = "GET";
+
+
 
     @Inject
     Factory factory;
@@ -122,12 +133,16 @@ class EntryCommand implements Runnable {
         model.client.endpoint.host = url.getHost();
         model.client.endpoint.port = url.getPort() == -1 ? 80 : url.getPort();
 
-        Suite scenario = new Suite();
+        Suite suite = new Suite();
         Step step = new Step();
         step.path = url.getPath();
+        step.method = method;
 
-        model.client.suites.add(scenario);
-        scenario.steps.add(step);
+        model.client.suites.add(suite);
+        suite.steps.add(step);
+
+        model.client.topology.local.parallel = parallel;
+        model.client.topology.local.repeat = repeat;
 
         return model;
     }

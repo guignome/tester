@@ -38,7 +38,7 @@ public class ConfigurationModelTest {
     @Test
     public void testCLI() {
         CommandLine cmd = new CommandLine(entryCommand);
-        int exitCode = cmd.execute("http://www.google.com");
+        int exitCode = cmd.execute("-P","2", "-R","3","-m","GET","https://api.publicapis.org/random");
         assertEquals(0, exitCode, "Non 0 exit code.");
     }
 
