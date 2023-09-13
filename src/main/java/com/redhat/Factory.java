@@ -10,9 +10,13 @@ public class Factory {
     @Inject
     Vertx vertx;
 
+    @Inject
+    ResultCollector resultCollector;
+
     public ClientRunner createClientRunner() {
         ClientRunner client = new ClientRunner();
         client.setVertx(vertx);
+        client.setResultCollector(resultCollector);
         return client;
     }
     

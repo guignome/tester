@@ -1,6 +1,5 @@
 package com.redhat;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
@@ -8,24 +7,22 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 
 import io.quarkus.logging.Log;
-import io.quarkus.picocli.runtime.annotations.TopCommand;
 import io.quarkus.test.junit.QuarkusTest;
-import picocli.CommandLine;
+import io.vertx.core.Future;
 
 @QuarkusTest
-@Disabled
-public class ConfigurationModelTest {
+public class RunnerTest {
 
     @Inject
-    @TopCommand
-    EntryCommand entryCommand;
+    Runner runner;
     
     @Test
     public void testLoadYaml() throws StreamReadException, DatabindException, IOException {
@@ -38,12 +35,17 @@ public class ConfigurationModelTest {
         assertNotNull(model3);
     }
 
-    @Test
-    public void testCLI() {
-        Log.info("Running testCLI test.\n");
-        CommandLine cmd = new CommandLine(entryCommand);
-        int exitCode = cmd.execute("-P","2", "-R","3","-m","GET","https://api.publicapis.org/random");
-        assertEquals(0, exitCode, "Non 0 exit code.");
+    
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2,3,4,5}) 
+    public void testScenarios(int n) throws Exception {
+        Log.info("\n Running testScenario " + n + "\n");
+        ConfigurationModel model = ConfigurationModel.loadFromFile(new File("src/test/resources/example" + n + ".yaml"));
+        runner.setModel(model);
+        Future future = runner.run();
+        future.onComplete(h -> {
+            Log.debug("testScenario" + n + " complete.");
+        });
+        Thread.sleep(5000);
     }
-
 }

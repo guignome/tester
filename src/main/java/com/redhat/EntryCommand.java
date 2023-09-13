@@ -1,6 +1,7 @@
 package com.redhat;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -14,17 +15,13 @@ import com.redhat.ConfigurationModel.ClientConfiguration;
 import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
-import com.redhat.ConfigurationModel.ClientConfiguration.Topology.Local;
-
-import picocli.CommandLine;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.Quarkus;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
-import io.vertx.core.http.HttpServer;
+import picocli.CommandLine;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 @CommandLine.Command(name = "tester", mixinStandardHelpOptions = true, description = "Starts the HTTP client.")
 class EntryCommand implements Runnable {
@@ -53,74 +50,61 @@ class EntryCommand implements Runnable {
     @Option(names = { "-m", "--method" }, description = "The HTTP Method to use.")
     String method = "GET";
 
-
+    @Option(names = { "-c", "--csv" }, description = "The file name where to save the results in csv format.")
+    File csvFile; 
 
     @Inject
     Factory factory;
 
+    @Inject
+    ResultCollector resultCollector;
+
+    @Inject
+    Runner runner;
+
     List<ClientRunner> clients = new ArrayList<>();
     ServerRunner server = null;
 
+    public EntryCommand() throws IOException{
+        csvFile= File.createTempFile("results", ".csv");
+    }
+
     @Override
     public void run() {
+        resultCollector.init();
         ConfigurationModel model = null;
         try {
             model = createModelFromOptions();
         } catch (Exception e) {
             Log.error("Couldn't initialize model: ", e);
         }
+        runner.setModel(model);
+        runner.setCsvFile(csvFile);
 
-        // Create clients
-        if (model.client != null) {
-            ClientRunner currentClient;
-            for (int i = 0; i < model.client.topology.local.parallel; i++) {
-                currentClient = factory.createClientRunner();
-                currentClient.setModel(model);
-                clients.add(currentClient);
-            }
-        }
-
-        // Create server
-        Future<HttpServer> serverFuture = null;
-        if (model.server != null) {
-            server = factory.createServerRunner();
-            server.setModel(model);
-
-            // Run instances.
-            serverFuture = server.run();
-        }
-        // Wait for the server to be started
-        List<Future> clientFutures = new ArrayList<>();
-        if (serverFuture != null) {
-            serverFuture.onComplete(h -> {
-                Log.debug("Server startup Completed.");
-                clientFutures.addAll(startClients());
-            });
-        } else {
-            clientFutures.addAll(startClients());
-        }
+        Future appFuture = runner.run();
+        appFuture.onSuccess(h -> {
+            Log.debug("All clients succeeded, exiting.");
+            printResultsToFile();
+            Quarkus.asyncExit(0);
+        }).onFailure(h -> {
+            Log.debug("All clients failed, exiting.");
+            printResultsToFile();
+            Quarkus.asyncExit(1);
+        });
 
         Log.debug("Waiting For Exit.");
         Quarkus.waitForExit();
-
+        Log.debug("Exiting now.");
     }
 
-    private List<Future> startClients() {
-        List<Future> clientFutures = new ArrayList<>();
-        for (ClientRunner client : clients) {
-            clientFutures.add(client.run());
+    private void printResultsToFile() {
+        Log.info("Creating result file: " + csvFile.getAbsolutePath());
+        try (FileWriter writer = new FileWriter(csvFile)) {
+            writer.write(resultCollector.renderCSV());
+            writer.close();
+        } catch (IOException e) {
+            Log.error("Not able to create CSV result file.", e);
         }
-        if (clientFutures.size() > 0) {
-            CompositeFuture allClientsFuture = CompositeFuture.all(clientFutures);
-            allClientsFuture.onSuccess(h -> {
-                Log.debug("All clients succeeded, exiting.");
-                Quarkus.asyncExit(0);
-            }).onFailure(h -> {
-                Log.debug("All clients failed, exiting.");
-                Quarkus.asyncExit(1);
-            });
-        }
-        return clientFutures;
     }
 
     private ConfigurationModel createModelFromOptions() throws StreamReadException, DatabindException, IOException {

@@ -11,3 +11,5 @@ client:
     steps:
     - path: /hello
       method: GET
+    - path: /hello
+      method: GET
