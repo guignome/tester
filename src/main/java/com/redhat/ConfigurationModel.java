@@ -48,8 +48,8 @@ public class ConfigurationModel {
             }
 
             public static class Assertion {
-                String name;
-                String body;
+                public String name;
+                public String body;
             }
         }
     }

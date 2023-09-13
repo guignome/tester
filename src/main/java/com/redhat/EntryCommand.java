@@ -71,7 +71,6 @@ class EntryCommand implements Runnable {
 
     @Override
     public void run() {
-        resultCollector.init();
         ConfigurationModel model = null;
         try {
             model = createModelFromOptions();

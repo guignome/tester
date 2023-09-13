@@ -23,7 +23,9 @@ public class RunnerTest {
 
     @Inject
     Runner runner;
-    
+
+    public final static Object obj = new Object();
+
     @Test
     public void testLoadYaml() throws StreamReadException, DatabindException, IOException {
         Log.info("Running testLoadYaml test.\n");
@@ -35,17 +37,27 @@ public class RunnerTest {
         assertNotNull(model3);
     }
 
-    
-    @ParameterizedTest
-    @ValueSource(ints = {1, 2,3,4,5}) 
-    public void testScenarios(int n) throws Exception {
-        Log.info("\n Running testScenario " + n + "\n");
-        ConfigurationModel model = ConfigurationModel.loadFromFile(new File("src/test/resources/example" + n + ".yaml"));
-        runner.setModel(model);
-        Future future = runner.run();
-        future.onComplete(h -> {
-            Log.debug("testScenario" + n + " complete.");
-        });
-        Thread.sleep(5000);
+    @Test
+    public void testScenarios() throws Exception {
+        for (int n = 1; n < 5; n++) {
+            Log.info("\n Running testScenario " + n + "\n");
+            ConfigurationModel model = ConfigurationModel
+                    .loadFromFile(new File("src/test/resources/example" + n + ".yaml"));
+            runner.setModel(model);
+            Future future = runner.run();
+            final int i = n;
+
+            synchronized (obj) {
+                future.onComplete(h -> {
+                    Log.debug("testScenario" + i + " complete.");
+                    synchronized (obj) {
+                        obj.notify();
+                    }
+                });
+                obj.wait();
+            }
+            // Thread.sleep(10000);
+
+        }
     }
 }

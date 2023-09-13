@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import io.quarkus.logging.Log;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 
 @ApplicationScoped
@@ -40,6 +41,7 @@ public class Runner {
     
     public Future run() {
         resultCollector.init();
+        Promise promise = Promise.promise();
         
         // Create clients
         if (model.client != null) {
@@ -66,12 +68,14 @@ public class Runner {
             serverFuture.onComplete(h -> {
                 Log.debug("Server startup Completed.");
                 clientFutures.addAll(startClients());
+                CompositeFuture.join(clientFutures).onComplete(v-> promise.complete());
             });
         } else {
             clientFutures.addAll(startClients());
+            CompositeFuture.join(clientFutures).onComplete(v-> promise.complete());
         }
 
-        return CompositeFuture.join(clientFutures);
+        return promise.future();
     }
 
     private List<Future> startClients() {
