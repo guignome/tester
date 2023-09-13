@@ -41,6 +41,10 @@ public class ResultCollector {
         results = new ArrayList<>();
     }
 
+    public int size() {
+        return results.size();
+    }
+
     public int onRequestSent(HttpRequest request) {
         int requestId = requestCounter.getAndIncrement();
         Log.debug("Request " + requestId);

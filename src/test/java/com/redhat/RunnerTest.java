@@ -1,5 +1,6 @@
 package com.redhat;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
@@ -24,6 +25,9 @@ public class RunnerTest {
     @Inject
     Runner runner;
 
+    @Inject
+    ResultCollector resultCollector;
+
     public final static Object obj = new Object();
 
     @Test
@@ -39,30 +43,36 @@ public class RunnerTest {
 
     @Test
     public void testCLI() {
-        //java -jar target/quarkus-app/quarkus-run.jar -P 2 -R 3 -m GET https://api.publicapis.org/random
+        // java -jar target/quarkus-app/quarkus-run.jar -P 2 -R 3 -m GET
+        // https://api.publicapis.org/random
     }
 
     @Test
     public void testScenarios() throws Exception {
-        for (int n = 1; n < 5; n++) {
-            Log.info("\n Running testScenario " + n + "\n");
-            ConfigurationModel model = ConfigurationModel
-                    .loadFromFile(new File("src/test/resources/example" + n + ".yaml"));
-            runner.setModel(model);
-            Future future = runner.run();
-            final int i = n;
+        testScenario(1, 12);
+        //testScenario(2, 0);
+        testScenario(3, 12);
+        testScenario(4, 80);
+        testScenario(5, 6);
+    }
 
-            synchronized (obj) {
-                future.onComplete(h -> {
-                    Log.debug("testScenario" + i + " complete.");
-                    synchronized (obj) {
-                        obj.notify();
-                    }
-                });
-                obj.wait();
-            }
-            // Thread.sleep(10000);
+    private void testScenario(final int scenarioNumber, int expectedResultSize) throws Exception {
+        Log.info("\n Running testScenario " + scenarioNumber + "\n");
+        resultCollector.init();
+        ConfigurationModel model = ConfigurationModel
+                .loadFromFile(new File("src/test/resources/example" + scenarioNumber + ".yaml"));
+        runner.setModel(model);
+        Future future = runner.run();
 
+        synchronized (obj) {
+            future.onComplete(h -> {
+                Log.debug("testScenario" + scenarioNumber + " complete.");
+                assertEquals(expectedResultSize, resultCollector.size(), "Wrong size of results.");
+                synchronized (obj) {
+                    obj.notify();
+                }
+            });
+            obj.wait();
         }
     }
 }

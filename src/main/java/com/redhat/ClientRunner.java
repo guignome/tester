@@ -50,16 +50,19 @@ public class ClientRunner {
         }
         List<Future> futures = new ArrayList<>();
         Future<HttpResponse<Buffer>> currentFuture = Future.succeededFuture();
-        for (Suite suite : model.client.suites) {
-            for (Step step : suite.steps) {
-                Log.debug("Step: " + step.method + " " + step.path);
-                HttpRequest<Buffer> request = client.request(HttpMethod.valueOf(step.method),
-                        model.client.endpoint.port, model.client.endpoint.host, step.path);
-                currentFuture = currentFuture.compose(ar -> {
-                    int requestId = resultCollector.onRequestSent(request);
-                    return request.send().onComplete(r -> resultCollector.onResponseReceived(requestId, r.result()));
-                });
-                futures.add(currentFuture);
+        for (int repeat = 0; repeat < model.client.topology.local.repeat; repeat++) {
+            for (Suite suite : model.client.suites) {
+                for (Step step : suite.steps) {
+                    Log.debug("Step: " + step.method + " " + step.path);
+                    HttpRequest<Buffer> request = client.request(HttpMethod.valueOf(step.method),
+                            model.client.endpoint.port, model.client.endpoint.host, step.path);
+                    currentFuture = currentFuture.compose(ar -> {
+                        int requestId = resultCollector.onRequestSent(request);
+                        return request.send()
+                                .onComplete(r -> resultCollector.onResponseReceived(requestId, r.result()));
+                    });
+                    futures.add(currentFuture);
+                }
             }
         }
         Log.debug("ClientRunner started.");

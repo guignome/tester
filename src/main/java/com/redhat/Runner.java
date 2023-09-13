@@ -41,6 +41,7 @@ public class Runner {
 
     public Future run() {
         resultCollector.init();
+        clients = new ArrayList<>();
         Promise promise = Promise.promise();
 
         // Create clients
