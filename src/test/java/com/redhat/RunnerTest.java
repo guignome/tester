@@ -38,6 +38,11 @@ public class RunnerTest {
     }
 
     @Test
+    public void testCLI() {
+        //java -jar target/quarkus-app/quarkus-run.jar -P 2 -R 3 -m GET https://api.publicapis.org/random
+    }
+
+    @Test
     public void testScenarios() throws Exception {
         for (int n = 1; n < 5; n++) {
             Log.info("\n Running testScenario " + n + "\n");
