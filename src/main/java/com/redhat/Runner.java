@@ -38,11 +38,11 @@ public class Runner {
     public void setModel(ConfigurationModel model) {
         this.model = model;
     }
-    
+
     public Future run() {
         resultCollector.init();
         Promise promise = Promise.promise();
-        
+
         // Create clients
         if (model.client != null) {
             ClientRunner currentClient;
@@ -68,11 +68,19 @@ public class Runner {
             serverFuture.onComplete(h -> {
                 Log.debug("Server startup Completed.");
                 clientFutures.addAll(startClients());
-                CompositeFuture.join(clientFutures).onComplete(v-> promise.complete());
+                if (clientFutures.size() > 0) {
+                    CompositeFuture.join(clientFutures).onComplete(v -> promise.complete());
+                } else {
+                    Log.info("Running in Server mode, Press CTRL-C to stop.");
+                }
             });
         } else {
             clientFutures.addAll(startClients());
-            CompositeFuture.join(clientFutures).onComplete(v-> promise.complete());
+            if (clientFutures.size() > 0) {
+                CompositeFuture.join(clientFutures).onComplete(v -> promise.complete());
+            } else {
+                Log.info("Running in Server mode, Press CTRL-C to stop.");
+            }
         }
 
         return promise.future();
@@ -83,7 +91,7 @@ public class Runner {
         for (ClientRunner client : clients) {
             clientFutures.add(client.run());
         }
-        
+
         return clientFutures;
     }
 
