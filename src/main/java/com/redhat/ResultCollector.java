@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.enterprise.context.ApplicationScoped;
 
 import io.quarkus.logging.Log;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 
@@ -54,6 +55,7 @@ public class ResultCollector {
 
     public void onResponseReceived(int requestId, HttpResponse response) {
         Log.debug("Response " + requestId);
+        Log.info(renderResponse(response));
         results.get(requestId).receivedTime = new Date();
         results.get(requestId).response = response;
     }
@@ -77,6 +79,21 @@ public class ResultCollector {
                 sb.append(r.response.bodyAsString()).append('\n');
             }
         }
+        return sb.toString();
+    }
+
+     public static String renderResponse(HttpResponse<Buffer> response) {
+        StringBuilder sb = new StringBuilder()
+                .append("-----\n")
+                .append("HTTP Status code: ").append(response.statusCode())
+                .append("\n----- Headers -----\n");
+        response.headers().forEach(
+                (k, v) -> {
+                    sb.append(k).append(" : ").append(v).append("\n");
+                });
+        sb.append("----- Body -----  ").append("\n")
+                .append(response.bodyAsString()).append("\n")
+                .append("-----\n");
         return sb.toString();
     }
 }

@@ -72,10 +72,10 @@ public class ConfigurationModel {
     public static class ServerConfiguration {
         public Endpoint endpoint;
 
-        public List<Handlers> handlers = new ArrayList<>();
+        public List<Handler> handlers = new ArrayList<>();
 
         @RegisterForReflection
-        public static class Handlers {
+        public static class Handler {
             public String path;
             public String method;
             public int delay = 1;

@@ -68,19 +68,4 @@ public class ClientRunner {
         Log.debug("ClientRunner started.");
         return CompositeFuture.join(futures);
     }
-
-    public String renderResponse(HttpResponse<Buffer> response) {
-        StringBuilder sb = new StringBuilder()
-                .append("-----\n")
-                .append("HTTP Status code: ").append(response.statusCode())
-                .append("\n----- Headers -----\n");
-        response.headers().forEach(
-                (k, v) -> {
-                    sb.append(k).append(" : ").append(v).append("\n");
-                });
-        sb.append("----- Body -----  ").append("\n")
-                .append(response.bodyAsString()).append("\n")
-                .append("-----\n");
-        return sb.toString();
-    }
 }

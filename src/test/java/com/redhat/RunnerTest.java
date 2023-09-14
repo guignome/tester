@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 
+import org.apache.maven.shared.utils.cli.Commandline;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.databind.DatabindException;
 import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import io.vertx.core.Future;
+import picocli.CommandLine;
 
 @QuarkusTest
 public class RunnerTest {
@@ -42,9 +44,18 @@ public class RunnerTest {
     }
 
     @Test
-    public void testCLI() {
+    public void testCLI() throws Exception {
         // java -jar target/quarkus-app/quarkus-run.jar -P 2 -R 3 -m GET
         // https://api.publicapis.org/random
+        EntryCommand app = new EntryCommand();
+        new CommandLine(app).parseArgs("-P", "2", "-R","3", "-m", "GET","https://api.publicapis.org/random");
+        app.loadModelFromOptions();
+        assertEquals(2, app.getModel().client.topology.local.parallel);
+        assertEquals(3, app.getModel().client.topology.local.repeat);
+        assertEquals("GET", app.getModel().client.suites.get(0).steps.get(0).method);
+        //assertEquals(2, app.getModel().client.endpoint.);
+
+
     }
 
     @Test

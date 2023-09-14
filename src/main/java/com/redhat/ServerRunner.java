@@ -1,6 +1,6 @@
 package com.redhat;
 
-import com.redhat.ConfigurationModel.ServerConfiguration.Handlers;
+import com.redhat.ConfigurationModel.ServerConfiguration.Handler;
 
 import io.quarkus.logging.Log;
 import io.vertx.core.Future;
@@ -35,7 +35,7 @@ public class ServerRunner {
     Router router = Router.router(vertx);
 
     // Mount the handler for all incoming requests at every path and HTTP method
-    for (Handlers handler : model.server.handlers) {
+    for (Handler handler : model.server.handlers) {
       router.route(HttpMethod.valueOf(handler.method), handler.path).handler(context -> {
         context.vertx().setTimer(handler.delay, tid -> context.end(handler.response));
       });
