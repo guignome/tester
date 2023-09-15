@@ -50,17 +50,17 @@ class EntryCommand implements Runnable {
     @Option(names = { "-R", "--repeat" }, description = "The number of times to repeat the calls for each thread.")
     int repeat = 1;
 
-    @Option(names = { "-m", "--method" }, description = "The HTTP Method to use.")
-    String method = "GET";
+    @Option(names = { "-m", "--method" }, description = "The HTTP Method to use.", defaultValue = "${TESTER_METHOD:-GET}")
+    String method;
 
     //Server mode
     @Option(names = { "-s", "--server" }, description = "Run in Server Mode.", defaultValue = "false" )
     boolean serverMode ;
 
-    @Option(names = { "-p", "--port" }, description = "The port number.", defaultValue = "8080")
+    @Option(names = { "-p", "--port" }, description = "The port number.", defaultValue = "${TESTER_PORT:-8080}")
     int port ;
 
-    @Option(names = { "-d", "--delay" }, description = "Delay to respond to requests.", defaultValue = "1")
+    @Option(names = { "-d", "--delay" }, description = "Delay to respond to requests.", defaultValue = "${TESTER_DELAY:-0}")
     int delay ;
 
     @Option(names = { "-r", "--response" }, description = "Response body of requests.", defaultValue = "Hi")
@@ -111,6 +111,9 @@ class EntryCommand implements Runnable {
 
         Log.debug("Waiting For Exit.");
         Quarkus.waitForExit();
+        System.out.println(String.format("%s Requests sent. Duration (ms): min=%d, max=%d, avg=%.3f",
+             resultCollector.size(),resultCollector.minDuration(),resultCollector.maxDuration()
+             ,resultCollector.averageDuration()));
         Log.debug("Exiting now.");
     }
 

@@ -17,6 +17,7 @@ import io.vertx.ext.web.client.HttpResponse;
 public class ResultCollector {
     private AtomicInteger requestCounter = new AtomicInteger(0);
     private ArrayList<Result> results = new ArrayList<>();
+    private static String SEPARATOR = "----------";
 
     static final String pattern = "yyyy-MM-dd hh:mm:ss.SSS";
     static final SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
@@ -34,6 +35,10 @@ public class ResultCollector {
             this.request = request;
 
         }
+
+        public long duration() {
+            return ChronoUnit.MILLIS.between(sentTime.toInstant(),receivedTime.toInstant());
+        }
     }
 
     public void init() {
@@ -46,6 +51,18 @@ public class ResultCollector {
         return results.size();
     }
 
+    public long minDuration() {
+        return results.stream().mapToLong(r->r.duration()).summaryStatistics().getMin();
+    }
+
+    public long maxDuration() {
+        return results.stream().mapToLong(r->r.duration()).summaryStatistics().getMax();
+    }
+
+    public double averageDuration() {
+        return results.stream().mapToLong(r->r.duration()).summaryStatistics().getAverage();
+    }
+
     public int onRequestSent(HttpRequest request) {
         int requestId = requestCounter.getAndIncrement();
         Log.debug("Request " + requestId);
@@ -55,7 +72,7 @@ public class ResultCollector {
 
     public void onResponseReceived(int requestId, HttpResponse response) {
         Log.debug("Response " + requestId);
-        Log.info(renderResponse(response));
+        System.out.println(renderResponse(response));
         results.get(requestId).receivedTime = new Date();
         results.get(requestId).response = response;
     }
@@ -67,6 +84,7 @@ public class ResultCollector {
           .append("Sent Time,")
           .append("Received Time,")
           .append("Duration (ms),")
+          .append("Response code")
           .append("Received Body\n");
         for (Result r : results) {
             sb.append(r.requestId).append(',')
@@ -74,8 +92,10 @@ public class ResultCollector {
                     .append(dateFormat.format(r.receivedTime)).append(',')
                     .append(ChronoUnit.MILLIS.between(r.sentTime.toInstant(),r.receivedTime.toInstant())).append(',');
             if(r.response == null) {
+                sb.append("null,");
                 sb.append("null\n");
             } else {
+                sb.append(r.response.statusCode()).append(',');
                 sb.append(r.response.bodyAsString()).append('\n');
             }
         }
@@ -84,16 +104,15 @@ public class ResultCollector {
 
      public static String renderResponse(HttpResponse<Buffer> response) {
         StringBuilder sb = new StringBuilder()
-                .append("-----\n")
-                .append("HTTP Status code: ").append(response.statusCode())
-                .append("\n----- Headers -----\n");
+                .append(SEPARATOR).append(" HTTP ").append(response.statusCode()).append(' ').append(SEPARATOR).append('\n')
+                .append(SEPARATOR).append(" Headers  ").append(SEPARATOR).append('\n');
         response.headers().forEach(
                 (k, v) -> {
                     sb.append(k).append(" : ").append(v).append("\n");
                 });
-        sb.append("----- Body -----  ").append("\n")
-                .append(response.bodyAsString()).append("\n")
-                .append("-----\n");
+        sb.append(SEPARATOR).append("   Body   ").append(SEPARATOR).append('\n')
+                .append(response.bodyAsString())
+                .append(SEPARATOR).append("    END   ").append(SEPARATOR).append('\n');
         return sb.toString();
     }
 }

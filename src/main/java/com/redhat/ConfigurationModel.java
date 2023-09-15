@@ -78,7 +78,7 @@ public class ConfigurationModel {
         public static class Handler {
             public String path;
             public String method;
-            public int delay = 1;
+            public int delay = 0;
             public String response;
         }
 

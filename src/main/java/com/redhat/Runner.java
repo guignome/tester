@@ -72,7 +72,7 @@ public class Runner {
                 if (clientFutures.size() > 0) {
                     CompositeFuture.join(clientFutures).onComplete(v -> promise.complete());
                 } else {
-                    Log.info("Running in Server mode, Press CTRL-C to stop.");
+                    System.out.println("Running in Server mode, Press CTRL-C to stop.");
                 }
             });
         } else {
@@ -80,7 +80,7 @@ public class Runner {
             if (clientFutures.size() > 0) {
                 CompositeFuture.join(clientFutures).onComplete(v -> promise.complete());
             } else {
-                Log.info("Running in Server mode, Press CTRL-C to stop.");
+               System.out.println("Running in Server mode, Press CTRL-C to stop.");
             }
         }
 
