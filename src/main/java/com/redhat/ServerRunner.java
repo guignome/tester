@@ -1,5 +1,6 @@
 package com.redhat;
 
+import com.redhat.ConfigurationModel.ServerConfiguration;
 import com.redhat.ConfigurationModel.ServerConfiguration.Handler;
 
 import io.quarkus.logging.Log;
@@ -14,6 +15,7 @@ public class ServerRunner {
   private Vertx vertx;
   private ConfigurationModel model;
   private boolean isReady = false;
+  private ServerConfiguration serverConfiguration;
 
   public Vertx getVertx() {
     return vertx;
@@ -26,16 +28,19 @@ public class ServerRunner {
   public ConfigurationModel getModel() {
     return model;
   }
+    public void setServer(ServerConfiguration serverConfiguration) {
+      this.serverConfiguration = serverConfiguration;
+  }
 
   public Future<HttpServer> run() {
-    if (model.server == null) {
+    if (model.servers == null) {
       return Future.succeededFuture();
     }
 
     Router router = Router.router(vertx);
 
     // Mount the handler for all incoming requests at every path and HTTP method
-    for (Handler handler : model.server.handlers) {
+    for (Handler handler : serverConfiguration.handlers) {
       router.route(HttpMethod.valueOf(handler.method), handler.path).handler(context -> {
         if(handler.delay == 0) {
           context.end(handler.response);
@@ -51,8 +56,11 @@ public class ServerRunner {
         // Handle every request using the router
         .requestHandler(router)
         // Start listening
-        .listen(model.server.endpoint.port);
-    Log.debug("ServerRunner started.");
+        .listen(serverConfiguration.port,serverConfiguration.host);
+    Log.debug(String.format("ServerRunner %s started on interface %s and port %s.",
+      serverConfiguration.name, 
+      serverConfiguration.host, 
+      serverConfiguration.port));
     return future;
   }
 
@@ -63,4 +71,5 @@ public class ServerRunner {
   public boolean isReady() {
     return isReady;
   }
+
 }

@@ -60,7 +60,7 @@ public class RunnerTest {
 
     @Test
     public void testScenarios() throws Exception {
-        testScenario(1, 12);
+        testScenario(1, 18);
         //testScenario(2, 0);
         testScenario(3, 12);
         testScenario(4, 80);

@@ -3,17 +3,25 @@ package com.redhat;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonKey;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
 
+import io.quarkus.logging.Log;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public class ConfigurationModel {
+    public static final String DEFAULT_ENDPOINT = "default";
+    public static final String DEFAULT_SERVER = "default";
 
     public ConfigurationModel() {
         super();
@@ -21,13 +29,38 @@ public class ConfigurationModel {
 
     public ClientConfiguration client;
 
-    public ServerConfiguration server;
+    public List<ServerConfiguration> servers = new ArrayList<>();
 
+    public ServerConfiguration getDefaultServer() {
+        return getServer(DEFAULT_SERVER);
+    }
+
+    public ServerConfiguration getServer(String name) {
+        for(ServerConfiguration currentServer: servers ) {
+            if(name.equals(currentServer.name)) {
+                return currentServer;
+            }
+        }
+        return null;
+    }
     @RegisterForReflection
     public static class ClientConfiguration {
         public Topology topology = new Topology();
-        public Endpoint endpoint = new Endpoint();
+        public List<Endpoint> endpoints = new ArrayList<>();
         public List<Suite> suites = new ArrayList<>();
+
+        public Endpoint getDefaultEndpoint() {
+            return getEndpoint(DEFAULT_ENDPOINT);
+        }
+
+        public Endpoint getEndpoint(String name) {
+            for (Endpoint endpoint : endpoints) {
+                if (name.equals(endpoint.name)) {
+                    return endpoint;
+                }
+            }
+            return null;
+        }
 
         @RegisterForReflection
         public static class Topology {
@@ -42,6 +75,8 @@ public class ConfigurationModel {
 
         @RegisterForReflection
         public static class Endpoint {
+
+            public String name = DEFAULT_ENDPOINT;
             public String host = "localhost";
             public int port = 80;
         }
@@ -56,6 +91,7 @@ public class ConfigurationModel {
                 public String method = "GET";
                 public String path = "/";
                 public String body;
+                public String endpoint = DEFAULT_ENDPOINT;
                 public List<Header> headers;
                 public List<Assertion> assertions;
             }
@@ -70,7 +106,10 @@ public class ConfigurationModel {
 
     @RegisterForReflection
     public static class ServerConfiguration {
-        public Endpoint endpoint;
+
+        public String name;
+        public String host = "localhost";
+        public int port;
 
         public List<Handler> handlers = new ArrayList<>();
 
@@ -82,10 +121,7 @@ public class ConfigurationModel {
             public String response;
         }
 
-        @RegisterForReflection
-        public static class Endpoint {
-            public int port;
-        }
+        
     }
 
     @RegisterForReflection
@@ -94,8 +130,47 @@ public class ConfigurationModel {
         public String value = "";
     }
 
+    public static ConfigurationModel loadFromFile(File[] files)
+            throws StreamReadException, DatabindException, IOException {
+        List<ConfigurationModel> loadedModels = new ArrayList<>();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                loadedModels.add(loadFromFile(file.listFiles((d,n)-> {
+                    return n.endsWith(".yml") || n.endsWith(".yaml");
+                })));
+            } else {
+                loadedModels.add(loadFromFile(file));
+            }
+            // merge
+        }
+        ConfigurationModel mergedModel = new ConfigurationModel();
+        for (ConfigurationModel currentModel : loadedModels) {
+            // merge clients
+            if (currentModel.client != null) {
+                if (mergedModel.client == null) {
+                    mergedModel.client = currentModel.client;
+                } else {
+                    Log.warn("Loading duplicate client definition, one of them will be overriden.");
+                }
+                // merge client endpoints
+                mergedModel.client.endpoints.addAll(currentModel.client.endpoints);
+
+                // merge client suites
+                mergedModel.client.suites.addAll(currentModel.client.suites);
+            }
+
+            // merge servers
+            if (currentModel.servers.size() > 0) {
+                mergedModel.servers.addAll(currentModel.servers);
+            }
+        }
+
+        return mergedModel;
+    }
+
     public static ConfigurationModel loadFromFile(File file)
             throws StreamReadException, DatabindException, IOException {
+
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         return mapper.readValue(file, ConfigurationModel.class);
     }

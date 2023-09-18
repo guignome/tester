@@ -3,6 +3,7 @@ package com.redhat;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
 
@@ -54,8 +55,12 @@ public class ClientRunner {
             for (Suite suite : model.client.suites) {
                 for (Step step : suite.steps) {
                     Log.debug("Step: " + step.method + " " + step.path);
+                    Endpoint targetEndpoint = model.client.getEndpoint(step.endpoint);
+                    if(targetEndpoint == null) {
+                        Log.error("Refering to non-existent endpoint: " + step.endpoint);
+                    }
                     HttpRequest<Buffer> request = client.request(HttpMethod.valueOf(step.method),
-                            model.client.endpoint.port, model.client.endpoint.host, step.path);
+                            targetEndpoint.port, targetEndpoint.host, step.path);
                     currentFuture = currentFuture.compose(ar -> {
                         int requestId = resultCollector.onRequestSent(request);
                         return request.send()

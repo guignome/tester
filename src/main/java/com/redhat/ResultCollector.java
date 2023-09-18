@@ -112,7 +112,7 @@ public class ResultCollector {
                 });
         sb.append(SEPARATOR).append("   Body   ").append(SEPARATOR).append('\n')
                 .append(response.bodyAsString())
-                .append(SEPARATOR).append("    END   ").append(SEPARATOR).append('\n');
+                .append('\n').append(SEPARATOR).append("    END   ").append(SEPARATOR).append('\n');
         return sb.toString();
     }
 }

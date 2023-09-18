@@ -3,8 +3,8 @@ client:
     local:
       parallel: 10
       repeat: 2
-  endpoint:
-    host: localhost
+  endpoints:
+  - host: localhost
     port: 8090
   suites:
   - name: testSuite1

@@ -29,8 +29,8 @@ import picocli.CommandLine.Parameters;
 class EntryCommand implements Runnable {
 
     //File mode
-    @Option(names = { "-f", "--file" }, description = "The file name.")
-    File file;
+    @Option(names = { "-f", "--file" }, description = "Files to load from. If a directory is specified, all the yaml files in it will be loaded.")
+    File[] files;
 
     @Option(names = { "-c", "--csv" }, description = "The file name where to save the results in csv format.")
     File csvFile;
@@ -128,29 +128,30 @@ class EntryCommand implements Runnable {
     }
 
     void loadModelFromOptions() throws StreamReadException, DatabindException, IOException {
-        if (file != null) {
-            this.model = ConfigurationModel.loadFromFile(file);
+        if (files != null) {
+            this.model = ConfigurationModel.loadFromFile(files);
             return; 
         }
         ConfigurationModel modelFromOptions = new ConfigurationModel();
         if(serverMode) {
             //server mode
-            modelFromOptions.server = new ServerConfiguration();
-            modelFromOptions.server.endpoint = new ServerConfiguration.Endpoint();
-            modelFromOptions.server.endpoint.port = port;
+            modelFromOptions.servers.add(new ServerConfiguration());
+            modelFromOptions.getDefaultServer().port = port;
             ServerConfiguration.Handler handler = new ServerConfiguration.Handler();
             handler.delay = delay;
             handler.response = response;
             handler.method = "GET";
             handler.path = "/*";
-            modelFromOptions.server.handlers.add(handler);
+            modelFromOptions.getDefaultServer().handlers.add(handler);
 
         } else {
             // client mode
             modelFromOptions.client = new ClientConfiguration();
-            modelFromOptions.client.endpoint = new Endpoint();
-            modelFromOptions.client.endpoint.host = url.getHost();
-            modelFromOptions.client.endpoint.port = url.getPort() == -1 ? 80 : url.getPort();
+            Endpoint endpoint = new Endpoint();
+            endpoint.host = url.getHost();
+            endpoint.port = url.getPort() == -1 ? 80 : url.getPort();
+
+            modelFromOptions.client.endpoints.add(endpoint);
 
             Suite suite = new Suite();
             Step step = new Step();

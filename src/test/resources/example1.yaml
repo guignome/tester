@@ -3,9 +3,12 @@ client:
     local:
       parallel: 2
       repeat: 3
-  endpoint:
+  endpoints:
+  - name: default
     host: localhost
     port: 8090
+  - name: marklogic
+    port: 1234
   suites:
   - name: testsuite1
     steps:
@@ -13,9 +16,12 @@ client:
       method: GET
     - path: /bye
       method: POST
-server:
-  endpoint:
-    port: 8090
+    - path: /external
+      endpoint: marklogic
+servers:
+- name: default
+  host: localhost
+  port: 8090
   handlers:
     - path: /hello
       method: GET
@@ -23,3 +29,5 @@ server:
     - path: /bye
       method: POST
       response: Good Bye!
+- name: database
+  port: 1234

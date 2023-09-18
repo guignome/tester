@@ -1,8 +1,7 @@
-server:
-  endpoint:
-    port: 8090
+servers:
+- port: 8090
   handlers:
-    - path: /*
-      method: GET
-      delay: 2000
-      response: Hello how are you
+  - path: /*
+    method: GET
+    delay: 2000
+    response: Hello how are you

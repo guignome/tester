@@ -3,8 +3,8 @@ client:
     local:
       parallel: 1
       repeat: 1
-  endpoint:
-    host: localhost
+  endpoints:
+  - host: localhost
     port: 8090
   suites:
   - name: testSuite1
@@ -23,11 +23,10 @@ client:
       method: GET
     - path: /6
       method: GET
-server:
-  endpoint:
-    port: 8090
+servers:
+- port: 8090
   handlers:
-    - path: /*
-      method: GET
-      delay: 100
-      response: Hello how are you
+  - path: /*
+    method: GET
+    delay: 100
+    response: Hello how are you
