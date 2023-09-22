@@ -54,16 +54,19 @@ class EntryCommand implements Runnable {
     String method;
 
     //Server mode
-    @Option(names = { "-s", "--server" }, description = "Run in Server Mode.", defaultValue = "false" )
+    @Option(names = { "-s", "--server" }, description = "Run in Server Mode.", defaultValue = "${TESTER_SERVER_MODE:-false}" )
     boolean serverMode ;
 
     @Option(names = { "-p", "--port" }, description = "The port number.", defaultValue = "${TESTER_PORT:-8080}")
-    int port ;
+    int port;
+
+    @Option(names = { "-h", "--host" }, description = "The interface to listen on", defaultValue = "${TESTER_HOST:-localhost}")
+    String host;
 
     @Option(names = { "-d", "--delay" }, description = "Delay to respond to requests.", defaultValue = "${TESTER_DELAY:-0}")
     int delay ;
 
-    @Option(names = { "-r", "--response" }, description = "Response body of requests.", defaultValue = "Hi")
+    @Option(names = { "-r", "--response" }, description = "Response body of requests.", defaultValue = "${TESTER_RESPONSE:-Hi}")
     String response ;
 
     //Other fields
@@ -136,13 +139,14 @@ class EntryCommand implements Runnable {
         if(serverMode) {
             //server mode
             modelFromOptions.servers.add(new ServerConfiguration());
-            modelFromOptions.getDefaultServer().port = port;
+            modelFromOptions.servers.get(0).port = port;
+            modelFromOptions.servers.get(0).host = host;
             ServerConfiguration.Handler handler = new ServerConfiguration.Handler();
             handler.delay = delay;
             handler.response = response;
             handler.method = "GET";
             handler.path = "/*";
-            modelFromOptions.getDefaultServer().handlers.add(handler);
+            modelFromOptions.servers.get(0).handlers.add(handler);
 
         } else {
             // client mode

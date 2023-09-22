@@ -44,7 +44,7 @@ public class RunnerTest {
     }
 
     @Test
-    public void testCLI() throws Exception {
+    public void testCLIclient() throws Exception {
         // java -jar target/quarkus-app/quarkus-run.jar -P 2 -R 3 -m GET
         // https://api.publicapis.org/random
         EntryCommand app = new EntryCommand();
@@ -53,6 +53,16 @@ public class RunnerTest {
         assertEquals(2, app.getModel().client.topology.local.parallel);
         assertEquals(3, app.getModel().client.topology.local.repeat);
         assertEquals("GET", app.getModel().client.suites.get(0).steps.get(0).method);
+        //assertEquals(2, app.getModel().client.endpoint.);
+    }
+
+    @Test
+    public void testCLIserver() throws Exception {
+        // java -jar target/quarkus-app/quarkus-run.jar -s
+        EntryCommand app = new EntryCommand();
+        new CommandLine(app).parseArgs("-s");
+        app.loadModelFromOptions();
+        assertNotNull(app.getModel());
         //assertEquals(2, app.getModel().client.endpoint.);
 
 

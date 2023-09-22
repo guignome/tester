@@ -4,11 +4,13 @@ client:
       parallel: 2
       repeat: 3
   endpoints:
-  - name: default
+  - name: app1
     host: localhost
     port: 8090
-  - name: marklogic
+  - name: database
     port: 1234
+    prefix: /myprefix
+    isdefault: true
   suites:
   - name: testsuite1
     steps:
@@ -16,18 +18,21 @@ client:
       method: GET
     - path: /bye
       method: POST
-    - path: /external
-      endpoint: marklogic
+    - path: /myprefix/hello
+      endpoint: database
 servers:
-- name: default
+- name: application
   host: localhost
   port: 8090
   handlers:
-    - path: /hello
-      method: GET
-      response: Hello how are you
-    - path: /bye
-      method: POST
-      response: Good Bye!
-- name: database
+  - path: /hello
+    method: GET
+    response: Hello how are you
+  - path: /bye
+    method: POST
+    response: Good Bye!
+- name: with-prefix
   port: 1234
+  handlers:
+  - path: /myprefix/*
+    response: This is a response with prefix.

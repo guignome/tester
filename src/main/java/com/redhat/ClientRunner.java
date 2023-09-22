@@ -60,7 +60,7 @@ public class ClientRunner {
                         Log.error("Refering to non-existent endpoint: " + step.endpoint);
                     }
                     HttpRequest<Buffer> request = client.request(HttpMethod.valueOf(step.method),
-                            targetEndpoint.port, targetEndpoint.host, step.path);
+                            targetEndpoint.port, targetEndpoint.host, targetEndpoint.prefix + step.path);
                     currentFuture = currentFuture.compose(ar -> {
                         int requestId = resultCollector.onRequestSent(request);
                         return request.send()

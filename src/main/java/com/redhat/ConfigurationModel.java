@@ -48,12 +48,31 @@ public class ConfigurationModel {
         public Topology topology = new Topology();
         public List<Endpoint> endpoints = new ArrayList<>();
         public List<Suite> suites = new ArrayList<>();
+        private Endpoint defaultEndpoint = null;
 
         public Endpoint getDefaultEndpoint() {
-            return getEndpoint(DEFAULT_ENDPOINT);
+            if(defaultEndpoint != null) {
+                return defaultEndpoint;
+            }
+            for(Endpoint currentEndpoint: endpoints) {
+                if(currentEndpoint.isdefault) {
+                    defaultEndpoint = currentEndpoint;
+                    return defaultEndpoint;
+                }
+            }
+            if(endpoints.size() == 1) {
+                defaultEndpoint = endpoints.get(0);
+                return defaultEndpoint;
+            } else {
+                defaultEndpoint = getEndpoint(DEFAULT_ENDPOINT);
+            }
+            return defaultEndpoint;
         }
 
         public Endpoint getEndpoint(String name) {
+            if(DEFAULT_ENDPOINT.equals(name)) {
+                return getDefaultEndpoint();
+            }
             for (Endpoint endpoint : endpoints) {
                 if (name.equals(endpoint.name)) {
                     return endpoint;
@@ -79,6 +98,8 @@ public class ConfigurationModel {
             public String name = DEFAULT_ENDPOINT;
             public String host = "localhost";
             public int port = 80;
+            public String prefix = "";
+            public boolean isdefault = false;
         }
 
         @RegisterForReflection
@@ -116,7 +137,7 @@ public class ConfigurationModel {
         @RegisterForReflection
         public static class Handler {
             public String path;
-            public String method;
+            public String method = "GET";
             public int delay = 0;
             public String response;
         }
