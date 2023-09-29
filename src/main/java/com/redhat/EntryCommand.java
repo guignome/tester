@@ -164,10 +164,9 @@ class EntryCommand implements Runnable {
             modelFromOptions.client = new ClientConfiguration();
             Endpoint endpoint = new Endpoint();
             endpoint.host = url.getHost();
-            endpoint.port = url.getPort() == -1 ? 80 : url.getPort();
+            endpoint.port = url.getPort() == -1 ? url.getDefaultPort() : url.getPort();
             if (url.getProtocol() != null) {
                 endpoint.protocol = url.getProtocol();
-
             }
 
             modelFromOptions.client.endpoints.add(endpoint);
