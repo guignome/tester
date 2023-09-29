@@ -77,6 +77,15 @@ public class ResultCollector {
         results.get(requestId).response = response;
     }
 
+    public void onFailureReceived(int requestId,Throwable t) {
+        Log.debug("Response " + requestId);
+        results.get(requestId).receivedTime = new Date();
+        results.get(requestId).response = null;
+        System.out.println("Received error: " + t.getMessage());
+        Log.error("Received error: ", t);
+        return;
+    }
+
     public String renderCSV() {
         Log.debug("Render CSV.");
         StringBuffer sb = new StringBuffer();
@@ -115,4 +124,6 @@ public class ResultCollector {
                 .append('\n').append(SEPARATOR).append("    END   ").append(SEPARATOR).append('\n');
         return sb.toString();
     }
+
+
 }

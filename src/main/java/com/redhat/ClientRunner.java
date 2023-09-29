@@ -64,7 +64,8 @@ public class ClientRunner {
                     currentFuture = currentFuture.compose(ar -> {
                         int requestId = resultCollector.onRequestSent(request);
                         return request.send()
-                                .onComplete(r -> resultCollector.onResponseReceived(requestId, r.result()));
+                                .onSuccess(r -> resultCollector.onResponseReceived(requestId, r))
+                                .onFailure(t-> resultCollector.onFailureReceived(requestId, t));
                     });
                     futures.add(currentFuture);
                 }
