@@ -64,7 +64,7 @@ public class ConfigurationModel {
                 defaultEndpoint = endpoints.get(0);
                 return defaultEndpoint;
             } else {
-                defaultEndpoint = getEndpoint(DEFAULT_ENDPOINT);
+                defaultEndpoint = doGetEndpoint(DEFAULT_ENDPOINT);
             }
             return defaultEndpoint;
         }
@@ -73,6 +73,11 @@ public class ConfigurationModel {
             if(DEFAULT_ENDPOINT.equals(name)) {
                 return getDefaultEndpoint();
             }
+            return doGetEndpoint(name);
+            
+        }
+
+        private Endpoint doGetEndpoint(String name) {
             for (Endpoint endpoint : endpoints) {
                 if (name.equals(endpoint.name)) {
                     return endpoint;
