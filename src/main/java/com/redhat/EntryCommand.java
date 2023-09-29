@@ -3,9 +3,11 @@ package com.redhat;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Handler;
 
 import javax.inject.Inject;
@@ -54,6 +56,9 @@ class EntryCommand implements Runnable {
     @Option(names = { "-m",
             "--method" }, description = "The HTTP Method to use.", defaultValue = "${TESTER_METHOD:-GET}")
     String method;
+
+    @Option(names = { "-H", "--header" })
+    Map<String, String> headers;
 
     // Server mode
     @Option(names = { "-s",
@@ -171,6 +176,12 @@ class EntryCommand implements Runnable {
             Step step = new Step();
             step.path = url.getPath();
             step.method = method;
+            // load headers
+            if (headers != null) {
+                headers.forEach((k, v) -> {
+                    step.headers.add(new ConfigurationModel.Header(k, v));
+                });
+            }
 
             modelFromOptions.client.suites.add(suite);
             suite.steps.add(step);

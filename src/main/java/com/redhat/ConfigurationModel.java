@@ -155,6 +155,11 @@ public class ConfigurationModel {
     public static class Header {
         public String name = "";
         public String value = "";
+        public Header() {}
+        public Header(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
     }
 
     public static ConfigurationModel loadFromFile(File[] files)
