@@ -28,8 +28,9 @@ import picocli.CommandLine.Parameters;
 @CommandLine.Command(name = "tester", mixinStandardHelpOptions = true, description = "Starts the HTTP client.")
 class EntryCommand implements Runnable {
 
-    //File mode
-    @Option(names = { "-f", "--file" }, description = "Files to load from. If a directory is specified, all the yaml files in it will be loaded.")
+    // File mode
+    @Option(names = { "-f",
+            "--file" }, description = "Files to load from. If a directory is specified, all the yaml files in it will be loaded.")
     File[] files;
 
     @Option(names = { "-c", "--csv" }, description = "The file name where to save the results in csv format.")
@@ -39,7 +40,7 @@ class EntryCommand implements Runnable {
             "--verbose" }, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
     private boolean[] verbose;
 
-    //Client mode
+    // Client mode
 
     @Parameters(index = "0", description = "URL of the resource", defaultValue = "http://localhost:8080")
     URL url;
@@ -50,26 +51,31 @@ class EntryCommand implements Runnable {
     @Option(names = { "-R", "--repeat" }, description = "The number of times to repeat the calls for each thread.")
     int repeat = 1;
 
-    @Option(names = { "-m", "--method" }, description = "The HTTP Method to use.", defaultValue = "${TESTER_METHOD:-GET}")
+    @Option(names = { "-m",
+            "--method" }, description = "The HTTP Method to use.", defaultValue = "${TESTER_METHOD:-GET}")
     String method;
 
-    //Server mode
-    @Option(names = { "-s", "--server" }, description = "Run in Server Mode.", defaultValue = "${TESTER_SERVER_MODE:-false}" )
-    boolean serverMode ;
+    // Server mode
+    @Option(names = { "-s",
+            "--server" }, description = "Run in Server Mode.", defaultValue = "${TESTER_SERVER_MODE:-false}")
+    boolean serverMode;
 
     @Option(names = { "-p", "--port" }, description = "The port number.", defaultValue = "${TESTER_PORT:-8080}")
     int port;
 
-    @Option(names = { "-h", "--host" }, description = "The interface to listen on", defaultValue = "${TESTER_HOST:-localhost}")
+    @Option(names = { "-h",
+            "--host" }, description = "The interface to listen on", defaultValue = "${TESTER_HOST:-localhost}")
     String host;
 
-    @Option(names = { "-d", "--delay" }, description = "Delay to respond to requests.", defaultValue = "${TESTER_DELAY:-0}")
-    int delay ;
+    @Option(names = { "-d",
+            "--delay" }, description = "Delay to respond to requests.", defaultValue = "${TESTER_DELAY:-0}")
+    int delay;
 
-    @Option(names = { "-r", "--response" }, description = "Response body of requests.", defaultValue = "${TESTER_RESPONSE:-Hi}")
-    String response ;
+    @Option(names = { "-r",
+            "--response" }, description = "Response body of requests.", defaultValue = "${TESTER_RESPONSE:-Hi}")
+    String response;
 
-    //Other fields
+    // Other fields
 
     @Inject
     Factory factory;
@@ -85,14 +91,14 @@ class EntryCommand implements Runnable {
 
     private ConfigurationModel model = null;
 
-    public EntryCommand() throws IOException{
-        csvFile= File.createTempFile("results", ".csv");
+    public EntryCommand() throws IOException {
+        csvFile = File.createTempFile("results", ".csv");
     }
 
     @Override
     @SuppressWarnings("rawtypes")
     public void run() {
-        
+
         try {
             loadModelFromOptions();
         } catch (Exception e) {
@@ -115,8 +121,8 @@ class EntryCommand implements Runnable {
         Log.debug("Waiting For Exit.");
         Quarkus.waitForExit();
         System.out.println(String.format("%s Requests sent. Duration (ms): min=%d, max=%d, avg=%.3f",
-             resultCollector.size(),resultCollector.minDuration(),resultCollector.maxDuration()
-             ,resultCollector.averageDuration()));
+                resultCollector.size(), resultCollector.minDuration(), resultCollector.maxDuration(),
+                resultCollector.averageDuration()));
         Log.debug("Exiting now.");
     }
 
@@ -133,11 +139,11 @@ class EntryCommand implements Runnable {
     void loadModelFromOptions() throws StreamReadException, DatabindException, IOException {
         if (files != null) {
             this.model = ConfigurationModel.loadFromFile(files);
-            return; 
+            return;
         }
         ConfigurationModel modelFromOptions = new ConfigurationModel();
-        if(serverMode) {
-            //server mode
+        if (serverMode) {
+            // server mode
             modelFromOptions.servers.add(new ServerConfiguration());
             modelFromOptions.servers.get(0).port = port;
             modelFromOptions.servers.get(0).host = host;
@@ -154,6 +160,10 @@ class EntryCommand implements Runnable {
             Endpoint endpoint = new Endpoint();
             endpoint.host = url.getHost();
             endpoint.port = url.getPort() == -1 ? 80 : url.getPort();
+            if (url.getProtocol() != null) {
+                endpoint.protocol = url.getProtocol();
+
+            }
 
             modelFromOptions.client.endpoints.add(endpoint);
 

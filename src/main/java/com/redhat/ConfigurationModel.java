@@ -100,6 +100,7 @@ public class ConfigurationModel {
         @RegisterForReflection
         public static class Endpoint {
 
+            public String protocol = "http";
             public String name = DEFAULT_ENDPOINT;
             public String host = "localhost";
             public int port = 80;

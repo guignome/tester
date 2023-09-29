@@ -8,6 +8,7 @@ client:
     host: localhost
     port: 8090
   - name: database
+    protocol: http
     port: 1234
     prefix: /myprefix
     isdefault: true

@@ -59,8 +59,17 @@ public class ClientRunner {
                     if(targetEndpoint == null) {
                         Log.error("Refering to non-existent endpoint: " + step.endpoint);
                     }
-                    HttpRequest<Buffer> request = client.request(HttpMethod.valueOf(step.method),
-                            targetEndpoint.port, targetEndpoint.host, targetEndpoint.prefix + step.path);
+                    String absoluteUri = new StringBuilder()
+                       .append(targetEndpoint.protocol)
+                       .append("://")
+                       .append(targetEndpoint.host)
+                       .append(":")
+                       .append(targetEndpoint.port)
+                       .append(targetEndpoint.prefix)
+                       .append(step.path)
+                       .toString();
+                    HttpRequest<Buffer> request = client.requestAbs(HttpMethod.valueOf(step.method),
+                            absoluteUri);
                     currentFuture = currentFuture.compose(ar -> {
                         int requestId = resultCollector.onRequestSent(request);
                         return request.send()
