@@ -172,15 +172,16 @@ public class ConfigurationModel {
                 })));
             } else {
                 loadedModels.add(loadFromFile(file));
-            }
-            // merge
+            }   
         }
+        // merge
         ConfigurationModel mergedModel = new ConfigurationModel();
         for (ConfigurationModel currentModel : loadedModels) {
             // merge clients
             if (currentModel.client != null) {
                 if (mergedModel.client == null) {
-                    mergedModel.client = currentModel.client;
+                    mergedModel.client = new ClientConfiguration();
+                    mergedModel.client.topology = currentModel.client.topology;
                 } else {
                     Log.warn("Loading duplicate client definition, one of them will be overriden.");
                 }

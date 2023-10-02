@@ -45,14 +45,16 @@ public class ClientRunner {
     }
 
     public Future run() {
-
+        Log.debug("Client Runner Running.");
         if (model.client == null) {
             return Future.succeededFuture();
         }
         List<Future> futures = new ArrayList<>();
         Future<HttpResponse<Buffer>> currentFuture = Future.succeededFuture();
         for (int repeat = 0; repeat < model.client.topology.local.repeat; repeat++) {
+            Log.debugf("Repeat %s",repeat);
             for (Suite suite : model.client.suites) {
+                Log.debugf("Suite %s", suite.name);
                 for (Step step : suite.steps) {
                     Log.debugf("Repeat: %s, Suite: %s, Step: %s ",repeat,suite.name, step.method + " " + step.path);
                     Endpoint targetEndpoint = model.client.getEndpoint(step.endpoint);
