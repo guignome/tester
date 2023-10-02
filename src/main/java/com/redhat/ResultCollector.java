@@ -93,7 +93,7 @@ public class ResultCollector {
           .append("Sent Time,")
           .append("Received Time,")
           .append("Duration (ms),")
-          .append("Response code")
+          .append("Response code,")
           .append("Received Body\n");
         for (Result r : results) {
             sb.append(r.requestId).append(',')

@@ -53,7 +53,11 @@ public class RunnerTest {
         assertEquals(2, app.getModel().client.topology.local.parallel);
         assertEquals(3, app.getModel().client.topology.local.repeat);
         assertEquals("GET", app.getModel().client.suites.get(0).steps.get(0).method);
-        //assertEquals(2, app.getModel().client.endpoint.);
+        
+        String endpointName = app.getModel().client.suites.get(0).steps.get(0).endpoint;
+        assertEquals("api.publicapis.org", app.getModel().client.getEndpoint(endpointName).host);
+        assertEquals("https", app.getModel().client.getEndpoint(endpointName).protocol);
+        assertEquals(443, app.getModel().client.getEndpoint(endpointName).port);
     }
 
     @Test

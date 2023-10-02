@@ -54,7 +54,7 @@ public class ClientRunner {
         for (int repeat = 0; repeat < model.client.topology.local.repeat; repeat++) {
             for (Suite suite : model.client.suites) {
                 for (Step step : suite.steps) {
-                    Log.debug("Step: " + step.method + " " + step.path);
+                    Log.debugf("Repeat: %s, Suite: %s, Step: %s ",repeat,suite.name, step.method + " " + step.path);
                     Endpoint targetEndpoint = model.client.getEndpoint(step.endpoint);
                     if(targetEndpoint == null) {
                         Log.error("Refering to non-existent endpoint: " + step.endpoint);
