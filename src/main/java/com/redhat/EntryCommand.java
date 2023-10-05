@@ -65,19 +65,19 @@ class EntryCommand implements Runnable {
             "--server" }, description = "Run in Server Mode.", defaultValue = "${TESTER_SERVER_MODE:-false}")
     boolean serverMode;
 
-    @Option(names = { "-p", "--port" }, description = "The port number.", defaultValue = "${TESTER_PORT:-8080}")
+    @Option(names = { "-p", "--port" }, description = "The port number.", defaultValue = "${TESTER_SERVER_PORT:-8080}")
     int port;
 
     @Option(names = { "-h",
-            "--host" }, description = "The interface to listen on", defaultValue = "${TESTER_HOST:-localhost}")
+            "--host" }, description = "The interface to listen on", defaultValue = "${TESTER_SERVER_HOST:-localhost}")
     String host;
 
     @Option(names = { "-d",
-            "--delay" }, description = "Delay to respond to requests.", defaultValue = "${TESTER_DELAY:-0}")
+            "--delay" }, description = "Delay to respond to requests.", defaultValue = "${TESTER_SERVER_DELAY:-0}")
     int delay;
 
     @Option(names = { "-r",
-            "--response" }, description = "Response body of requests.", defaultValue = "${TESTER_RESPONSE:-Hi}")
+            "--response" }, description = "Response body of requests.", defaultValue = "${TESTER_SERVER_RESPONSE:-Hi}")
     String response;
 
     // Other fields
