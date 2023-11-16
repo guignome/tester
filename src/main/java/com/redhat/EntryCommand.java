@@ -32,7 +32,9 @@ class EntryCommand implements Runnable {
 
     // File mode
     @Option(names = { "-f",
-            "--file" }, description = "Files to load from. If a directory is specified, all the yaml files in it will be loaded.")
+            "--file" }, 
+            description = "Files to load from. If a directory is specified, all the yaml files in it will be loaded.",
+            defaultValue = "${TESTER_FILE}")
     File[] files;
 
     @Option(names = { "-c", "--csv" }, description = "The file name where to save the results in csv format.")
