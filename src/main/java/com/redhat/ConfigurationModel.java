@@ -117,9 +117,9 @@ public class ConfigurationModel {
             public static class Step {
                 public String method = "GET";
                 public String path = "/";
-                public String body;
+                public String body = "";
                 public String endpoint = DEFAULT_ENDPOINT;
-                public List<Header> headers;
+                public List<Header> headers = new ArrayList<>();
                 public List<Assertion> assertions;
             }
 

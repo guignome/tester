@@ -3,6 +3,7 @@ package com.redhat;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.redhat.ConfigurationModel.Header;
 import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
@@ -72,9 +73,13 @@ public class ClientRunner {
                        .toString();
                     HttpRequest<Buffer> request = client.requestAbs(HttpMethod.valueOf(step.method),
                             absoluteUri);
+                            for(Header header: step.headers) {
+                                request.putHeader(header.name, header.value);
+                            }
                     currentFuture = currentFuture.compose(ar -> {
                         int requestId = resultCollector.onRequestSent(request);
-                        return request.send()
+                        Buffer body = Buffer.buffer(step.body); 
+                        return request.sendBuffer(body)
                                 .onSuccess(r -> resultCollector.onResponseReceived(requestId, r))
                                 .onFailure(t-> resultCollector.onFailureReceived(requestId, t));
                     });
