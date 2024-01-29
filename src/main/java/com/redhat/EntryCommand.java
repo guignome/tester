@@ -135,7 +135,7 @@ class EntryCommand implements Runnable {
 
     private void printResultsToFile() {
         try (FileWriter writer = new FileWriter(csvFile)) {
-            writer.write(resultCollector.renderCSV());
+            resultCollector.render(writer);
             writer.close();
             System.out.printf("Creating result file: %s\n", csvFile.getAbsolutePath());
         } catch (IOException e) {

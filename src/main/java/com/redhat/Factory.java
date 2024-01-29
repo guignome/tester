@@ -1,17 +1,19 @@
 package com.redhat;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import io.quarkus.logging.Log;
 import io.vertx.core.Vertx;
 
-@Dependent
+@ApplicationScoped
 public class Factory {
     @Inject
     Vertx vertx;
 
-    @Inject
+    
     ResultCollector resultCollector;
 
     public ClientRunner createClientRunner() {
@@ -27,5 +29,13 @@ public class Factory {
         ServerRunner server = new ServerRunner();
         server.setVertx(vertx);
         return server;
+    }
+
+    @Produces
+    public ResultCollector getResultCollector() {
+        if(resultCollector == null) {
+            resultCollector = new CsvResultCollector();
+        }
+        return resultCollector;
     }
 }
