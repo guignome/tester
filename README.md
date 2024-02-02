@@ -1,4 +1,4 @@
-Tester is a REST MicroService data-driven testing framework. It allows testers to create test suites to test REST microservices while mocking external dependencies. Tests suites and mock servers created in `yaml` format.
+Tester is a REST MicroService data-driven testing framework. It allows testers to create test suites to test REST microservices while mocking external dependencies. Tests suites and mock servers are created in `yaml` format.
 
 # Usage
 
