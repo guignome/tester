@@ -53,6 +53,7 @@ public class TpsResultCollector implements ResultCollector{
         size=0;
         vertx.setPeriodic(1000,1000,(id)-> {
             Log.debug("Moving to next bucket.");
+            System.out.println(renderSummary());
             lastTPS=currentBucketTPS;
             currentBucketTPS=0;
         });

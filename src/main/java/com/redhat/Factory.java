@@ -1,7 +1,7 @@
 package com.redhat;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import io.quarkus.logging.Log;
 import io.vertx.core.Vertx;

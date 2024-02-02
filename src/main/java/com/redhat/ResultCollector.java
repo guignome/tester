@@ -3,7 +3,7 @@ package com.redhat;
 import java.io.IOException;
 import java.io.Writer;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
