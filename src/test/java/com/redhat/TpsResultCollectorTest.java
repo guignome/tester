@@ -20,20 +20,20 @@ public class TpsResultCollectorTest {
         TpsResultCollector tpsResultCollector = (TpsResultCollector) factory.getResultCollector();
         tpsResultCollector.init();
 
-        assertEquals(0, tpsResultCollector.size);
-        assertEquals(0, tpsResultCollector.lastTPS);
-        assertEquals(0, tpsResultCollector.currentBucketTPS);
+        assertEquals(0, tpsResultCollector.size.get());
+        assertEquals(0, tpsResultCollector.lastTPS.get());
+        assertEquals(0, tpsResultCollector.currentBucketTPS.get());
 
         tpsResultCollector.onResponseReceived(0, null);
 
-        assertEquals(1, tpsResultCollector.size);
-        assertEquals(0, tpsResultCollector.lastTPS);
-        assertEquals(1, tpsResultCollector.currentBucketTPS);
+        assertEquals(1, tpsResultCollector.size.get());
+        assertEquals(0, tpsResultCollector.lastTPS.get());
+        assertEquals(1, tpsResultCollector.currentBucketTPS.get());
 
         Thread.sleep(1100);
 
-        assertEquals(1, tpsResultCollector.size);
-        assertEquals(1, tpsResultCollector.lastTPS);
-        assertEquals(0, tpsResultCollector.currentBucketTPS);
+        assertEquals(1, tpsResultCollector.size.get());
+        assertEquals(1, tpsResultCollector.lastTPS.get());
+        assertEquals(0, tpsResultCollector.currentBucketTPS.get());
     }
 }

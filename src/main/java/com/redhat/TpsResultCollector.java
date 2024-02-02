@@ -12,9 +12,11 @@ import io.vertx.ext.web.client.HttpResponse;
 
 public class TpsResultCollector implements ResultCollector{
 
-    int lastTPS =0;
-    int currentBucketTPS = 0;
-    private AtomicInteger requestCounter = new AtomicInteger(0);
+    AtomicInteger lastTPS =new AtomicInteger(0);
+    AtomicInteger currentBucketTPS = new AtomicInteger(0);
+    AtomicInteger size =new AtomicInteger(0);
+
+    AtomicInteger requestCounter = new AtomicInteger(0);
 
     Vertx vertx;
 
@@ -22,7 +24,6 @@ public class TpsResultCollector implements ResultCollector{
         this.vertx = v;
     }
 
-    int size = 0;
 
     @Override
     public int onRequestSent(HttpRequest request) {
@@ -34,34 +35,34 @@ public class TpsResultCollector implements ResultCollector{
     @Override
     public void onResponseReceived(int requestId, HttpResponse response) {
         Log.debug("Response " + requestId);
-        size++;
-        currentBucketTPS++;
+        size.incrementAndGet();
+        currentBucketTPS.incrementAndGet();
     }
 
     @Override
     public void onFailureReceived(int requestId, Throwable t) {
-        size++;
-        currentBucketTPS++;
+        size.incrementAndGet();
+        currentBucketTPS.incrementAndGet();
     }
 
     @Override
     public void init() {
         Log.debug("Initializing TpsResultCollector.");
         requestCounter = new AtomicInteger(0);
-        lastTPS=0;
-        currentBucketTPS=0;
-        size=0;
+        lastTPS.set(0);
+        currentBucketTPS.set(0);
+        size.set(0);
         vertx.setPeriodic(1000,1000,(id)-> {
             Log.debug("Moving to next bucket.");
             System.out.println(renderSummary());
-            lastTPS=currentBucketTPS;
-            currentBucketTPS=0;
+            lastTPS.set(currentBucketTPS.get());
+            currentBucketTPS.set(0);
         });
     }
 
     @Override
     public int size() {
-        return size;
+        return size.get();
     }
 
     @Override
@@ -72,11 +73,6 @@ public class TpsResultCollector implements ResultCollector{
     public String renderSummary() {
         return String.format("%s Requests. Last TPS: %s, Current TPS: %s", size,lastTPS,currentBucketTPS);
 
-    }
-
-    public static class TPSMeasurement {
-        Instant instant;
-        double tps;
     }
 
     @Override
