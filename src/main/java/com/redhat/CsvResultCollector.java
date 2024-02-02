@@ -15,7 +15,7 @@ import io.vertx.ext.web.client.HttpResponse;
 
 public class CsvResultCollector implements ResultCollector {
     private AtomicInteger requestCounter = new AtomicInteger(0);
-    private ArrayList<Result> results = new ArrayList<>();
+    private ArrayList<Result<?>> results = new ArrayList<>();
     private static String SEPARATOR = "----------";
 
     static final String pattern = "yyyy-MM-dd hh:mm:ss.SSS";
@@ -36,12 +36,12 @@ public class CsvResultCollector implements ResultCollector {
         }
 
         public long duration() {
-            return ChronoUnit.MILLIS.between(sentTime.toInstant(),receivedTime.toInstant());
+            return ChronoUnit.MILLIS.between(sentTime.toInstant(), receivedTime.toInstant());
         }
     }
 
     public void init() {
-        Log.debug("Result Init");
+        Log.debug("Initializing CsvResultCollector.");
         requestCounter = new AtomicInteger(0);
         results = new ArrayList<>();
     }
@@ -51,15 +51,15 @@ public class CsvResultCollector implements ResultCollector {
     }
 
     public long minDuration() {
-        return results.stream().mapToLong(r->r.duration()).summaryStatistics().getMin();
+        return results.stream().mapToLong(r -> r.duration()).summaryStatistics().getMin();
     }
 
     public long maxDuration() {
-        return results.stream().mapToLong(r->r.duration()).summaryStatistics().getMax();
+        return results.stream().mapToLong(r -> r.duration()).summaryStatistics().getMax();
     }
 
     public double averageDuration() {
-        return results.stream().mapToLong(r->r.duration()).summaryStatistics().getAverage();
+        return results.stream().mapToLong(r -> r.duration()).summaryStatistics().getAverage();
     }
 
     public int onRequestSent(HttpRequest request) {
@@ -76,7 +76,7 @@ public class CsvResultCollector implements ResultCollector {
         results.get(requestId).response = response;
     }
 
-    public void onFailureReceived(int requestId,Throwable t) {
+    public void onFailureReceived(int requestId, Throwable t) {
         Log.debug("Response " + requestId);
         results.get(requestId).receivedTime = new Date();
         results.get(requestId).response = null;
@@ -85,20 +85,22 @@ public class CsvResultCollector implements ResultCollector {
         return;
     }
 
-    public void render(Writer w) throws IOException{
+    public void render(Writer w) throws IOException {
         Log.debug("Render CSV.");
         w.append("ID,")
-          .append("Sent Time,")
-          .append("Received Time,")
-          .append("Duration (ms),")
-          .append("Response code,")
-          .append("Received Body\n");
+                .append("Sent Time,")
+                .append("Received Time,")
+                .append("Duration (ms),")
+                .append("Response code,")
+                .append("Received Body\n");
         for (Result r : results) {
             w.append(String.valueOf(r.requestId)).append(',')
                     .append(dateFormat.format(r.sentTime)).append(',')
                     .append(dateFormat.format(r.receivedTime)).append(',')
-                    .append(String.valueOf(ChronoUnit.MILLIS.between(r.sentTime.toInstant(),r.receivedTime.toInstant()))).append(',');
-            if(r.response == null) {
+                    .append(String
+                            .valueOf(ChronoUnit.MILLIS.between(r.sentTime.toInstant(), r.receivedTime.toInstant())))
+                    .append(',');
+            if (r.response == null) {
                 w.append("null,");
                 w.append("null\n");
             } else {
@@ -108,9 +110,16 @@ public class CsvResultCollector implements ResultCollector {
         }
     }
 
-     public static String renderResponse(HttpResponse<Buffer> response) {
+    public String renderSummary() {
+        return String.format("%s Requests sent. Duration (ms): min=%d, max=%d, avg=%.3f",
+                size(), minDuration(), maxDuration(),
+                averageDuration());
+    }
+
+    public static String renderResponse(HttpResponse<Buffer> response) {
         StringBuilder sb = new StringBuilder()
-                .append(SEPARATOR).append(" HTTP ").append(response.statusCode()).append(' ').append(SEPARATOR).append('\n')
+                .append(SEPARATOR).append(" HTTP ").append(response.statusCode()).append(' ').append(SEPARATOR)
+                .append('\n')
                 .append(SEPARATOR).append(" Headers  ").append(SEPARATOR).append('\n');
         response.headers().forEach(
                 (k, v) -> {
@@ -122,5 +131,9 @@ public class CsvResultCollector implements ResultCollector {
         return sb.toString();
     }
 
+    @Override
+    public String getFormat() {
+        return FORMAT_CSV;
+    }
 
 }

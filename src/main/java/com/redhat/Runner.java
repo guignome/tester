@@ -1,6 +1,5 @@
 package com.redhat;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,29 +12,17 @@ import io.quarkus.logging.Log;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.http.HttpServer;
 
 @ApplicationScoped
 public class Runner {
     ConfigurationModel model;
-    File csvFile;
 
     @Inject
     Factory factory;
 
-    @Inject
-    ResultCollector resultCollector;
-
     List<ClientRunner> clients = new ArrayList<>();
     List<ServerRunner> servers = new ArrayList<>();
 
-    public void setResultCollector(ResultCollector resultCollector) {
-        this.resultCollector = resultCollector;
-    }
-
-    public void setCsvFile(File csvFile) {
-        this.csvFile = csvFile;
-    }
 
     public void setModel(ConfigurationModel model) {
         this.model = model;
@@ -43,6 +30,7 @@ public class Runner {
 
     @SuppressWarnings("rawtypes")
     public Future run() {
+        ResultCollector resultCollector = factory.getResultCollector();
         resultCollector.init();
         clients = new ArrayList<>();
         Promise promise = Promise.promise();

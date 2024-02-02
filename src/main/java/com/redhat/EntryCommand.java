@@ -3,26 +3,25 @@ package com.redhat;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Handler;
 
 import javax.inject.Inject;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.redhat.ConfigurationModel.ClientConfiguration;
-import com.redhat.ConfigurationModel.ServerConfiguration;
 import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.ConfigurationModel.ServerConfiguration;
 
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.Quarkus;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -39,6 +38,10 @@ class EntryCommand implements Runnable {
 
     @Option(names = { "-c", "--csv" }, description = "The file name where to save the results in csv format.")
     File csvFile;
+
+    @Option(names = { "-o", "--format" }, description = "The format of the result collector. Either csv or tps", 
+        defaultValue = ResultCollector.FORMAT_CSV)
+    String format= ResultCollector.FORMAT_CSV;
 
     @Option(names = { "-v",
             "--verbose" }, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
@@ -88,7 +91,7 @@ class EntryCommand implements Runnable {
     Factory factory;
 
     @Inject
-    ResultCollector resultCollector;
+    Vertx vertx;
 
     @Inject
     Runner runner;
@@ -105,14 +108,13 @@ class EntryCommand implements Runnable {
     @Override
     @SuppressWarnings("rawtypes")
     public void run() {
-
+        factory.setFormat(format);
         try {
             loadModelFromOptions();
         } catch (Exception e) {
             Log.error("Couldn't initialize model: ", e);
         }
         runner.setModel(model);
-        runner.setCsvFile(csvFile);
 
         Future appFuture = runner.run();
         appFuture.onSuccess(h -> {
@@ -127,15 +129,13 @@ class EntryCommand implements Runnable {
 
         Log.debug("Waiting For Exit.");
         Quarkus.waitForExit();
-        System.out.println(String.format("%s Requests sent. Duration (ms): min=%d, max=%d, avg=%.3f",
-                resultCollector.size(), resultCollector.minDuration(), resultCollector.maxDuration(),
-                resultCollector.averageDuration()));
+        System.out.println(factory.getResultCollector().renderSummary());
         Log.debug("Exiting now.");
     }
 
     private void printResultsToFile() {
         try (FileWriter writer = new FileWriter(csvFile)) {
-            resultCollector.render(writer);
+            factory.getResultCollector().render(writer);
             writer.close();
             System.out.printf("Creating result file: %s\n", csvFile.getAbsolutePath());
         } catch (IOException e) {

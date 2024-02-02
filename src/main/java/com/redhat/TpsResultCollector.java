@@ -2,64 +2,85 @@ package com.redhat;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import io.quarkus.logging.Log;
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 
 public class TpsResultCollector implements ResultCollector{
 
+    int lastTPS =0;
+    int currentBucketTPS = 0;
+    private AtomicInteger requestCounter = new AtomicInteger(0);
+
+    Vertx vertx;
+
+    public void setVertx(Vertx v) {
+        this.vertx = v;
+    }
+
+    int size = 0;
+
     @Override
     public int onRequestSent(HttpRequest request) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onRequestSent'");
+        int requestId = requestCounter.getAndIncrement();
+        Log.debug("Request " + requestId);
+        return requestId;
     }
 
     @Override
     public void onResponseReceived(int requestId, HttpResponse response) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onResponseReceived'");
+        Log.debug("Response " + requestId);
+        size++;
+        currentBucketTPS++;
     }
 
     @Override
     public void onFailureReceived(int requestId, Throwable t) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'onFailureReceived'");
-    }
-
-    @Override
-    public double averageDuration() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'averageDuration'");
-    }
-
-    @Override
-    public long minDuration() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'minDuration'");
-    }
-
-    @Override
-    public long maxDuration() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'maxDuration'");
-    }
-
-    @Override
-    public int size() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'size'");
+        size++;
+        currentBucketTPS++;
     }
 
     @Override
     public void init() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'init'");
+        Log.debug("Initializing TpsResultCollector.");
+        requestCounter = new AtomicInteger(0);
+        lastTPS=0;
+        currentBucketTPS=0;
+        size=0;
+        vertx.setPeriodic(1000,1000,(id)-> {
+            Log.debug("Moving to next bucket.");
+            lastTPS=currentBucketTPS;
+            currentBucketTPS=0;
+        });
+    }
+
+    @Override
+    public int size() {
+        return size;
     }
 
     @Override
     public void render(Writer w) throws IOException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'render'");
+        w.write(renderSummary());
+    }
+
+    public String renderSummary() {
+        return String.format("%s Requests. Last TPS: %s, Current TPS: %s", size,lastTPS,currentBucketTPS);
+
+    }
+
+    public static class TPSMeasurement {
+        Instant instant;
+        double tps;
+    }
+
+    @Override
+    public String getFormat() {
+        return FORMAT_TPS;
     }
     
 }

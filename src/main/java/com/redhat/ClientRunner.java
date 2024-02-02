@@ -45,7 +45,7 @@ public class ClientRunner {
         this.resultCollector = resultCollector;
     }
 
-    public Future run() {
+    public Future<?> run() {
         Log.debug("Client Runner Running.");
         if (model.client == null) {
             return Future.succeededFuture();

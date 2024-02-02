@@ -8,10 +8,7 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 
-import org.apache.maven.shared.utils.cli.Commandline;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
@@ -28,7 +25,7 @@ public class RunnerTest {
     Runner runner;
 
     @Inject
-    ResultCollector resultCollector;
+    Factory factory;
 
     public final static Object obj = new Object();
 
@@ -74,6 +71,7 @@ public class RunnerTest {
 
     @Test
     public void testScenarios() throws Exception {
+        factory.setFormat(ResultCollector.FORMAT_CSV);
         testScenario(1, 18);
         //testScenario(2, 0);
         testScenario(3, 12);
@@ -82,12 +80,13 @@ public class RunnerTest {
     }
 
     private void testScenario(final int scenarioNumber, int expectedResultSize) throws Exception {
+        final ResultCollector resultCollector = factory.getResultCollector();
         Log.info("\n Running testScenario " + scenarioNumber + "\n");
         resultCollector.init();
         ConfigurationModel model = ConfigurationModel
                 .loadFromFile(new File("src/test/resources/example" + scenarioNumber + ".yaml"));
         runner.setModel(model);
-        Future future = runner.run();
+        Future<?> future = runner.run();
 
         synchronized (obj) {
             future.onComplete(h -> {
@@ -100,4 +99,10 @@ public class RunnerTest {
             obj.wait();
         }
     }
+
+    // @Test
+    // public void testTPSResultCollector() {
+    //     factory.setFormat(ResultCollector.FORMAT_TPS);
+    //     final TpsResultCollector tpsResultCollector = (TpsResultCollector) factory.getResultCollector();
+    // }
 }
