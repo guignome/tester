@@ -163,4 +163,13 @@
       </properties>
     </profile>
   </profiles>
+
+  <!-- Publish to github packages -->
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/guignome/tester</url>
+    </repository>
+  </distributionManagement>
 </project>
