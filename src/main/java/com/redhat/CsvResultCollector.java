@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.quarkus.logging.Log;
@@ -33,6 +35,10 @@ public class CsvResultCollector implements ResultCollector {
             this.sentTime = sentTime;
             this.request = request;
 
+        }
+
+        public int statusCode() {
+            return response.statusCode();
         }
 
         public long duration() {
@@ -111,9 +117,24 @@ public class CsvResultCollector implements ResultCollector {
     }
 
     public String renderSummary() {
-        return String.format("%s Requests sent. Duration (ms): min=%d, max=%d, avg=%.3f",
-                size(), minDuration(), maxDuration(),
-                averageDuration());
+        //key is http code, value is the count
+        Map<Integer,Integer> statusCodesCount = new HashMap<>();
+        
+        results.forEach(r->{
+            //Increment the count in the map ( 400: i++, )
+            statusCodesCount.put(r.statusCode(),statusCodesCount.getOrDefault(r.statusCode(), 0)+1);
+        });
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%s Requests sent. Duration (ms): min=%d, max=%d, avg=%.3f",
+            size(), minDuration(), maxDuration(),
+            averageDuration()))
+            .append("\n")
+            .append("HTTP Return Codes: ");
+        for(int code:statusCodesCount.keySet()){
+            sb.append(code).append(": ").append(statusCodesCount.get(code));
+        }
+            
+        return sb.toString();
     }
 
     public static String renderResponse(HttpResponse<Buffer> response) {

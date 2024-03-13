@@ -29,6 +29,9 @@ import picocli.CommandLine.Parameters;
 @CommandLine.Command(name = "tester", mixinStandardHelpOptions = true, description = "Starts the HTTP client.")
 class EntryCommand implements Runnable {
 
+    @Option(names = "--help", usageHelp = true, description = "display this help and exit")
+    boolean help;
+
     // File mode
     @Option(names = { "-f",
             "--file" }, 
