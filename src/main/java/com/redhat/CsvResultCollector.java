@@ -129,10 +129,12 @@ public class CsvResultCollector implements ResultCollector {
             size(), minDuration(), maxDuration(),
             averageDuration()))
             .append("\n")
-            .append("HTTP Return Codes: ");
+            .append("HTTP Return Codes: { ");
         for(int code:statusCodesCount.keySet()){
-            sb.append(code).append(": ").append(statusCodesCount.get(code));
+            sb.append(code).append(":").append(statusCodesCount.get(code))
+             .append(' ');
         }
+        sb.append('}');
             
         return sb.toString();
     }
