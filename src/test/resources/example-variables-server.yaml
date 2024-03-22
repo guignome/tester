@@ -1,0 +1,23 @@
+variables:
+- name: default_response
+  value: This is the default response from
+- name: environment
+  value: dev
+- name: default_body
+  value: This is a body
+
+servers:
+- name: application
+  host: localhost
+  port: 1234
+  handlers:
+  - path: /dev/*
+    method: POST
+    response: "{default_response} dev"
+  - path: /prod/*
+    method: POST
+    response: "{default_response} prod"
+  - path: /getResults
+    method: GET
+    response: Hello
+  

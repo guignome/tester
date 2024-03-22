@@ -3,6 +3,8 @@ package com.redhat;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.eclipse.microprofile.context.ManagedExecutor;
+
 import io.quarkus.logging.Log;
 import io.vertx.core.Vertx;
 
@@ -10,6 +12,12 @@ import io.vertx.core.Vertx;
 public class Factory {
     @Inject
     Vertx vertx;
+
+    @Inject
+    TemplateRenderer renderer;
+
+    @Inject
+    ManagedExecutor executor;
 
     String format = ResultCollector.FORMAT_CSV;
     
@@ -25,6 +33,7 @@ public class Factory {
         ClientRunner client = new ClientRunner();
         client.setVertx(vertx);
         client.setResultCollector(resultCollector);
+        client.setRenderer(renderer);
         return client;
     }
 
@@ -32,6 +41,7 @@ public class Factory {
         Log.debug("Creating ServerRunner.");
         ServerRunner server = new ServerRunner();
         server.setVertx(vertx);
+        server.setRenderer(renderer);
         return server;
     }
 
@@ -48,5 +58,4 @@ public class Factory {
         }
         return resultCollector;
     }
-    
 }

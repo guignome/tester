@@ -22,6 +22,8 @@ public class ConfigurationModel {
         super();
     }
 
+    public List<Variable> variables = new ArrayList<>();
+
     public ClientConfiguration client;
 
     public List<ServerConfiguration> servers = new ArrayList<>();
@@ -31,13 +33,20 @@ public class ConfigurationModel {
     }
 
     public ServerConfiguration getServer(String name) {
-        for(ServerConfiguration currentServer: servers ) {
-            if(name.equals(currentServer.name)) {
+        for (ServerConfiguration currentServer : servers) {
+            if (name.equals(currentServer.name)) {
                 return currentServer;
             }
         }
         return null;
     }
+
+    @RegisterForReflection
+    public static class Variable {
+        public String name;
+        public String value;
+    }
+
     @RegisterForReflection
     public static class ClientConfiguration {
         public Topology topology = new Topology();
@@ -46,16 +55,16 @@ public class ConfigurationModel {
         private Endpoint defaultEndpoint = null;
 
         public Endpoint getDefaultEndpoint() {
-            if(defaultEndpoint != null) {
+            if (defaultEndpoint != null) {
                 return defaultEndpoint;
             }
-            for(Endpoint currentEndpoint: endpoints) {
-                if(currentEndpoint.isdefault) {
+            for (Endpoint currentEndpoint : endpoints) {
+                if (currentEndpoint.isdefault) {
                     defaultEndpoint = currentEndpoint;
                     return defaultEndpoint;
                 }
             }
-            if(endpoints.size() == 1) {
+            if (endpoints.size() == 1) {
                 defaultEndpoint = endpoints.get(0);
                 return defaultEndpoint;
             } else {
@@ -65,11 +74,11 @@ public class ConfigurationModel {
         }
 
         public Endpoint getEndpoint(String name) {
-            if(DEFAULT_ENDPOINT.equals(name)) {
+            if (DEFAULT_ENDPOINT.equals(name)) {
                 return getDefaultEndpoint();
             }
             return doGetEndpoint(name);
-            
+
         }
 
         private Endpoint doGetEndpoint(String name) {
@@ -106,6 +115,7 @@ public class ConfigurationModel {
         @RegisterForReflection
         public static class Suite {
             public String name = "suite1";
+            public List<Variable> variables = new ArrayList<>();
             public List<Step> steps = new ArrayList<>();
 
             @RegisterForReflection
@@ -143,14 +153,16 @@ public class ConfigurationModel {
             public String response;
         }
 
-        
     }
 
     @RegisterForReflection
     public static class Header {
         public String name = "";
         public String value = "";
-        public Header() {}
+
+        public Header() {
+        }
+
         public Header(String name, String value) {
             this.name = name;
             this.value = value;
@@ -162,12 +174,12 @@ public class ConfigurationModel {
         List<ConfigurationModel> loadedModels = new ArrayList<>();
         for (File file : files) {
             if (file.isDirectory()) {
-                loadedModels.add(loadFromFile(file.listFiles((d,n)-> {
+                loadedModels.add(loadFromFile(file.listFiles((d, n) -> {
                     return n.endsWith(".yml") || n.endsWith(".yaml");
                 })));
             } else {
                 loadedModels.add(loadFromFile(file));
-            }   
+            }
         }
         // merge
         ConfigurationModel mergedModel = new ConfigurationModel();
@@ -191,6 +203,10 @@ public class ConfigurationModel {
             if (currentModel.servers.size() > 0) {
                 mergedModel.servers.addAll(currentModel.servers);
             }
+            // merge variables
+            if (currentModel.variables.size() > 0) {
+                mergedModel.variables.addAll(currentModel.variables);
+            }
         }
 
         return mergedModel;
@@ -202,5 +218,4 @@ public class ConfigurationModel {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         return mapper.readValue(file, ConfigurationModel.class);
     }
-
 }

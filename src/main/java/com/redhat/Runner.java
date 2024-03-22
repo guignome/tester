@@ -9,7 +9,6 @@ import jakarta.inject.Inject;
 import com.redhat.ConfigurationModel.ServerConfiguration;
 
 import io.quarkus.logging.Log;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 
@@ -22,7 +21,6 @@ public class Runner {
 
     List<ClientRunner> clients = new ArrayList<>();
     List<ServerRunner> servers = new ArrayList<>();
-
 
     public void setModel(ConfigurationModel model) {
         this.model = model;
@@ -46,10 +44,10 @@ public class Runner {
         }
 
         // Create server
-        List<Future> serverFutures = new ArrayList<>();
+        List<Future<?>> serverFutures = new ArrayList<>();
         if (model.servers != null) {
             ServerRunner currentServer;
-            for (ServerConfiguration serverConfiguration:model.servers) {
+            for (ServerConfiguration serverConfiguration : model.servers) {
 
                 currentServer = factory.createServerRunner();
                 currentServer.setModel(model);
@@ -61,14 +59,14 @@ public class Runner {
 
         }
         // Wait for the server to be started
-        List<Future> clientFutures = new ArrayList<>();
+        List<Future<?>> clientFutures = new ArrayList<>();
         if (serverFutures.size() > 0) {
-            Future allServersFuture = CompositeFuture.join(serverFutures);
+            Future allServersFuture = Future.join(serverFutures);
             allServersFuture.onComplete(h -> {
                 Log.debug("Server startup Completed.");
                 clientFutures.addAll(startClients());
                 if (clientFutures.size() > 0) {
-                    CompositeFuture.join(clientFutures).onComplete(v -> promise.complete());
+                    Future.join(clientFutures).onComplete(v -> promise.complete());
                 } else {
                     System.out.println("Running in Server mode, Press CTRL-C to stop.");
                 }
@@ -76,17 +74,17 @@ public class Runner {
         } else {
             clientFutures.addAll(startClients());
             if (clientFutures.size() > 0) {
-                CompositeFuture.join(clientFutures).onComplete(v -> promise.complete());
+                Future.join(clientFutures).onComplete(v -> promise.complete());
             } else {
-               System.out.println("Running in Server mode, Press CTRL-C to stop.");
+                System.out.println("Running in Server mode, Press CTRL-C to stop.");
             }
         }
 
         return promise.future();
     }
 
-    private List<Future> startClients() {
-        List<Future> clientFutures = new ArrayList<>();
+    private List<Future<?>> startClients() {
+        List<Future<?>> clientFutures = new ArrayList<>();
         for (ClientRunner client : clients) {
             clientFutures.add(client.run());
         }

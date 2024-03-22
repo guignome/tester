@@ -2,7 +2,6 @@ package com.redhat;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.quarkus.logging.Log;
@@ -26,14 +25,14 @@ public class TpsResultCollector implements ResultCollector{
 
 
     @Override
-    public int onRequestSent(HttpRequest request) {
+    public int onRequestSent(HttpRequest<?> request) {
         int requestId = requestCounter.getAndIncrement();
         Log.debug("Request " + requestId);
         return requestId;
     }
 
     @Override
-    public void onResponseReceived(int requestId, HttpResponse response) {
+    public void onResponseReceived(int requestId, HttpResponse<?> response) {
         Log.debug("Response " + requestId);
         size.incrementAndGet();
         currentBucketTPS.incrementAndGet();

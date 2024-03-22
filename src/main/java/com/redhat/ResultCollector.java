@@ -15,9 +15,9 @@ public interface ResultCollector {
 
     public String getFormat();
 
-    public int onRequestSent(HttpRequest request);
+    public int onRequestSent(HttpRequest<?> request);
 
-    public void onResponseReceived(int requestId, HttpResponse response);
+    public void onResponseReceived(int requestId, HttpResponse<?> response);
 
     public void onFailureReceived(int requestId, Throwable t);
 

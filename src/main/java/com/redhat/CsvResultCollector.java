@@ -38,7 +38,7 @@ public class CsvResultCollector implements ResultCollector {
         }
 
         public int statusCode() {
-            return response.statusCode();
+            return response == null ? 0 : response.statusCode();
         }
 
         public long duration() {
@@ -68,7 +68,7 @@ public class CsvResultCollector implements ResultCollector {
         return results.stream().mapToLong(r -> r.duration()).summaryStatistics().getAverage();
     }
 
-    public int onRequestSent(HttpRequest request) {
+    public int onRequestSent(HttpRequest<?> request) {
         int requestId = requestCounter.getAndIncrement();
         Log.debug("Request " + requestId);
         results.add(requestId, new Result(requestId, new Date(), request));

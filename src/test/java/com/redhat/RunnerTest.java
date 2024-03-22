@@ -77,6 +77,7 @@ public class RunnerTest {
         testScenario(3, 12);
         testScenario(4, 80);
         testScenario(5, 6);
+        testScenario(6,6);
     }
 
     private void testScenario(final int scenarioNumber, int expectedResultSize) throws Exception {
@@ -91,7 +92,7 @@ public class RunnerTest {
         synchronized (obj) {
             future.onComplete(h -> {
                 Log.debug("testScenario" + scenarioNumber + " complete.");
-                assertEquals(expectedResultSize, resultCollector.size(), "Wrong size of results.");
+                assertEquals(expectedResultSize, resultCollector.size(), "Wrong size of results for scenario " + scenarioNumber + ".");
                 synchronized (obj) {
                     obj.notify();
                 }
@@ -99,10 +100,4 @@ public class RunnerTest {
             obj.wait();
         }
     }
-
-    // @Test
-    // public void testTPSResultCollector() {
-    //     factory.setFormat(ResultCollector.FORMAT_TPS);
-    //     final TpsResultCollector tpsResultCollector = (TpsResultCollector) factory.getResultCollector();
-    // }
 }

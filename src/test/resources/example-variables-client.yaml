@@ -1,0 +1,25 @@
+variables:
+- name: default_response
+  value: This is the default response from
+- name: environment
+  value: dev
+- name: default_body
+  value: This is a body
+client:
+  endpoints:
+  - name: app
+    host: localhost
+    port: 1234
+    protocol: http
+  suites:
+  - name: Dev Test Suite
+    steps:
+    - path: /dev/hi
+      method: POST
+      body: "{default_body}"
+    - path: /prod/hi
+      method: POST
+  - name: Test Suite with Result
+    steps:
+    - path: /getResults
+      method: GET

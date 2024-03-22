@@ -1,0 +1,57 @@
+variables:
+- name: default_response
+  value: This is the default response from
+- name: environment
+  value: dev
+- name: default_body
+  value: This is a body
+client:
+  endpoints:
+  - name: app
+    port: 1234
+  suites:
+  - name: Dev Test Suite
+    steps:
+    - path: /dev/hi
+      method: POST
+      body: "{default_body}"
+    - path: /prod/hi
+      method: POST
+  - name: Test Suite with Result
+    steps:
+    - path: /getResults
+      method: GET
+    - path: /showResults
+      method: POST
+      body: "{result.bodyAsString}"
+  - name: Test Suite with Local Vars
+    variables:
+    - name: environment
+      value: prod
+    - name: myuri
+      value: theuri
+    steps:
+    - path: /{environment}/hello
+      method: GET
+    - path: /{myuri}
+      method: GET
+
+
+servers:
+- name: application
+  host: localhost
+  port: 1234
+  handlers:
+  - path: /dev/*
+    method: POST
+    response: "{default_response} dev"
+  - path: /prod/*
+    method: POST
+    response: "{default_response} prod"
+  - path: /getResults
+    method: GET
+    response: Hello
+  - path: /theuri
+    method: GET
+    response: This is the URI
+  
