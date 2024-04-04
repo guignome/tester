@@ -18,13 +18,13 @@ public class TpsResultCollectorTest {
     public void testTpsResultCollector() throws Exception {
         factory.setFormat(ResultCollector.FORMAT_TPS);
         TpsResultCollector tpsResultCollector = (TpsResultCollector) factory.getResultCollector();
-        tpsResultCollector.init();
+        tpsResultCollector.init(null);
 
         assertEquals(0, tpsResultCollector.size.get());
         assertEquals(0, tpsResultCollector.lastTPS.get());
         assertEquals(0, tpsResultCollector.currentBucketTPS.get());
 
-        tpsResultCollector.onResponseReceived(0, null);
+        tpsResultCollector.afterStep(null, null);
 
         assertEquals(1, tpsResultCollector.size.get());
         assertEquals(0, tpsResultCollector.lastTPS.get());

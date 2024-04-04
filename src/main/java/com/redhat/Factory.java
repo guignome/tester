@@ -3,8 +3,6 @@ package com.redhat;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import org.eclipse.microprofile.context.ManagedExecutor;
-
 import io.quarkus.logging.Log;
 import io.vertx.core.Vertx;
 
@@ -16,15 +14,11 @@ public class Factory {
     @Inject
     TemplateRenderer renderer;
 
-    @Inject
-    ManagedExecutor executor;
-
     String format = ResultCollector.FORMAT_CSV;
-    
+
     public void setFormat(String format) {
         this.format = format;
     }
-
 
     private ResultCollector resultCollector;
 
@@ -45,11 +39,12 @@ public class Factory {
         return server;
     }
 
-
     public ResultCollector getResultCollector() {
         if (resultCollector == null || !resultCollector.getFormat().equals(format)) {
             if (format == null || ResultCollector.FORMAT_CSV.equals(format)) {
                 resultCollector = new CsvResultCollector();
+            } else if (ResultCollector.FORMAT_JSON.equals(format)) {
+                resultCollector = new JsonResultCollector();
             } else {
                 TpsResultCollector tps = new TpsResultCollector();
                 tps.setVertx(vertx);

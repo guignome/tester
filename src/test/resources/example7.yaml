@@ -1,0 +1,33 @@
+client:
+  topology:
+    local:
+      parallel: 1
+      repeat: 1
+  endpoints:
+  - name: app1
+    host: localhost
+    port: 8092
+  suites:
+  - name: testsuite1
+    steps:
+    - name: Test default path
+      path: /test1
+      method: GET
+    - path: /test2
+      method: GET
+      assertions:
+      - name: My Custom Assertion
+        body: "{result.statusCode().equals(404)}"
+
+servers:
+- name: application
+  host: localhost
+  port: 8092
+  handlers:
+  - path: /test1
+    method: GET
+    response: response1
+  - path: /test2
+    method: GET
+    response: Good Bye!
+    status: 404

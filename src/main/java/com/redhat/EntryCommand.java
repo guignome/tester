@@ -1,7 +1,6 @@
 package com.redhat;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -39,8 +38,8 @@ class EntryCommand implements Runnable {
             defaultValue = "${TESTER_FILE}")
     File[] files;
 
-    @Option(names = { "-c", "--csv" }, description = "The file name where to save the results in csv format.")
-    File csvFile;
+    @Option(names = { "-t", "--result" }, description = "The file name where to save the results in the format specified by -o .")
+    File resultFile;
 
     @Option(names = { "-o", "--format" }, description = "The format of the result collector. Either csv or tps", 
         defaultValue = ResultCollector.FORMAT_CSV)
@@ -105,13 +104,13 @@ class EntryCommand implements Runnable {
     private ConfigurationModel model = null;
 
     public EntryCommand() throws IOException {
-        csvFile = File.createTempFile("results", ".csv");
+        
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
     public void run() {
         factory.setFormat(format);
+        factory.getResultCollector().init(resultFile);
         try {
             loadModelFromOptions();
         } catch (Exception e) {
@@ -119,14 +118,14 @@ class EntryCommand implements Runnable {
         }
         runner.setModel(model);
 
-        Future appFuture = runner.run();
+        Future<?> appFuture = runner.run();
         appFuture.onSuccess(h -> {
             Log.debug("All clients succeeded, exiting.");
-            printResultsToFile();
+            factory.getResultCollector().close();
             Quarkus.asyncExit(0);
         }).onFailure(h -> {
             Log.debug("All clients failed, exiting.");
-            printResultsToFile();
+            factory.getResultCollector().close();
             Quarkus.asyncExit(1);
         });
 
@@ -134,16 +133,6 @@ class EntryCommand implements Runnable {
         Quarkus.waitForExit();
         System.out.println(factory.getResultCollector().renderSummary());
         Log.debug("Exiting now.");
-    }
-
-    private void printResultsToFile() {
-        try (FileWriter writer = new FileWriter(csvFile)) {
-            factory.getResultCollector().render(writer);
-            writer.close();
-            System.out.printf("Creating result file: %s\n", csvFile.getAbsolutePath());
-        } catch (IOException e) {
-            Log.error("Not able to create CSV result file.", e);
-        }
     }
 
     void loadModelFromOptions() throws StreamReadException, DatabindException, IOException {

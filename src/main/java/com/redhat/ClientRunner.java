@@ -1,8 +1,10 @@
 package com.redhat;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import com.redhat.ConfigurationModel.Header;
+import com.redhat.ConfigurationModel.Variable;
 import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
@@ -18,6 +20,8 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 
 public class ClientRunner {
+    private static String SEPARATOR = "----------";
+
     private ConfigurationModel model;
     private Vertx vertx;
     private ResultCollector resultCollector;
@@ -25,6 +29,18 @@ public class ClientRunner {
     WebClient client;
     private ContextMap ctx = new ContextMap();
     private StepIterator it;
+    public static final String CLIENT_ID_VAR = "clientId";
+    public static final String RESULT_VAR = "result";
+    private static int idCounter = 0;
+    private String id;
+
+    public ClientRunner() {
+        id = String.valueOf(idCounter++);
+    }
+
+    public String getId() {
+        return id;
+    }
 
     public Vertx getVertx() {
         return vertx;
@@ -58,21 +74,26 @@ public class ClientRunner {
         Log.debug("Client Runner Running.");
         if (model.client == null || model.client.suites.isEmpty()) {
             return Future.succeededFuture();
-        } 
+        }
         // Initialize the context
-        ctx.initializeGlobalVariables(model.variables);
+        Variable clientId = new Variable();
+        clientId.name = CLIENT_ID_VAR;
+        clientId.value = String.valueOf(id);
+        List<Variable> init = new ArrayList<>();
+        init.addAll(model.variables);
+        init.add(clientId);
+        ctx.initializeGlobalVariables(init);
 
         prom = Promise.promise();
-        
-        it = new StepIterator(model.client.suites, model.client.topology.local.repeat,ctx);
-        if(it.hasNext()) {
+
+        it = new StepIterator(model.client.suites, model.client.topology.local.repeat, ctx);
+        if (it.hasNext()) {
             processStep(it.next());
         } else {
             prom.complete();
         }
         return prom.future();
     }
-
 
     private Future<HttpResponse<Buffer>> processStep(Step step) {
         Endpoint targetEndpoint = model.client.getEndpoint(step.endpoint);
@@ -94,41 +115,62 @@ public class ClientRunner {
             request.putHeader(renderer.extrapolate(header.name, ctx),
                     renderer.extrapolate(header.value, ctx));
         }
-        int requestId = resultCollector.onRequestSent(request);
+
         Buffer body = Buffer.buffer(renderer.extrapolate(step.body, ctx));
+        resultCollector.beforeStep(step, ctx);
         Log.debugf("  Sending request: %s %s", request.method().toString(), request.uri());
         return request.sendBuffer(body)
                 .onSuccess(r -> {
-                    resultCollector.onResponseReceived(requestId, r);
+                    // resultCollector.onResponseReceived(requestId, r);
                     ctx.put("result", r);
-                    //TODO process the next step
-                    if(it.hasNext()) {
+                    resultCollector.afterStep(step, ctx);
+                    System.out.println(renderResponse(r));
+
+                    // Process the following step
+                    if (it.hasNext()) {
                         processStep(it.next());
                     } else {
                         prom.complete();
                     }
                 })
                 .onFailure(t -> {
-                    resultCollector.onFailureReceived(requestId, t);
-                    ctx.put("result", t);
-                    if(it.hasNext()) {
+                    // resultCollector.onFailureReceived(requestId, t);
+                    ctx.put(RESULT_VAR, t);
+                    resultCollector.afterStep(step, ctx);
+                    if (it.hasNext()) {
                         processStep(it.next());
                     } else {
                         prom.complete();
                     }
                 });
     }
+
+    public static String renderResponse(HttpResponse<Buffer> response) {
+        StringBuilder sb = new StringBuilder()
+                .append(SEPARATOR).append(" HTTP ").append(response.statusCode()).append(' ').append(SEPARATOR)
+                .append('\n')
+                .append(SEPARATOR).append(" Headers  ").append(SEPARATOR).append('\n');
+        response.headers().forEach(
+                (k, v) -> {
+                    sb.append(k).append(" : ").append(v).append("\n");
+                });
+        sb.append(SEPARATOR).append("   Body   ").append(SEPARATOR).append('\n')
+                .append(response.bodyAsString())
+                .append('\n').append(SEPARATOR).append("    END   ").append(SEPARATOR).append('\n');
+        return sb.toString();
+    }
+
     private static class StepIterator implements Iterator<Step> {
 
         List<Suite> suites;
         int repeat;
         int currentRepeat = 0;
         Iterator<Suite> suiteIterator;
-        Suite suite ;
+        Suite suite;
         Iterator<Step> stepIterator;
         ContextMap ctx;
 
-        public StepIterator(List<Suite> suites, int repeat,ContextMap ctx) {
+        public StepIterator(List<Suite> suites, int repeat, ContextMap ctx) {
             this.suites = suites;
             this.repeat = repeat;
             suiteIterator = suites.iterator();
@@ -140,19 +182,19 @@ public class ClientRunner {
 
         @Override
         public boolean hasNext() {
-            return stepIterator.hasNext() || suiteIterator.hasNext() || currentRepeat<repeat-1;
+            return stepIterator.hasNext() || suiteIterator.hasNext() || currentRepeat < repeat - 1;
         }
 
         @Override
         public Step next() {
-            if(stepIterator.hasNext()) {
+            if (stepIterator.hasNext()) {
                 return stepIterator.next();
             } else if (suiteIterator.hasNext()) {
                 suite = suiteIterator.next();
                 stepIterator = suite.steps.iterator();
                 ctx.initializeLocalVariables(suite.variables);
                 return stepIterator.next();
-            } else if (currentRepeat<repeat-1) {
+            } else if (currentRepeat < repeat - 1) {
                 currentRepeat++;
                 suiteIterator = suites.iterator();
                 suite = suiteIterator.next();

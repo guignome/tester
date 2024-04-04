@@ -1,6 +1,5 @@
 package com.redhat;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.redhat.ConfigurationModel.ServerConfiguration;
@@ -58,10 +57,10 @@ public class ServerRunner {
     for (Handler handler : serverConfiguration.handlers) {
       router.route(HttpMethod.valueOf(handler.method), handler.path).handler(context -> {
         if (handler.delay == 0) {
-          context.end(
+          context.response().setStatusCode(handler.status).end(
               renderer.extrapolate(handler.response, ctx));
         } else {
-          context.vertx().setTimer(handler.delay, tid -> context.end(
+          context.vertx().setTimer(handler.delay, tid -> context.response().setStatusCode(handler.status).end(
               renderer.extrapolate(handler.response, ctx)));
         }
         System.out.println("Request received. Response sent.");

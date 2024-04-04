@@ -78,12 +78,13 @@ public class RunnerTest {
         testScenario(4, 80);
         testScenario(5, 6);
         testScenario(6,6);
+        testScenario(7, 2);
     }
 
     private void testScenario(final int scenarioNumber, int expectedResultSize) throws Exception {
         final ResultCollector resultCollector = factory.getResultCollector();
         Log.info("\n Running testScenario " + scenarioNumber + "\n");
-        resultCollector.init();
+        resultCollector.init(null);
         ConfigurationModel model = ConfigurationModel
                 .loadFromFile(new File("src/test/resources/example" + scenarioNumber + ".yaml"));
         runner.setModel(model);
@@ -92,6 +93,7 @@ public class RunnerTest {
         synchronized (obj) {
             future.onComplete(h -> {
                 Log.debug("testScenario" + scenarioNumber + " complete.");
+                resultCollector.close();
                 assertEquals(expectedResultSize, resultCollector.size(), "Wrong size of results for scenario " + scenarioNumber + ".");
                 synchronized (obj) {
                     obj.notify();

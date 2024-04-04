@@ -1,5 +1,7 @@
 package com.redhat;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
@@ -10,31 +12,30 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
+
 import io.quarkus.logging.Log;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 
 public class CsvResultCollector implements ResultCollector {
     private AtomicInteger requestCounter = new AtomicInteger(0);
-    private ArrayList<Result<?>> results = new ArrayList<>();
-    private static String SEPARATOR = "----------";
+    private ArrayList<Result> results = new ArrayList<>();
+    private Writer writer;
+
 
     static final String pattern = "yyyy-MM-dd hh:mm:ss.SSS";
     static final SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
 
-    private static class Result<T> {
+    private static class Result {
         int requestId;
         Date sentTime;
         Date receivedTime;
-        HttpRequest<T> request;
-        HttpResponse<T> response;
+        HttpResponse<?> response;
 
-        Result(int requestId, Date sentTime, HttpRequest<T> request) {
+        Result(int requestId, Date sentTime) {
             this.requestId = requestId;
             this.sentTime = sentTime;
-            this.request = request;
-
         }
 
         public int statusCode() {
@@ -46,10 +47,27 @@ public class CsvResultCollector implements ResultCollector {
         }
     }
 
-    public void init() {
+    public void init(File resultFile) {
         Log.debug("Initializing CsvResultCollector.");
         requestCounter = new AtomicInteger(0);
         results = new ArrayList<>();
+        try {
+            if (resultFile == null) {
+                resultFile = File.createTempFile("results", ".csv");
+            } else {
+                if (!resultFile.createNewFile()) {
+                    Log.warnf("File %s already exists.", resultFile);
+                }
+            }
+        } catch (IOException e) {
+            Log.error("Failed to create result File", e);
+        }
+        //Prepare the result output
+        try  {
+            this.writer = new FileWriter(resultFile);
+        } catch (IOException e) {
+            Log.error("Not able to create Output result file.", e);
+        }
     }
 
     public int size() {
@@ -68,30 +86,48 @@ public class CsvResultCollector implements ResultCollector {
         return results.stream().mapToLong(r -> r.duration()).summaryStatistics().getAverage();
     }
 
-    public int onRequestSent(HttpRequest<?> request) {
+    // public int onRequestSent(HttpRequest<?> request) {
+    //     int requestId = requestCounter.getAndIncrement();
+    //     Log.debug("Request " + requestId);
+    //     results.add(requestId, new Result(requestId, new Date()));
+    //     return requestId;
+    // }
+
+    // public void onResponseReceived(int requestId, HttpResponse response) {
+    //     Log.debug("Response " + requestId);
+    //     System.out.println(renderResponse(response));
+    //     results.get(requestId).receivedTime = new Date();
+    //     results.get(requestId).response = response;
+    // }
+
+    // public void onFailureReceived(int requestId, Throwable t) {
+    //     Log.debug("Response " + requestId);
+    //     results.get(requestId).receivedTime = new Date();
+    //     results.get(requestId).response = null;
+    //     System.out.println("Received error: " + t.getMessage());
+    //     Log.error("Received error: ", t);
+    //     return;
+    // }
+    public static final String REQUEST_ID = "request_id";
+
+    public void beforeStep(Step step, Map<String,Object> ctx) {
         int requestId = requestCounter.getAndIncrement();
+        ctx.put(REQUEST_ID, requestId);
         Log.debug("Request " + requestId);
-        results.add(requestId, new Result(requestId, new Date(), request));
-        return requestId;
+        results.add(requestId, new Result(requestId, new Date()));
     }
 
-    public void onResponseReceived(int requestId, HttpResponse response) {
-        Log.debug("Response " + requestId);
-        System.out.println(renderResponse(response));
-        results.get(requestId).receivedTime = new Date();
-        results.get(requestId).response = response;
-    }
-
-    public void onFailureReceived(int requestId, Throwable t) {
+    public void afterStep(Step step, Map<String,Object> ctx) {
+        int requestId = (int) ctx.remove(REQUEST_ID);
         Log.debug("Response " + requestId);
         results.get(requestId).receivedTime = new Date();
-        results.get(requestId).response = null;
-        System.out.println("Received error: " + t.getMessage());
-        Log.error("Received error: ", t);
-        return;
+        results.get(requestId).response = (HttpResponse<?>) ctx.get(ClientRunner.RESULT_VAR);
+    }
+    public void afterSuite(Suite suite, Map<String,Object> ctx) {
+
     }
 
-    public void render(Writer w) throws IOException {
+    private void render(Writer w) throws IOException {
         Log.debug("Render CSV.");
         w.append("ID,")
                 .append("Sent Time,")
@@ -117,46 +153,42 @@ public class CsvResultCollector implements ResultCollector {
     }
 
     public String renderSummary() {
-        //key is http code, value is the count
-        Map<Integer,Integer> statusCodesCount = new HashMap<>();
-        
-        results.forEach(r->{
-            //Increment the count in the map ( 400: i++, )
-            statusCodesCount.put(r.statusCode(),statusCodesCount.getOrDefault(r.statusCode(), 0)+1);
+        // key is http code, value is the count
+        Map<Integer, Integer> statusCodesCount = new HashMap<>();
+
+        results.forEach(r -> {
+            // Increment the count in the map ( 400: i++, )
+            statusCodesCount.put(r.statusCode(), statusCodesCount.getOrDefault(r.statusCode(), 0) + 1);
         });
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%s Requests sent. Duration (ms): min=%d, max=%d, avg=%.3f",
-            size(), minDuration(), maxDuration(),
-            averageDuration()))
-            .append("\n")
-            .append("HTTP Return Codes: { ");
-        for(int code:statusCodesCount.keySet()){
+                size(), minDuration(), maxDuration(),
+                averageDuration()))
+                .append("\n")
+                .append("HTTP Return Codes: { ");
+        for (int code : statusCodesCount.keySet()) {
             sb.append(code).append(":").append(statusCodesCount.get(code))
-             .append(' ');
+                    .append(' ');
         }
         sb.append('}');
-            
+
         return sb.toString();
     }
 
-    public static String renderResponse(HttpResponse<Buffer> response) {
-        StringBuilder sb = new StringBuilder()
-                .append(SEPARATOR).append(" HTTP ").append(response.statusCode()).append(' ').append(SEPARATOR)
-                .append('\n')
-                .append(SEPARATOR).append(" Headers  ").append(SEPARATOR).append('\n');
-        response.headers().forEach(
-                (k, v) -> {
-                    sb.append(k).append(" : ").append(v).append("\n");
-                });
-        sb.append(SEPARATOR).append("   Body   ").append(SEPARATOR).append('\n')
-                .append(response.bodyAsString())
-                .append('\n').append(SEPARATOR).append("    END   ").append(SEPARATOR).append('\n');
-        return sb.toString();
-    }
-
+    
     @Override
     public String getFormat() {
         return FORMAT_CSV;
+    }
+
+    @Override
+    public void close() {
+        try {
+            render(writer);
+            writer.close();
+        } catch (IOException e) {
+            Log.error(e);
+        }
     }
 
 }

@@ -28,8 +28,7 @@ public class Runner {
 
     @SuppressWarnings("rawtypes")
     public Future run() {
-        ResultCollector resultCollector = factory.getResultCollector();
-        resultCollector.init();
+
         clients = new ArrayList<>();
         Promise promise = Promise.promise();
 
@@ -61,7 +60,7 @@ public class Runner {
         // Wait for the server to be started
         List<Future<?>> clientFutures = new ArrayList<>();
         if (serverFutures.size() > 0) {
-            Future allServersFuture = Future.join(serverFutures);
+            Future<?> allServersFuture = Future.join(serverFutures);
             allServersFuture.onComplete(h -> {
                 Log.debug("Server startup Completed.");
                 clientFutures.addAll(startClients());

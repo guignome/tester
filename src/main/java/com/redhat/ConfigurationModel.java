@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import io.quarkus.logging.Log;
+import io.quarkus.qute.Qute;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -120,18 +122,37 @@ public class ConfigurationModel {
 
             @RegisterForReflection
             public static class Step {
+                public static Assertion DEFAULT_ASSERTION;
+                public static int stepNumber = 0;
+                static {
+                    DEFAULT_ASSERTION = new Assertion();
+                    DEFAULT_ASSERTION.name="HTTP Return Code is OK";
+                    DEFAULT_ASSERTION.body="{result.statusCode().equals(200)}";
+                }
+
                 public String method = "GET";
                 public String path = "/";
                 public String body = "";
                 public String endpoint = DEFAULT_ENDPOINT;
+                public String name = "Step " + stepNumber++;
                 public List<Header> headers = new ArrayList<>();
-                public List<Assertion> assertions;
+                public List<Assertion> assertions = new ArrayList<>();
+
+                public Step() {
+                    assertions.add(DEFAULT_ASSERTION);
+                }
+
             }
 
             @RegisterForReflection
             public static class Assertion {
                 public String name;
                 public String body;
+
+                public boolean evaluate(Map<String,Object> ctx) {
+                    String res =Qute.fmt(body,ctx);
+                    return "true".equals(res);
+                }
             }
         }
     }
@@ -151,6 +172,7 @@ public class ConfigurationModel {
             public String method = "GET";
             public int delay = 0;
             public String response;
+            public int status = 200;
         }
 
     }
