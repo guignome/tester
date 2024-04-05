@@ -109,9 +109,9 @@ public class JsonResultCollector implements ResultCollector {
         stepResult.startTime = LocalDateTime.now();
         stepResult.assertions = new ArrayList<>();
         
-        Variable clientId =(Variable) ctx.get(ClientRunner.CLIENT_ID_VAR);
-        stepResult.clientId = clientId.value;
-        inflight.put(clientId.value, stepResult);
+        String clientId =(String) ctx.get(ClientRunner.CLIENT_ID_VAR);
+        stepResult.clientId = clientId;
+        inflight.put(clientId, stepResult);
      }
 
     @Override

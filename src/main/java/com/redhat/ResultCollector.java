@@ -36,26 +36,4 @@ public interface ResultCollector {
 
     String renderSummary();
 
-    @ApplicationScoped
-    public static class ResultCollectorFactory {
-
-        private String format;
-        private ResultCollector instance = null;
-
-        public void setFormat(String f) {
-            this.format = f;
-        }
-
-        public ResultCollector getInstance() {
-            if (instance == null || !format.equals(instance.getFormat())) {
-                if (FORMAT_CSV.equals(format)) {
-                    instance = new CsvResultCollector();
-                } else {
-                    instance = new TpsResultCollector();
-                }
-            }
-            return instance;
-        }
-    }
-
 }
