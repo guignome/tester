@@ -12,7 +12,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.redhat.ConfigurationModel.Variable;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Assertion;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
@@ -80,25 +79,6 @@ public class JsonResultCollector implements ResultCollector {
             Log.error(e);
         }
     }
-
-    // @Override
-    // public void afterStep(Step step, Map<String,Object> ctx){
-    //     try {
-    //         jsonGenerator.writeStartObject();
-    //         jsonGenerator.writeStringField("stepName", step.name);
-    //         jsonGenerator.writeArrayFieldStart("assertions");
-    //         for(Assertion assertion: step.assertions) {
-    //             jsonGenerator.writeStartObject();
-    //             jsonGenerator.writeStringField("name", assertion.name);
-    //             jsonGenerator.writeBooleanField("passed", assertion.evaluate(ctx));
-    //             jsonGenerator.writeEndObject();
-    //         }
-    //         jsonGenerator.writeEndArray();
-    //         jsonGenerator.writeEndObject();
-    //     } catch (IOException e) {
-    //         Log.error("Couldn't write to json file.", e);
-    //     }
-    // }
 
      // Events
 

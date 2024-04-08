@@ -20,7 +20,6 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 
 public class ClientRunner {
-    private static String SEPARATOR = "----------";
 
     private ConfigurationModel model;
     private Vertx vertx;
@@ -121,7 +120,6 @@ public class ClientRunner {
         Log.debugf("  Sending request: %s %s", request.method().toString(), request.uri());
         return request.sendBuffer(body)
                 .onSuccess(r -> {
-                    // resultCollector.onResponseReceived(requestId, r);
                     ctx.put("result", r);
                     resultCollector.afterStep(step, ctx);
                     System.out.println(renderResponse(r));
@@ -134,7 +132,6 @@ public class ClientRunner {
                     }
                 })
                 .onFailure(t -> {
-                    // resultCollector.onFailureReceived(requestId, t);
                     ctx.put(RESULT_VAR, t);
                     resultCollector.afterStep(step, ctx);
                     if (it.hasNext()) {
@@ -147,16 +144,14 @@ public class ClientRunner {
 
     public static String renderResponse(HttpResponse<Buffer> response) {
         StringBuilder sb = new StringBuilder()
-                .append(SEPARATOR).append(" HTTP ").append(response.statusCode()).append(' ').append(SEPARATOR)
-                .append('\n')
-                .append(SEPARATOR).append(" Headers  ").append(SEPARATOR).append('\n');
+                .append("┌──────────────────────").append(" HTTP ").append(response.statusCode()).append(' ').append("────────────────────┐\n");
         response.headers().forEach(
                 (k, v) -> {
-                    sb.append(k).append(" : ").append(v).append("\n");
+                    sb.append(String.format("│%-25s│ %-25s│\n", k,v));
                 });
-        sb.append(SEPARATOR).append("   Body   ").append(SEPARATOR).append('\n')
+        sb.append("├─────────────────────").append("   Body   ").append("─────────────────────┤\n")
                 .append(response.bodyAsString())
-                .append('\n').append(SEPARATOR).append("    END   ").append(SEPARATOR).append('\n');
+                .append("\n└────────────────────────────────────────────────────┘\n");
         return sb.toString();
     }
 

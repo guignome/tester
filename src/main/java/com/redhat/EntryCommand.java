@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import jakarta.inject.Inject;
 
@@ -22,8 +23,11 @@ import io.quarkus.runtime.Quarkus;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import picocli.CommandLine;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParseResult;
+import picocli.CommandLine.Spec;
 
 @CommandLine.Command(name = "tester", mixinStandardHelpOptions = true, description = "Starts the HTTP client.")
 class EntryCommand implements Runnable {
@@ -31,19 +35,25 @@ class EntryCommand implements Runnable {
     @Option(names = "--help", usageHelp = true, description = "display this help and exit")
     boolean help;
 
+    @Option(names = "--endpoint-list", description = "List endpoints and exits.")
+    boolean endpointLists;
+
+    @Option(names = OVERRIDE_ENDPOINT_LIST, description = "Override an endpoint with a uri. Example: --override-endpoint database=http://abc:123/test")
+    Map<String, URL> overrideEndpoints;
+    static final String OVERRIDE_ENDPOINT_LIST = "--override-endpoint";
+
     // File mode
     @Option(names = { "-f",
-            "--file" }, 
-            description = "Files to load from. If a directory is specified, all the yaml files in it will be loaded.",
-            defaultValue = "${TESTER_FILE}")
+            "--file" }, description = "Files to load from. If a directory is specified, all the yaml files in it will be loaded.", defaultValue = "${TESTER_FILE}")
     File[] files;
 
-    @Option(names = { "-t", "--result" }, description = "The file name where to save the results in the format specified by -o .")
+    @Option(names = { "-t",
+            "--result" }, description = "The file name where to save the results in the format specified by -o .")
     File resultFile;
 
-    @Option(names = { "-o", "--format" }, description = "The format of the result collector. Either csv or tps", 
-        defaultValue = ResultCollector.FORMAT_CSV)
-    String format= ResultCollector.FORMAT_CSV;
+    @Option(names = { "-o",
+            "--format" }, description = "The format of the result collector. Either csv or tps", defaultValue = ResultCollector.FORMAT_CSV)
+    String format = ResultCollector.FORMAT_CSV;
 
     @Option(names = { "-v",
             "--verbose" }, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
@@ -55,10 +65,10 @@ class EntryCommand implements Runnable {
     URL url;
 
     @Option(names = { "-P", "--parallel" }, description = "The number of parallel calls.")
-    int parallel = 1;
+    Optional<Integer> parallel;
 
     @Option(names = { "-R", "--repeat" }, description = "The number of times to repeat the calls for each thread.")
-    int repeat = 1;
+    Optional<Integer> repeat;
 
     @Option(names = { "-m",
             "--method" }, description = "The HTTP Method to use.", defaultValue = "${TESTER_METHOD:-GET}")
@@ -98,13 +108,16 @@ class EntryCommand implements Runnable {
     @Inject
     Runner runner;
 
+    @Spec
+    CommandSpec spec;
+
     List<ClientRunner> clients = new ArrayList<>();
     ServerRunner server = null;
 
     private ConfigurationModel model = null;
 
     public EntryCommand() throws IOException {
-        
+
     }
 
     @Override
@@ -115,6 +128,28 @@ class EntryCommand implements Runnable {
             loadModelFromOptions();
         } catch (Exception e) {
             Log.error("Couldn't initialize model: ", e);
+        }
+
+        // Endpoint list
+        if (endpointLists) {
+            System.out.printf("List of Endpoints: \n\n");
+            System.out.printf("┌───────────────────────────────────────────────────────────┐\n");
+            System.out.printf("│%-10s |%-5s │%-10s │%-6s │%-10s │%-7s │\n", "Name", "Proto", "Host", "Port", "Prefix",
+                    "Default");
+            System.out.printf("├───────────────────────────────────────────────────────────┤\n");
+
+            if (model.client == null || model.client.endpoints == null) {
+                Quarkus.asyncExit(0);
+                return;
+            }
+            for (Endpoint ep : model.client.endpoints) {
+                System.out.printf("│%-10s │%-5s │%-10s │%-6s │%-10s │%-7s │\n", ep.name, ep.protocol, ep.host, ep.port,
+                        ep.prefix, ep.isdefault);
+            }
+            System.out.printf("└───────────────────────────────────────────────────────────┘\n");
+            System.out.println();
+            Quarkus.asyncExit(0);
+            return;
         }
         runner.setModel(model);
 
@@ -136,11 +171,44 @@ class EntryCommand implements Runnable {
     }
 
     void loadModelFromOptions() throws StreamReadException, DatabindException, IOException {
+        ParseResult pr = spec.commandLine().getParseResult();
+
         if (files != null) {
+            // load files first
             this.model = ConfigurationModel.loadFromFile(files);
+            // Then override with extra options
+            // override url
+            if (pr.hasMatchedPositional(0)) {
+                // override all the endpoints with the url.
+                this.model.client.endpoints = new ArrayList<>();
+                this.model.client.endpoints.add(urlToEndpoint(url, null));
+            }
+
+            // override Endpoints
+            if (pr.hasMatchedOption(OVERRIDE_ENDPOINT_LIST)) {
+                for (String overrideEndpointName : overrideEndpoints.keySet()) {
+                    // removed endpoints with the same name
+                    model.client.endpoints.removeIf(e -> {
+                        return e.name.equals(overrideEndpointName);
+                    });
+                    // add the new endpoint
+                    model.client.endpoints
+                            .add(urlToEndpoint(overrideEndpoints.get(overrideEndpointName), overrideEndpointName));
+                }
+            }
+
+            // override repeat and parallel
+            if (pr.hasMatchedOption("--repeat")) {
+                this.model.client.topology.local.repeat = repeat.get();
+            }
+            if (pr.hasMatchedOption("--parallel")) {
+                this.model.client.topology.local.parallel = parallel.get();
+            }
             return;
         }
+
         ConfigurationModel modelFromOptions = new ConfigurationModel();
+
         if (serverMode) {
             // server mode
             modelFromOptions.servers.add(new ServerConfiguration());
@@ -156,14 +224,8 @@ class EntryCommand implements Runnable {
         } else {
             // client mode
             modelFromOptions.client = new ClientConfiguration();
-            Endpoint endpoint = new Endpoint();
-            endpoint.host = url.getHost();
-            endpoint.port = url.getPort() == -1 ? url.getDefaultPort() : url.getPort();
-            if (url.getProtocol() != null) {
-                endpoint.protocol = url.getProtocol();
-            }
 
-            modelFromOptions.client.endpoints.add(endpoint);
+            modelFromOptions.client.endpoints.add(urlToEndpoint(url, null));
 
             Suite suite = new Suite();
             Step step = new Step();
@@ -179,11 +241,27 @@ class EntryCommand implements Runnable {
             modelFromOptions.client.suites.add(suite);
             suite.steps.add(step);
 
-            modelFromOptions.client.topology.local.parallel = parallel;
-            modelFromOptions.client.topology.local.repeat = repeat;
+            modelFromOptions.client.topology.local.parallel = parallel.get();
+            modelFromOptions.client.topology.local.repeat = repeat.get();
         }
 
         this.model = modelFromOptions;
+    }
+
+    private Endpoint urlToEndpoint(URL url, String endpointName) {
+        Endpoint endpoint = new Endpoint();
+        if (endpointName != null) {
+            endpoint.name = endpointName;
+        } else {
+            endpoint.name = "From url";
+        }
+        endpoint.isdefault = true;
+        endpoint.host = url.getHost();
+        endpoint.port = url.getPort() == -1 ? url.getDefaultPort() : url.getPort();
+        if (url.getProtocol() != null) {
+            endpoint.protocol = url.getProtocol();
+        }
+        return endpoint;
     }
 
     public ConfigurationModel getModel() {

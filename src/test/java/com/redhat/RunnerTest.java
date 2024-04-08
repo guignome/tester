@@ -102,4 +102,25 @@ public class RunnerTest {
             obj.wait();
         }
     }
+
+    @Test
+    public void testOverride() throws Exception {
+        EntryCommand app = new EntryCommand();
+        new CommandLine(app).parseArgs("-f", "src/test/resources/example1.yaml");
+        app.loadModelFromOptions();
+        assertEquals(2, app.getModel().client.topology.local.parallel);
+        assertEquals(3, app.getModel().client.topology.local.repeat);
+        assertEquals(2, app.getModel().client.endpoints.size());
+
+        EntryCommand app2 = new EntryCommand();
+        new CommandLine(app2).parseArgs("-f", "src/test/resources/example1.yaml", "--repeat","5","--parallel","7",
+                                        "--override-endpoint","database=http://abc:123/test",
+                                        "--override-endpoint","db2=http://abc:123/test2",
+                                        "--override-endpoint","db3=http://abc:123/test3");
+        app2.loadModelFromOptions();
+        assertEquals(7, app2.getModel().client.topology.local.parallel);
+        assertEquals(5, app2.getModel().client.topology.local.repeat);
+        assertEquals(4, app2.getModel().client.endpoints.size());
+
+    }
 }

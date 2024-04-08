@@ -86,28 +86,6 @@ public class CsvResultCollector implements ResultCollector {
         return results.stream().mapToLong(r -> r.duration()).summaryStatistics().getAverage();
     }
 
-    // public int onRequestSent(HttpRequest<?> request) {
-    //     int requestId = requestCounter.getAndIncrement();
-    //     Log.debug("Request " + requestId);
-    //     results.add(requestId, new Result(requestId, new Date()));
-    //     return requestId;
-    // }
-
-    // public void onResponseReceived(int requestId, HttpResponse response) {
-    //     Log.debug("Response " + requestId);
-    //     System.out.println(renderResponse(response));
-    //     results.get(requestId).receivedTime = new Date();
-    //     results.get(requestId).response = response;
-    // }
-
-    // public void onFailureReceived(int requestId, Throwable t) {
-    //     Log.debug("Response " + requestId);
-    //     results.get(requestId).receivedTime = new Date();
-    //     results.get(requestId).response = null;
-    //     System.out.println("Received error: " + t.getMessage());
-    //     Log.error("Received error: ", t);
-    //     return;
-    // }
     public static final String REQUEST_ID = "request_id";
 
     public void beforeStep(Step step, Map<String,Object> ctx) {
