@@ -17,6 +17,7 @@ import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Assertion;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
 
 import io.quarkus.logging.Log;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
 public class JsonResultCollector implements ResultCollector {
     FileOutputStream fos;
@@ -125,6 +126,7 @@ public class JsonResultCollector implements ResultCollector {
     }
 
     //JSON Object
+    @RegisterForReflection
     public static class StepResult {
         public LocalDateTime startTime;
         public LocalDateTime endTime;
@@ -133,6 +135,7 @@ public class JsonResultCollector implements ResultCollector {
         public String stepName;
         public List<AssertionResult> assertions;    
     }
+    @RegisterForReflection
     public static class AssertionResult {
         public String name;
         public boolean passed;
