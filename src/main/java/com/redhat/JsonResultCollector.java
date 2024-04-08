@@ -19,6 +19,7 @@ import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 public class JsonResultCollector implements ResultCollector {
     FileOutputStream fos;
     ObjectMapper mapper;
