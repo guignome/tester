@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
@@ -12,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import io.quarkus.logging.Log;
-import io.quarkus.qute.Qute;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
@@ -141,7 +139,6 @@ public class ConfigurationModel {
                 public Step() {
                     assertions.add(DEFAULT_ASSERTION);
                 }
-
             }
 
             @RegisterForReflection
@@ -149,10 +146,6 @@ public class ConfigurationModel {
                 public String name;
                 public String body;
 
-                public boolean evaluate(Map<String,Object> ctx) {
-                    String res =Qute.fmt(body,ctx);
-                    return "true".equals(res);
-                }
             }
         }
     }

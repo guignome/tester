@@ -52,7 +52,7 @@ class EntryCommand implements Runnable {
     File resultFile;
 
     @Option(names = { "-o",
-            "--format" }, description = "The format of the result collector. Either csv or tps", defaultValue = ResultCollector.FORMAT_CSV)
+            "--format" }, description = "The format of the result collector. Can be CSV, TPS, or JSON.", defaultValue = ResultCollector.FORMAT_CSV)
     String format = ResultCollector.FORMAT_CSV;
 
     @Option(names = { "-v",
@@ -133,20 +133,20 @@ class EntryCommand implements Runnable {
         // Endpoint list
         if (endpointLists) {
             System.out.printf("List of Endpoints: \n\n");
-            System.out.printf("┌───────────────────────────────────────────────────────────┐\n");
-            System.out.printf("│%-10s |%-5s │%-10s │%-6s │%-10s │%-7s │\n", "Name", "Proto", "Host", "Port", "Prefix",
+            System.out.printf("┌────────────────────────────────────────────────────────────────────────────────────────────┐\n");
+            System.out.printf("│%-15s |%-5s │%-30s │%-6s │%-20s │%-5s │\n", "Name", "Proto", "Host", "Port", "Prefix",
                     "Default");
-            System.out.printf("├───────────────────────────────────────────────────────────┤\n");
+            System.out.printf("├────────────────────────────────────────────────────────────────────────────────────────────┤\n");
 
             if (model.client == null || model.client.endpoints == null) {
                 Quarkus.asyncExit(0);
                 return;
             }
             for (Endpoint ep : model.client.endpoints) {
-                System.out.printf("│%-10s │%-5s │%-10s │%-6s │%-10s │%-7s │\n", ep.name, ep.protocol, ep.host, ep.port,
+                System.out.printf("│%-15s │%-5s │%-30s │%-6s │%-20s │%-5s │\n", ep.name, ep.protocol, ep.host, ep.port,
                         ep.prefix, ep.isdefault);
             }
-            System.out.printf("└───────────────────────────────────────────────────────────┘\n");
+            System.out.printf("└────────────────────────────────────────────────────────────────────────────────────────────┘\n");
             System.out.println();
             Quarkus.asyncExit(0);
             return;

@@ -44,7 +44,7 @@ public class Factory {
             if (format == null || ResultCollector.FORMAT_CSV.equals(format)) {
                 resultCollector = new CsvResultCollector();
             } else if (ResultCollector.FORMAT_JSON.equals(format)) {
-                resultCollector = new JsonResultCollector();
+                resultCollector = new JsonResultCollector(renderer);
             } else {
                 TpsResultCollector tps = new TpsResultCollector();
                 tps.setVertx(vertx);

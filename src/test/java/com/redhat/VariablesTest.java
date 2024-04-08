@@ -61,7 +61,8 @@ public class VariablesTest {
         assertEquals("true", res);
         
         HttpResponse<Buffer> response = new HttpResponseImpl<Buffer>(null, 200, null, null, null, null, null, null);
-        assertTrue(Step.DEFAULT_ASSERTION.evaluate(Map.of("result",response)));
-        
+        assertTrue(renderer.evaluateAssertion(Step.DEFAULT_ASSERTION,Map.of("result",response)));
+
+        assertFalse(renderer.evaluateAssertion(Step.DEFAULT_ASSERTION, Map.of()));
     }
 }

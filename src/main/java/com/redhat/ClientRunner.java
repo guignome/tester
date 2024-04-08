@@ -144,14 +144,14 @@ public class ClientRunner {
 
     public static String renderResponse(HttpResponse<Buffer> response) {
         StringBuilder sb = new StringBuilder()
-                .append("┌──────────────────────").append(" HTTP ").append(response.statusCode()).append(' ').append("────────────────────┐\n");
+                .append("┌───────────────────────────").append(" HTTP ").append(response.statusCode()).append(' ').append("─────────────────────────┐\n");
         response.headers().forEach(
                 (k, v) -> {
-                    sb.append(String.format("│%-25s│ %-25s│\n", k,v));
+                    sb.append(String.format("│%-20s│ %-40s│\n", k,v));
                 });
-        sb.append("├─────────────────────").append("   Body   ").append("─────────────────────┤\n")
+        sb.append("├──────────────────────────").append("   Body   ").append("──────────────────────────┤\n")
                 .append(response.bodyAsString())
-                .append("\n└────────────────────────────────────────────────────┘\n");
+                .append("\n└──────────────────────────────────────────────────────────────┘\n");
         return sb.toString();
     }
 

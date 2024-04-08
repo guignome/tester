@@ -2,8 +2,11 @@ package com.redhat;
 
 import java.util.Map;
 
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Assertion;
+
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
+import io.quarkus.qute.TemplateException;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -23,5 +26,16 @@ public class TemplateRenderer {
         }
         String res = instance.render();
         return res;
+    }
+
+    public boolean evaluateAssertion(Assertion assertion, Map<String,Object> ctx) {
+        String result;
+        try {
+             result = extrapolate(assertion.body, ctx);
+        } catch (TemplateException e) {
+            return false;
+        }
+
+        return "true".equals(result);
     }
 }

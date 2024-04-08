@@ -22,8 +22,13 @@ public class JsonResultCollector implements ResultCollector {
     FileOutputStream fos;
     ObjectMapper mapper;
     JsonGenerator jsonGenerator;
+    TemplateRenderer renderer;
 
     Map<String,StepResult> inflight = new HashMap<>();
+
+    public JsonResultCollector(TemplateRenderer renderer) {
+        this.renderer = renderer;
+    }
 
     @Override
     public String getFormat() {
@@ -104,7 +109,7 @@ public class JsonResultCollector implements ResultCollector {
         for(Assertion assertion: step.assertions) {
             AssertionResult assertionResult = new AssertionResult();
             assertionResult.name = assertion.name;
-            assertionResult.passed = assertion.evaluate(ctx);
+            assertionResult.passed = renderer.evaluateAssertion(assertion, ctx);
             stepResult.assertions.add(assertionResult);
         }
         try {
