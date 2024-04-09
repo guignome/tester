@@ -122,6 +122,7 @@ public class ClientRunner {
                 .onSuccess(r -> {
                     ctx.put("result", r);
                     resultCollector.afterStep(step, ctx);
+                    System.out.println(renderRequest(request));
                     System.out.println(renderResponse(r));
 
                     // Process the following step
@@ -140,6 +141,12 @@ public class ClientRunner {
                         prom.complete();
                     }
                 });
+    }
+
+    public static String renderRequest(HttpRequest<Buffer> req) {
+        String prefix = req.ssl()?"https://":"http://";
+        return new StringBuilder().append(req.method().name())
+            .append(' ').append(prefix).append(req.host()).append(':').append(req.port()).append(req.uri()).toString();
     }
 
     public static String renderResponse(HttpResponse<Buffer> response) {
