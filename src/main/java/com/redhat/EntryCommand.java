@@ -241,8 +241,8 @@ class EntryCommand implements Runnable {
             modelFromOptions.client.suites.add(suite);
             suite.steps.add(step);
 
-            modelFromOptions.client.topology.local.parallel = parallel.get();
-            modelFromOptions.client.topology.local.repeat = repeat.get();
+            modelFromOptions.client.topology.local.parallel = parallel.orElse(1);
+            modelFromOptions.client.topology.local.repeat = repeat.orElse(1);
         }
 
         this.model = modelFromOptions;
