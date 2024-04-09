@@ -122,13 +122,14 @@ class EntryCommand implements Runnable {
 
     @Override
     public void run() {
-        factory.setFormat(format);
-        factory.getResultCollector().init(resultFile);
+        
         try {
             loadModelFromOptions();
         } catch (Exception e) {
             Log.error("Couldn't initialize model: ", e);
         }
+        factory.setFormat(format);
+        factory.getResultCollector().init(resultFile,this.model);
 
         // Endpoint list
         if (endpointLists) {

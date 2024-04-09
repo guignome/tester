@@ -18,7 +18,7 @@ public class TpsResultCollectorTest {
     public void testTpsResultCollector() throws Exception {
         factory.setFormat(ResultCollector.FORMAT_TPS);
         TpsResultCollector tpsResultCollector = (TpsResultCollector) factory.getResultCollector();
-        tpsResultCollector.init(null);
+        tpsResultCollector.init(null,null);
 
         assertEquals(0, tpsResultCollector.size.get());
         assertEquals(0, tpsResultCollector.lastTPS.get());

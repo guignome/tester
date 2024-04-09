@@ -25,6 +25,7 @@ public class JsonResultCollector implements ResultCollector {
     ObjectMapper mapper;
     JsonGenerator jsonGenerator;
     TemplateRenderer renderer;
+    ConfigurationModel model;
 
     Map<String,StepResult> inflight = new HashMap<>();
 
@@ -38,7 +39,8 @@ public class JsonResultCollector implements ResultCollector {
     }
 
     @Override
-    public void init(File result) {
+    public void init(File result, ConfigurationModel model) {
+        this.model = model;
         try {
             if (result == null) {
                 result = File.createTempFile("results", ".json");
@@ -57,7 +59,12 @@ public class JsonResultCollector implements ResultCollector {
             //mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
             jsonGenerator = mapper.getFactory().createGenerator(fos);
-            // Write the start array token
+
+            // Write the start of the object
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeObjectField("creationTime", LocalDateTime.now());
+            jsonGenerator.writeObjectField("model", model);
+            jsonGenerator.writeFieldName("results");
             jsonGenerator.writeStartArray();
 
         } catch (IOException e) {
@@ -80,6 +87,7 @@ public class JsonResultCollector implements ResultCollector {
         Log.debug("Closing JsonResultCollector.");
         try {
             jsonGenerator.writeEndArray();
+            jsonGenerator.writeEndObject();
             jsonGenerator.close();
             fos.close();
         } catch (IOException e) {
@@ -122,11 +130,17 @@ public class JsonResultCollector implements ResultCollector {
     }
 
     @Override
-    public void afterSuite(Suite suite, Map<String,Object> ctx){
-
-    }
+    public void afterSuite(Suite suite, Map<String,Object> ctx){}
 
     //JSON Object
+
+    @RegisterForReflection
+    public static class TestExecution {
+        public LocalDateTime creationTime;
+        public ConfigurationModel model;
+        public List<StepResult> results;
+    }
+
     @RegisterForReflection
     public static class StepResult {
         public LocalDateTime startTime;

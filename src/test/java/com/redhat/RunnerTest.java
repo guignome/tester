@@ -84,7 +84,7 @@ public class RunnerTest {
     private void testScenario(final int scenarioNumber, int expectedResultSize) throws Exception {
         final ResultCollector resultCollector = factory.getResultCollector();
         Log.info("\n Running testScenario " + scenarioNumber + "\n");
-        resultCollector.init(null);
+        resultCollector.init(null,null);
         ConfigurationModel model = ConfigurationModel
                 .loadFromFile(new File("src/test/resources/example" + scenarioNumber + ".yaml"));
         runner.setModel(model);

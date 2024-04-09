@@ -47,7 +47,8 @@ public class CsvResultCollector implements ResultCollector {
         }
     }
 
-    public void init(File resultFile) {
+    @Override
+    public void init(File resultFile, ConfigurationModel model) {
         Log.debug("Initializing CsvResultCollector.");
         requestCounter = new AtomicInteger(0);
         results = new ArrayList<>();
@@ -70,6 +71,7 @@ public class CsvResultCollector implements ResultCollector {
         }
     }
 
+    @Override
     public int size() {
         return results.size();
     }
@@ -88,6 +90,7 @@ public class CsvResultCollector implements ResultCollector {
 
     public static final String REQUEST_ID = "request_id";
 
+    @Override
     public void beforeStep(Step step, Map<String,Object> ctx) {
         int requestId = requestCounter.getAndIncrement();
         ctx.put(REQUEST_ID, requestId);
@@ -95,15 +98,16 @@ public class CsvResultCollector implements ResultCollector {
         results.add(requestId, new Result(requestId, new Date()));
     }
 
+    @Override
     public void afterStep(Step step, Map<String,Object> ctx) {
         int requestId = (int) ctx.remove(REQUEST_ID);
         Log.debug("Response " + requestId);
         results.get(requestId).receivedTime = new Date();
         results.get(requestId).response = (HttpResponse<?>) ctx.get(ClientRunner.RESULT_VAR);
     }
-    public void afterSuite(Suite suite, Map<String,Object> ctx) {
 
-    }
+    @Override
+    public void afterSuite(Suite suite, Map<String,Object> ctx) {}
 
     private void render(Writer w) throws IOException {
         Log.debug("Render CSV.");
@@ -130,6 +134,7 @@ public class CsvResultCollector implements ResultCollector {
         }
     }
 
+    @Override
     public String renderSummary() {
         // key is http code, value is the count
         Map<Integer, Integer> statusCodesCount = new HashMap<>();

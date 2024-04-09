@@ -40,15 +40,13 @@ public class TpsResultCollector implements ResultCollector{
         currentBucketTPS.incrementAndGet();
     }
 
-    
-
     @Override
     public void afterSuite(Suite suite, Map<String, Object> ctx) {
         
     }
 
     @Override
-    public void init(File resultFile) {
+    public void init(File resultFile, ConfigurationModel model) {
         Log.debug("Initializing TpsResultCollector.");
         requestCounter = new AtomicInteger(0);
         lastTPS.set(0);
@@ -109,5 +107,4 @@ public class TpsResultCollector implements ResultCollector{
             Log.error(e);
         }
     }
-    
 }
