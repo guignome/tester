@@ -45,6 +45,12 @@ public class ConfigurationModel {
     public static class Variable {
         public String name;
         public String value;
+        public Variable(){}
+        public Variable(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
     }
 
     @RegisterForReflection

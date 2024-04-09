@@ -6,7 +6,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+
+import org.eclipse.microprofile.config.ConfigProvider;
 
 import com.redhat.ConfigurationModel.Variable;
 
@@ -19,9 +22,11 @@ public class ContextMap implements Map<String, Object> {
     // ContextMap specific methods
 
     public void initializeGlobalVariables(List<Variable> vars) {
-
         for (Variable var : vars) {
-            global.put(var.name, var.value);
+            global.put(var.name,
+                ConfigProvider.getConfig().getOptionalValue(var.name,String.class)
+                .orElse(var.value));
+            
         }
     }
 
@@ -29,7 +34,9 @@ public class ContextMap implements Map<String, Object> {
         local = new HashMap<>();
         if (vars != null) {
             for (Variable var : vars) {
-                local.put(var.name, var.value);
+                local.put(var.name,
+                ConfigProvider.getConfig().getOptionalValue(var.name,String.class)
+                .orElse(var.value));
             }
         }
     }
