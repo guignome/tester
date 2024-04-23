@@ -27,6 +27,9 @@ public class RunnerTest {
     @Inject
     Factory factory;
 
+    @Inject
+    Endpoints endpoints;
+
     public final static Object obj = new Object();
 
     @Test
@@ -47,14 +50,15 @@ public class RunnerTest {
         EntryCommand app = new EntryCommand();
         new CommandLine(app).parseArgs("-P", "2", "-R","3", "-m", "GET","https://api.publicapis.org/random");
         app.loadModelFromOptions();
+        endpoints.init(app.getModel().client.endpoints);
         assertEquals(2, app.getModel().client.topology.local.parallel);
         assertEquals(3, app.getModel().client.topology.local.repeat);
         assertEquals("GET", app.getModel().client.suites.get(0).steps.get(0).method);
         
         String endpointName = app.getModel().client.suites.get(0).steps.get(0).endpoint;
-        assertEquals("api.publicapis.org", app.getModel().client.getEndpoint(endpointName).host);
-        assertEquals("https", app.getModel().client.getEndpoint(endpointName).protocol);
-        assertEquals(443, app.getModel().client.getEndpoint(endpointName).port);
+        assertEquals("api.publicapis.org", endpoints.getEndpoint(endpointName).host);
+        assertEquals("https", endpoints.getEndpoint(endpointName).protocol);
+        assertEquals(443,endpoints.getEndpoint(endpointName).port);
     }
 
     @Test

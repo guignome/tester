@@ -25,7 +25,7 @@ public class ServerRunner {
     return vertx;
   }
 
-  public void setVertx(Vertx vertx) {
+  public ServerRunner(Vertx vertx) {
     this.vertx = vertx;
   }
 

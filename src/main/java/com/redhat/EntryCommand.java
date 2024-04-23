@@ -249,12 +249,13 @@ class EntryCommand implements Runnable {
         this.model = modelFromOptions;
     }
 
+    public static final String FROM_URL_ENDPOINT_NAME  = "From url";
     private Endpoint urlToEndpoint(URL url, String endpointName) {
         Endpoint endpoint = new Endpoint();
         if (endpointName != null) {
             endpoint.name = endpointName;
         } else {
-            endpoint.name = "From url";
+            endpoint.name = FROM_URL_ENDPOINT_NAME;
         }
         endpoint.isdefault = true;
         endpoint.host = url.getHost();

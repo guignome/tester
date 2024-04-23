@@ -19,11 +19,15 @@ public class Runner {
     @Inject
     Factory factory;
 
+    @Inject
+    Endpoints endpoints;
+
     List<ClientRunner> clients = new ArrayList<>();
     List<ServerRunner> servers = new ArrayList<>();
 
     public void setModel(ConfigurationModel model) {
         this.model = model;
+        endpoints.init(model.client.endpoints);
     }
 
     @SuppressWarnings("rawtypes")
@@ -37,7 +41,7 @@ public class Runner {
             ClientRunner currentClient;
             for (int i = 0; i < model.client.topology.local.parallel; i++) {
                 currentClient = factory.createClientRunner();
-                currentClient.setModel(model);
+                currentClient.init(model.variables);
                 clients.add(currentClient);
             }
         }
@@ -85,7 +89,7 @@ public class Runner {
     private List<Future<?>> startClients() {
         List<Future<?>> clientFutures = new ArrayList<>();
         for (ClientRunner client : clients) {
-            clientFutures.add(client.run());
+            clientFutures.add(client.execute(model.client.suites, model.client.topology.local.repeat));
         }
 
         return clientFutures;

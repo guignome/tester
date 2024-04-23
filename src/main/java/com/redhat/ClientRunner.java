@@ -1,6 +1,7 @@
 package com.redhat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import com.redhat.ConfigurationModel.Header;
@@ -21,10 +22,10 @@ import io.vertx.ext.web.client.WebClient;
 
 public class ClientRunner {
 
-    private ConfigurationModel model;
     private Vertx vertx;
     private ResultCollector resultCollector;
     private TemplateRenderer renderer;
+    private Endpoints endpoints;
     WebClient client;
     private ContextMap ctx = new ContextMap();
     private StepIterator it;
@@ -33,8 +34,12 @@ public class ClientRunner {
     private static int idCounter = 0;
     private String id;
 
-    public ClientRunner() {
+    public ClientRunner(Vertx vertx, Endpoints endpoints) {
         id = String.valueOf(idCounter++);
+        this.vertx = vertx;
+        this.endpoints = endpoints;
+        client = WebClient.create(vertx);
+        
     }
 
     public String getId() {
@@ -43,19 +48,6 @@ public class ClientRunner {
 
     public Vertx getVertx() {
         return vertx;
-    }
-
-    public void setVertx(Vertx vertx) {
-        this.vertx = vertx;
-        client = WebClient.create(vertx);
-    }
-
-    public ConfigurationModel getModel() {
-        return model;
-    }
-
-    public void setModel(ConfigurationModel model) {
-        this.model = model;
     }
 
     public void setResultCollector(ResultCollector resultCollector) {
@@ -68,34 +60,43 @@ public class ClientRunner {
 
     Promise<?> prom;
 
-    // Implementation of run but using an iterator
-    public Future<?> run() {
-        Log.debug("Client Runner Running.");
-        if (model.client == null || model.client.suites.isEmpty()) {
-            return Future.succeededFuture();
-        }
-        // Initialize the context
+    public void init(List<Variable> variables) {
+        // Initialize the context with model.variables and a clientId.
         Variable clientId = new Variable();
         clientId.name = CLIENT_ID_VAR;
         clientId.value = String.valueOf(id);
         List<Variable> init = new ArrayList<>();
-        init.addAll(model.variables);
+        init.addAll(variables);
         init.add(clientId);
         ctx.initializeGlobalVariables(init);
 
         prom = Promise.promise();
+    }
 
-        it = new StepIterator(model.client.suites, model.client.topology.local.repeat, ctx);
+    
+    public Future<?> execute(Suite suite) {
+        return execute(Arrays.asList(suite));
+    }
+
+    public Future<?> execute(List<Suite> suites) {
+        return execute(suites, 1);
+    }
+
+    public Future<?> execute(List<Suite> suites, int repeat) {
+        if(suites.isEmpty()) {
+            return Future.succeededFuture();
+        }
+        it = new StepIterator(suites, repeat, ctx);
         if (it.hasNext()) {
-            processStep(it.next());
+            execute(it.next());
         } else {
             prom.complete();
         }
         return prom.future();
     }
 
-    private Future<HttpResponse<Buffer>> processStep(Step step) {
-        Endpoint targetEndpoint = model.client.getEndpoint(step.endpoint);
+    private Future<HttpResponse<Buffer>> execute(Step step) {
+        Endpoint targetEndpoint = endpoints.getEndpoint(step.endpoint);
         if (targetEndpoint == null) {
             Log.error("Refering to non-existent endpoint: " + step.endpoint);
         }
@@ -127,7 +128,7 @@ public class ClientRunner {
 
                     // Process the following step
                     if (it.hasNext()) {
-                        processStep(it.next());
+                        execute(it.next());
                     } else {
                         prom.complete();
                     }
@@ -136,7 +137,7 @@ public class ClientRunner {
                     ctx.put(RESULT_VAR, t);
                     resultCollector.afterStep(step, ctx);
                     if (it.hasNext()) {
-                        processStep(it.next());
+                        execute(it.next());
                     } else {
                         prom.complete();
                     }
