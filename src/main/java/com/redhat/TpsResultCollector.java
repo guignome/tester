@@ -1,17 +1,15 @@
 package com.redhat;
 
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
+import io.quarkus.logging.Log;
+import io.vertx.core.Vertx;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
-
-import io.quarkus.logging.Log;
-import io.vertx.core.Vertx;
 
 public class TpsResultCollector implements ResultCollector{
 

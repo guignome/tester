@@ -1,30 +1,24 @@
 package com.redhat;
 
+import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.ConfigurationModel.Header;
+import com.redhat.ConfigurationModel.Variable;
+import io.quarkus.logging.Log;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.redhat.ConfigurationModel.Header;
-import com.redhat.ConfigurationModel.Variable;
-import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
-
-import io.netty.handler.codec.http.HttpContentEncoder.Result;
-import io.quarkus.logging.Log;
-import io.quarkus.vertx.LocalEventBusCodec;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.MessageCodec;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
 
 public class ClientRunner {
 

@@ -1,20 +1,16 @@
 package com.redhat;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.redhat.ResultCollector.AfterStepPayload;
 import com.redhat.ResultCollector.AfterSuitePayload;
 import com.redhat.ResultCollector.BeforeStepPayload;
 import com.redhat.ResultCollector.InitPayload;
-
 import io.quarkus.logging.Log;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 
 @ApplicationScoped
 public class Factory {
@@ -28,7 +24,7 @@ public class Factory {
     Endpoints endpoints;
 
     private boolean codecsRegistered = false;
-    private List<MessageConsumer> consumers = new ArrayList<>();
+    private final List<MessageConsumer> consumers = new ArrayList<>();
 
     String format = ResultCollector.FORMAT_CSV;
 

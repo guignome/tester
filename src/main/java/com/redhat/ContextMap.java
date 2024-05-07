@@ -1,5 +1,6 @@
 package com.redhat;
 
+import com.redhat.ConfigurationModel.Variable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -7,10 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.eclipse.microprofile.config.ConfigProvider;
-
-import com.redhat.ConfigurationModel.Variable;
 
 public class ContextMap implements Map<String, Object> {
 

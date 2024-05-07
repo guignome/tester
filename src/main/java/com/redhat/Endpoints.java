@@ -1,12 +1,10 @@
 package com.redhat;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
-
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
+import java.util.List;
 
 @ApplicationScoped
 public class Endpoints {

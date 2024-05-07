@@ -1,5 +1,14 @@
 package com.redhat;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Assertion;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
+import io.quarkus.logging.Log;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -8,17 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Assertion;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
-
-import io.quarkus.logging.Log;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public class JsonResultCollector implements ResultCollector {

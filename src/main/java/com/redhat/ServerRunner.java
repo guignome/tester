@@ -1,21 +1,19 @@
 package com.redhat;
 
-import java.util.Map;
-
 import com.redhat.ConfigurationModel.ServerConfiguration;
 import com.redhat.ConfigurationModel.ServerConfiguration.Handler;
 import com.redhat.ConfigurationModel.Variable;
-
 import io.quarkus.logging.Log;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
+import java.util.Map;
 
 public class ServerRunner {
 
-  private Vertx vertx;
+  private final Vertx vertx;
   private ConfigurationModel model;
   private ServerConfiguration serverConfiguration;
   private TemplateRenderer renderer;

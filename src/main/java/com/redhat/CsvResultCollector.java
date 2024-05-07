@@ -1,5 +1,9 @@
 package com.redhat;
 
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
+import io.quarkus.logging.Log;
+import io.vertx.ext.web.client.HttpResponse;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,13 +14,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
-
-import io.quarkus.logging.Log;
-import io.vertx.ext.web.client.HttpResponse;
 
 public class CsvResultCollector implements ResultCollector {
     private ArrayList<Result> results = new ArrayList<>();

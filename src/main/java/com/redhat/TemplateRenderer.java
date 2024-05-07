@@ -1,15 +1,13 @@
 package com.redhat;
 
-import java.util.Map;
-
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Assertion;
-
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateException;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import java.util.Map;
 
 @ApplicationScoped
 public class TemplateRenderer {

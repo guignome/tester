@@ -1,16 +1,13 @@
 package com.redhat;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
 import com.redhat.ConfigurationModel.ServerConfiguration;
-
 import io.quarkus.logging.Log;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 
 @ApplicationScoped
 public class Runner {

@@ -1,32 +1,27 @@
 package com.redhat;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.ConfigurationModel.Variable;
+import io.quarkus.logging.Log;
+import io.quarkus.qute.Qute;
+import io.quarkus.test.junit.QuarkusTest;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.impl.HttpResponseImpl;
+import jakarta.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import io.vertx.core.buffer.Buffer;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
-import com.redhat.ConfigurationModel.Variable;
-
-import io.quarkus.logging.Log;
-import io.quarkus.qute.Qute;
-import io.quarkus.test.junit.QuarkusTest;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.impl.HttpResponseImpl;
-import jakarta.inject.Inject;
 
 @QuarkusTest
 public class VariablesTest {

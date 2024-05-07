@@ -1,14 +1,12 @@
 package com.redhat;
 
-import java.util.HashMap;
-
 import com.redhat.ResultCollector.AfterStepPayload;
 import com.redhat.ResultCollector.AfterSuitePayload;
 import com.redhat.ResultCollector.BeforeStepPayload;
 import com.redhat.ResultCollector.InitPayload;
-
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.MessageCodec;
+import java.util.HashMap;
 
 public class MessageCodecs {
     public static class BeforeStepPayloadCodec implements MessageCodec<BeforeStepPayload,BeforeStepPayload> {

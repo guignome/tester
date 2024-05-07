@@ -1,21 +1,16 @@
 package com.redhat;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.io.File;
-import java.io.IOException;
-
-import jakarta.inject.Inject;
-
-import org.junit.jupiter.api.Test;
-
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
-
 import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import io.vertx.core.Future;
+import jakarta.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
 @QuarkusTest

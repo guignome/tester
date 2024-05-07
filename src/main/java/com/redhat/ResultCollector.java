@@ -1,14 +1,11 @@
 package com.redhat;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Map;
-
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
-
 import io.quarkus.logging.Log;
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 
 public interface ResultCollector {
 

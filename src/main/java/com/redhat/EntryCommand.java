@@ -1,15 +1,5 @@
 package com.redhat;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import jakarta.inject.Inject;
-
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.redhat.ConfigurationModel.ClientConfiguration;
@@ -17,13 +7,17 @@ import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
 import com.redhat.ConfigurationModel.ServerConfiguration;
-
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.Quarkus;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.StaticHandler;
+import jakarta.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -115,9 +109,6 @@ class EntryCommand implements Runnable {
 
     @Spec
     CommandSpec spec;
-
-    List<ClientRunner> clients = new ArrayList<>();
-    ServerRunner server = null;
 
     private ConfigurationModel model = null;
 
@@ -270,7 +261,7 @@ class EntryCommand implements Runnable {
     }
 
     public static final String FROM_URL_ENDPOINT_NAME  = "From url";
-    private Endpoint urlToEndpoint(URL url, String endpointName) {
+    private static Endpoint urlToEndpoint(URL url, String endpointName) {
         Endpoint endpoint = new Endpoint();
         if (endpointName != null) {
             endpoint.name = endpointName;
