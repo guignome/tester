@@ -19,10 +19,8 @@ import io.quarkus.logging.Log;
 import io.vertx.ext.web.client.HttpResponse;
 
 public class CsvResultCollector implements ResultCollector {
-    private AtomicInteger requestCounter = new AtomicInteger(0);
     private ArrayList<Result> results = new ArrayList<>();
     private Writer writer;
-
 
     static final String pattern = "yyyy-MM-dd hh:mm:ss.SSS";
     static final SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
@@ -48,24 +46,14 @@ public class CsvResultCollector implements ResultCollector {
     }
 
     @Override
-    public void init(File resultFile, ConfigurationModel model) {
+    public void init(String fileName, ConfigurationModel model) {
         Log.debug("Initializing CsvResultCollector.");
-        requestCounter = new AtomicInteger(0);
         results = new ArrayList<>();
+        File result = createResultFile(fileName);
+
+        // Prepare the result output
         try {
-            if (resultFile == null) {
-                resultFile = File.createTempFile("results", ".csv");
-            } else {
-                if (!resultFile.createNewFile()) {
-                    Log.warnf("File %s already exists.", resultFile);
-                }
-            }
-        } catch (IOException e) {
-            Log.error("Failed to create result File", e);
-        }
-        //Prepare the result output
-        try  {
-            this.writer = new FileWriter(resultFile);
+            this.writer = new FileWriter(result);
         } catch (IOException e) {
             Log.error("Not able to create Output result file.", e);
         }
@@ -91,23 +79,23 @@ public class CsvResultCollector implements ResultCollector {
     public static final String REQUEST_ID = "request_id";
 
     @Override
-    public void beforeStep(Step step, Map<String,Object> ctx) {
-        int requestId = requestCounter.getAndIncrement();
-        ctx.put(REQUEST_ID, requestId);
+    public void beforeStep(Step step, Map<String, Object> ctx) {
+        int requestId = (int) ctx.get(REQUEST_ID);
         Log.debug("Request " + requestId);
         results.add(requestId, new Result(requestId, new Date()));
     }
 
     @Override
-    public void afterStep(Step step, Map<String,Object> ctx) {
-        int requestId = (int) ctx.remove(REQUEST_ID);
+    public void afterStep(Step step, Map<String, Object> ctx) {
+        int requestId = (int) ctx.get(REQUEST_ID);
         Log.debug("Response " + requestId);
         results.get(requestId).receivedTime = new Date();
         results.get(requestId).response = (HttpResponse<?>) ctx.get(ClientRunner.RESULT_VAR);
     }
 
     @Override
-    public void afterSuite(Suite suite, Map<String,Object> ctx) {}
+    public void afterSuite(Suite suite, Map<String, Object> ctx) {
+    }
 
     private void render(Writer w) throws IOException {
         Log.debug("Render CSV.");
@@ -119,11 +107,18 @@ public class CsvResultCollector implements ResultCollector {
                 .append("Received Body\n");
         for (Result r : results) {
             w.append(String.valueOf(r.requestId)).append(',')
-                    .append(dateFormat.format(r.sentTime)).append(',')
-                    .append(dateFormat.format(r.receivedTime)).append(',')
-                    .append(String
-                            .valueOf(ChronoUnit.MILLIS.between(r.sentTime.toInstant(), r.receivedTime.toInstant())))
-                    .append(',');
+                    .append(dateFormat.format(r.sentTime)).append(',');
+            if (r.receivedTime != null) {
+                w.append(dateFormat.format(r.receivedTime))
+                        .append(',')
+                        .append(String
+                                .valueOf(
+                                        ChronoUnit.MILLIS.between(r.sentTime.toInstant(), r.receivedTime.toInstant())));
+            } else {
+                w.append(',');
+            }
+
+            w.append(',');
             if (r.response == null) {
                 w.append("null,");
                 w.append("null\n");
@@ -158,7 +153,6 @@ public class CsvResultCollector implements ResultCollector {
         return sb.toString();
     }
 
-    
     @Override
     public String getFormat() {
         return FORMAT_CSV;

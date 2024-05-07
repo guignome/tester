@@ -75,7 +75,6 @@ public class RunnerTest {
 
     @Test
     public void testScenarios() throws Exception {
-        factory.setFormat(ResultCollector.FORMAT_CSV);
         testScenario(1, 18);
         //testScenario(2, 0);
         testScenario(3, 12);
@@ -86,12 +85,13 @@ public class RunnerTest {
     }
 
     private void testScenario(final int scenarioNumber, int expectedResultSize) throws Exception {
-        final ResultCollector resultCollector = factory.getResultCollector();
         Log.info("\n Running testScenario " + scenarioNumber + "\n");
-        resultCollector.init(null,null);
         ConfigurationModel model = ConfigurationModel
                 .loadFromFile(new File("src/test/resources/example" + scenarioNumber + ".yaml"));
         runner.setModel(model);
+        factory.registerResultCollector(ResultCollector.FORMAT_CSV, "/tmp/test.csv", model);
+        final ResultCollector resultCollector = factory.getResultCollector();
+
         Future<?> future = runner.run();
 
         synchronized (obj) {

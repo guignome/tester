@@ -27,7 +27,9 @@ public class Runner {
 
     public void setModel(ConfigurationModel model) {
         this.model = model;
-        endpoints.init(model.client.endpoints);
+        if(model.client != null) {
+            endpoints.init(model.client.endpoints);
+        }
     }
 
     @SuppressWarnings("rawtypes")

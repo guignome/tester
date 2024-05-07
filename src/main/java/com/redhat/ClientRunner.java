@@ -4,17 +4,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.redhat.ConfigurationModel.Header;
 import com.redhat.ConfigurationModel.Variable;
 import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
 
+import io.netty.handler.codec.http.HttpContentEncoder.Result;
 import io.quarkus.logging.Log;
+import io.quarkus.vertx.LocalEventBusCodec;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
@@ -23,7 +29,7 @@ import io.vertx.ext.web.client.WebClient;
 public class ClientRunner {
 
     private Vertx vertx;
-    private ResultCollector resultCollector;
+    //private ResultCollector resultCollector;
     private TemplateRenderer renderer;
     private Endpoints endpoints;
     WebClient client;
@@ -33,6 +39,9 @@ public class ClientRunner {
     public static final String RESULT_VAR = "result";
     private static int idCounter = 0;
     private String id;
+    private AtomicInteger requestCounter = new AtomicInteger(0);
+    public static final String REQUEST_ID = "request_id";
+
 
     public ClientRunner(Vertx vertx, Endpoints endpoints) {
         id = String.valueOf(idCounter++);
@@ -50,9 +59,9 @@ public class ClientRunner {
         return vertx;
     }
 
-    public void setResultCollector(ResultCollector resultCollector) {
-        this.resultCollector = resultCollector;
-    }
+    //public void setResultCollector(ResultCollector resultCollector) {
+    //    this.resultCollector = resultCollector;
+   // }
 
     public void setRenderer(TemplateRenderer renderer) {
         this.renderer = renderer;
@@ -71,8 +80,8 @@ public class ClientRunner {
         ctx.initializeGlobalVariables(init);
 
         prom = Promise.promise();
+        requestCounter = new AtomicInteger(0);
     }
-
     
     public Future<?> execute(Suite suite) {
         return execute(Arrays.asList(suite));
@@ -97,6 +106,7 @@ public class ClientRunner {
 
     private Future<HttpResponse<Buffer>> execute(Step step) {
         Endpoint targetEndpoint = endpoints.getEndpoint(step.endpoint);
+        ctx.put(REQUEST_ID, requestCounter.getAndIncrement());
         if (targetEndpoint == null) {
             Log.error("Refering to non-existent endpoint: " + step.endpoint);
         }
@@ -117,17 +127,24 @@ public class ClientRunner {
         }
 
         Buffer body = Buffer.buffer(renderer.extrapolate(step.body, ctx));
-        resultCollector.beforeStep(step, ctx);
+        //resultCollector.beforeStep(step, ctx);
+        //vertx.eventBus().registerDefaultCodec(ResultCollector.BeforeStepPayload.class, new LocalEventBusCodec<ResultCollector.BeforeStepPayload>());
+        vertx.eventBus().send(ResultCollector.BEFORE_STEP_ADDRESS,
+          new ResultCollector.BeforeStepPayload(step, ctx));
         Log.debugf("  Sending request: %s %s", request.method().toString(), request.uri());
         return request.sendBuffer(body)
                 .onSuccess(r -> {
                     ctx.put("result", r);
-                    resultCollector.afterStep(step, ctx);
+                    //resultCollector.afterStep(step, ctx);
+                    vertx.eventBus().send(ResultCollector.AFTER_STEP_ADDRESS,
+                        new ResultCollector.AfterStepPayload(step, ctx));
+                        
                     System.out.println(renderRequest(request));
                     System.out.println(renderResponse(r));
 
                     // Process the following step
                     if (it.hasNext()) {
+                        //ctx.put(REQUEST_ID, requestCounter.getAndIncrement());
                         execute(it.next());
                     } else {
                         prom.complete();
@@ -135,7 +152,9 @@ public class ClientRunner {
                 })
                 .onFailure(t -> {
                     ctx.put(RESULT_VAR, t);
-                    resultCollector.afterStep(step, ctx);
+                    //resultCollector.afterStep(step, ctx);
+                    vertx.eventBus().send(ResultCollector.AFTER_STEP_ADDRESS,
+                        new ResultCollector.AfterStepPayload(step, ctx));
                     if (it.hasNext()) {
                         execute(it.next());
                     } else {

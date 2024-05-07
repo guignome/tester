@@ -22,6 +22,8 @@ import io.quarkus.logging.Log;
 import io.quarkus.runtime.Quarkus;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.StaticHandler;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -49,7 +51,7 @@ class EntryCommand implements Runnable {
 
     @Option(names = { "-t",
             "--result" }, description = "The file name where to save the results in the format specified by -o .")
-    File resultFile;
+    String resultFile;
 
     @Option(names = { "-o",
             "--format" }, description = "The format of the result collector. Can be CSV, TPS, or JSON.", defaultValue = ResultCollector.FORMAT_CSV)
@@ -97,6 +99,9 @@ class EntryCommand implements Runnable {
             "--response" }, description = "Response body of requests.", defaultValue = "${TESTER_SERVER_RESPONSE:-Hi}")
     String response;
 
+    @Option(names = {"--ui"}, description= "Starts the User Interface")
+    Boolean ui = false;
+
     // Other fields
 
     @Inject
@@ -128,8 +133,9 @@ class EntryCommand implements Runnable {
         } catch (Exception e) {
             Log.error("Couldn't initialize model: ", e);
         }
-        factory.setFormat(format);
-        factory.getResultCollector().init(resultFile,this.model);
+        //factory.setFormat(format);
+        //factory.getResultCollector().init(resultFile,this.model);
+        factory.registerResultCollector(format, resultFile,model );
 
         // Endpoint list
         if (endpointLists) {
@@ -153,21 +159,35 @@ class EntryCommand implements Runnable {
             return;
         }
         runner.setModel(model);
+        //UI
+        if(ui) {
+            UIServer uiserver = new UIServer(vertx);
+            uiserver.init();
+        }
 
         Future<?> appFuture = runner.run();
         appFuture.onSuccess(h -> {
             Log.debug("All clients succeeded, exiting.");
-            factory.getResultCollector().close();
+            //factory.getResultCollector().close();
+            vertx.eventBus().<String>request(ResultCollector.CLOSE_ADDRESS, null).onComplete((m) -> {
+                System.out.println(m.result().body());
+            });
             Quarkus.asyncExit(0);
         }).onFailure(h -> {
             Log.debug("All clients failed, exiting.");
-            factory.getResultCollector().close();
+            //factory.getResultCollector().close();
+            vertx.eventBus().<String>request(ResultCollector.CLOSE_ADDRESS, null).onComplete((m) -> {
+                System.out.println(m.result().body());
+            });
             Quarkus.asyncExit(1);
         });
 
         Log.debug("Waiting For Exit.");
         Quarkus.waitForExit();
-        System.out.println(factory.getResultCollector().renderSummary());
+        //System.out.println(factory.getResultCollector().renderSummary());
+        vertx.eventBus().<String>request(ResultCollector.SUMMARY_ADDRESS, null).onComplete((h) -> {
+            System.out.println(h.result().body());
+        });
         Log.debug("Exiting now.");
     }
 

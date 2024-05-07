@@ -24,7 +24,7 @@ public class TpsResultCollector implements ResultCollector{
     Vertx vertx;
     Writer writer;
 
-    public void setVertx(Vertx v) {
+    public TpsResultCollector(Vertx v) {
         this.vertx = v;
     }
 
@@ -36,6 +36,7 @@ public class TpsResultCollector implements ResultCollector{
 
     @Override
     public void afterStep(Step step, Map<String,Object> ctx){
+        Log.debugf("Size: %s",size());
         size.incrementAndGet();
         currentBucketTPS.incrementAndGet();
     }
@@ -46,7 +47,7 @@ public class TpsResultCollector implements ResultCollector{
     }
 
     @Override
-    public void init(File resultFile, ConfigurationModel model) {
+    public void init(String fileName, ConfigurationModel model) {
         Log.debug("Initializing TpsResultCollector.");
         requestCounter = new AtomicInteger(0);
         lastTPS.set(0);
@@ -59,20 +60,10 @@ public class TpsResultCollector implements ResultCollector{
             currentBucketTPS.set(0);
         });
 
-        try {
-            if (resultFile == null) {
-                resultFile = File.createTempFile("results", ".tps");
-            } else {
-                if (!resultFile.createNewFile()) {
-                    Log.warnf("File %s already exists.", resultFile);
-                }
-            }
-        } catch (IOException e) {
-            Log.error("Failed to create result File", e);
-        }
+        File result = createResultFile(fileName);
         //Prepare the result output
         try  {
-            this.writer = new FileWriter(resultFile);
+            this.writer = new FileWriter(result);
         } catch (IOException e) {
             Log.error("Not able to create Output result file.", e);
         }

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -39,16 +40,12 @@ public class JsonResultCollector implements ResultCollector {
     }
 
     @Override
-    public void init(File result, ConfigurationModel model) {
+    public void init(String fileName, ConfigurationModel model) {
+        Log.debug("Initializing JSONResultCollector.");
         this.model = model;
+        File result = createResultFile(fileName);
+
         try {
-            if (result == null) {
-                result = File.createTempFile("results", ".json");
-            } else {
-                if (!result.createNewFile()) {
-                    Log.warnf("File %s already exists.", result);
-                }
-            }
 
             fos = new FileOutputStream(result);
 
