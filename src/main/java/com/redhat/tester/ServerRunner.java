@@ -1,8 +1,8 @@
-package com.redhat;
+package com.redhat.tester;
 
-import com.redhat.ConfigurationModel.ServerConfiguration;
-import com.redhat.ConfigurationModel.ServerConfiguration.Handler;
-import com.redhat.ConfigurationModel.Variable;
+import com.redhat.tester.ConfigurationModel.ServerConfiguration;
+import com.redhat.tester.ConfigurationModel.ServerConfiguration.Handler;
+import com.redhat.tester.ConfigurationModel.Variable;
 import io.quarkus.logging.Log;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;

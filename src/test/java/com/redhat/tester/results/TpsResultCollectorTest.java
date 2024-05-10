@@ -1,10 +1,13 @@
-package com.redhat;
+package com.redhat.tester.results;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.vertx.core.Vertx;
 import jakarta.inject.Inject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
+
+import com.redhat.tester.Factory;
+import com.redhat.tester.results.TpsResultCollector;
 
 @QuarkusTest
 public class TpsResultCollectorTest {

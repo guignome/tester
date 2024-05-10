@@ -1,6 +1,6 @@
-package com.redhat;
+package com.redhat.tester;
 
-import com.redhat.ConfigurationModel.Variable;
+import com.redhat.tester.ConfigurationModel.Variable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

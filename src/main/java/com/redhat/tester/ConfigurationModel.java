@@ -1,4 +1,4 @@
-package com.redhat;
+package com.redhat.tester;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;

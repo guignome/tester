@@ -1,6 +1,6 @@
-package com.redhat;
+package com.redhat.tester;
 
-import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Endpoint;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;

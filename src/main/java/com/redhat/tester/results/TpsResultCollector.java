@@ -1,7 +1,8 @@
-package com.redhat;
+package com.redhat.tester.results;
 
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.tester.ConfigurationModel;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import io.quarkus.logging.Log;
 import io.vertx.core.Vertx;
 import java.io.File;

@@ -1,6 +1,6 @@
-package com.redhat;
+package com.redhat.tester;
 
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Assertion;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Assertion;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateException;

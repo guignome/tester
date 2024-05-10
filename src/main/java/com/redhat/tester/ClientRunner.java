@@ -1,10 +1,12 @@
-package com.redhat;
+package com.redhat.tester;
 
-import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
-import com.redhat.ConfigurationModel.Header;
-import com.redhat.ConfigurationModel.Variable;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Endpoint;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.tester.ConfigurationModel.Header;
+import com.redhat.tester.ConfigurationModel.Variable;
+import com.redhat.tester.results.ResultCollector;
+
 import io.quarkus.logging.Log;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -35,13 +37,15 @@ public class ClientRunner {
     private String id;
     private AtomicInteger requestCounter = new AtomicInteger(0);
     public static final String REQUEST_ID = "request_id";
+    private ResultCollector resultCollector;
 
 
-    public ClientRunner(Vertx vertx, Endpoints endpoints) {
+    public ClientRunner(Vertx vertx, Endpoints endpoints, ResultCollector resultCollector) {
         id = String.valueOf(idCounter++);
         this.vertx = vertx;
         this.endpoints = endpoints;
         client = WebClient.create(vertx);
+        this.resultCollector = resultCollector;
         
     }
 
@@ -121,18 +125,12 @@ public class ClientRunner {
         }
 
         Buffer body = Buffer.buffer(renderer.extrapolate(step.body, ctx));
-        //resultCollector.beforeStep(step, ctx);
-        //vertx.eventBus().registerDefaultCodec(ResultCollector.BeforeStepPayload.class, new LocalEventBusCodec<ResultCollector.BeforeStepPayload>());
-        vertx.eventBus().send(ResultCollector.BEFORE_STEP_ADDRESS,
-          new ResultCollector.BeforeStepPayload(step, ctx));
+        resultCollector.beforeStep(step, ctx);
         Log.debugf("  Sending request: %s %s", request.method().toString(), request.uri());
         return request.sendBuffer(body)
                 .onSuccess(r -> {
                     ctx.put("result", r);
-                    //resultCollector.afterStep(step, ctx);
-                    vertx.eventBus().send(ResultCollector.AFTER_STEP_ADDRESS,
-                        new ResultCollector.AfterStepPayload(step, ctx));
-                        
+                    resultCollector.afterStep(step, ctx);    
                     System.out.println(renderRequest(request));
                     System.out.println(renderResponse(r));
 
@@ -146,9 +144,7 @@ public class ClientRunner {
                 })
                 .onFailure(t -> {
                     ctx.put(RESULT_VAR, t);
-                    //resultCollector.afterStep(step, ctx);
-                    vertx.eventBus().send(ResultCollector.AFTER_STEP_ADDRESS,
-                        new ResultCollector.AfterStepPayload(step, ctx));
+                    resultCollector.afterStep(step, ctx);
                     if (it.hasNext()) {
                         execute(it.next());
                     } else {

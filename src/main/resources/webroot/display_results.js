@@ -115,18 +115,23 @@ function renderStep(step) {
 var eb;
 
 window.onload = function onLoad() {
-    eb = new EventBus('http://localhost:8081/eventbus');
-    eb.onopen = () => {
-        console.log('Registering handler');
-        // set a handler to receive a message
-        eb.registerHandler('some-address', (error, message) => {
-          console.log('received a message: ' + JSON.stringify(message));
-        });
+    // eb = new EventBus('http://localhost:8081/eventbus');
+    // eb.onopen = () => {
+    //     console.log('Registering handler');
+    //     // set a handler to receive a message
+    //     eb.registerHandler('some-address', (error, message) => {
+    //       console.log('received a message: ' + JSON.stringify(message));
+    //     });
        
-        // send a message
-        eb.send('some-address', {name: 'tim', age: 587});
+    //     // send a message
+    //     eb.send('some-address', {name: 'tim', age: 587});
        
-       }
+    //    }
+    const ws = new WebSocket("ws://localhost:8081");
+    ws.onopen = function() {
+        console.log("Opened");
+        ws.send("This is the first message.");
+    }
 }
 
 function startClient() {

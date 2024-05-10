@@ -1,12 +1,13 @@
-package com.redhat;
+package com.redhat.tester;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
-import com.redhat.ConfigurationModel.ClientConfiguration;
-import com.redhat.ConfigurationModel.ClientConfiguration.Endpoint;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
-import com.redhat.ConfigurationModel.ServerConfiguration;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Endpoint;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.tester.ConfigurationModel.ServerConfiguration;
+import com.redhat.tester.results.ResultCollector;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.Quarkus;
 import io.vertx.core.Future;
@@ -159,26 +160,17 @@ class EntryCommand implements Runnable {
         Future<?> appFuture = runner.run();
         appFuture.onSuccess(h -> {
             Log.debug("All clients succeeded, exiting.");
-            //factory.getResultCollector().close();
-            vertx.eventBus().<String>request(ResultCollector.CLOSE_ADDRESS, null).onComplete((m) -> {
-                System.out.println(m.result().body());
-            });
+            factory.getResultCollector().close();
             Quarkus.asyncExit(0);
         }).onFailure(h -> {
             Log.debug("All clients failed, exiting.");
-            //factory.getResultCollector().close();
-            vertx.eventBus().<String>request(ResultCollector.CLOSE_ADDRESS, null).onComplete((m) -> {
-                System.out.println(m.result().body());
-            });
+            factory.getResultCollector().close();
             Quarkus.asyncExit(1);
         });
 
         Log.debug("Waiting For Exit.");
         Quarkus.waitForExit();
-        //System.out.println(factory.getResultCollector().renderSummary());
-        vertx.eventBus().<String>request(ResultCollector.SUMMARY_ADDRESS, null).onComplete((h) -> {
-            System.out.println(h.result().body());
-        });
+        System.out.println(factory.getResultCollector().renderSummary());
         Log.debug("Exiting now.");
     }
 

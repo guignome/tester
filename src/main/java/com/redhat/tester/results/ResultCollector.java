@@ -1,8 +1,11 @@
-package com.redhat;
+package com.redhat.tester.results;
 
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.tester.ConfigurationModel;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import io.quarkus.logging.Log;
+import jakarta.websocket.OnMessage;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -28,25 +31,6 @@ public interface ResultCollector {
     public int size();
 
     String renderSummary();
-
-    public static record BeforeStepPayload(Step step, Map<String, Object> ctx) {
-    };
-
-    public static record AfterStepPayload(Step step, Map<String, Object> ctx)  {
-    };
-
-    public static record AfterSuitePayload(Suite suite, Map<String, Object> ctx)  {
-    };
-
-    public static record InitPayload(String file, ConfigurationModel model) {
-    };
-
-    public static final String BEFORE_STEP_ADDRESS = "/bus/results/beforeStep";
-    public static final String AFTER_STEP_ADDRESS = "/bus/results/afterStep";
-    public static final String AFTER_SUITE_ADDRESS = "/bus/results/afterSuite";
-    public static final String INIT_ADDRESS = "/bus/results/init";
-    public static final String CLOSE_ADDRESS = "/bus/results/close";
-    public static final String SUMMARY_ADDRESS = "/bus/results/summary";
 
     default File createResultFile(String fileName) {
         File result = null;

@@ -1,8 +1,8 @@
-package com.redhat;
+package com.redhat.tester;
 
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
-import com.redhat.ConfigurationModel.Variable;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.tester.ConfigurationModel.Variable;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
@@ -29,13 +29,12 @@ public interface TesterApi {
 
     //ResultCollector API
 
+    void initResultCollector(String file, ConfigurationModel model);
     void beforeStep(Step step, Map<String, Object> ctx);
     void afterStep(Step step, Map<String, Object> ctx);
     void afterSuite(Suite suite, Map<String, Object> ctx);
-    void init(String file, ConfigurationModel model);
-    void close();
     int size();
     String renderSummary();
-
+    void close();
     
 }

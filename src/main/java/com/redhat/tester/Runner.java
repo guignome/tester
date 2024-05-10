@@ -1,6 +1,6 @@
-package com.redhat;
+package com.redhat.tester;
 
-import com.redhat.ConfigurationModel.ServerConfiguration;
+import com.redhat.tester.ConfigurationModel.ServerConfiguration;
 import io.quarkus.logging.Log;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;

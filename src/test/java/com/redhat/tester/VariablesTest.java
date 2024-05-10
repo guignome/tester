@@ -1,9 +1,9 @@
-package com.redhat;
+package com.redhat.tester;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
-import com.redhat.ConfigurationModel.ClientConfiguration.Suite.Step;
-import com.redhat.ConfigurationModel.Variable;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.tester.ConfigurationModel.Variable;
 import io.quarkus.logging.Log;
 import io.quarkus.qute.Qute;
 import io.quarkus.test.junit.QuarkusTest;
