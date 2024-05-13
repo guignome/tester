@@ -3,3 +3,4 @@ resources:
   - tester-deployment.yaml
   - tester-route.yaml
   - tester-svc.yaml
+  - tester-cm.yaml

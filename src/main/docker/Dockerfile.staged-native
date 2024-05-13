@@ -25,14 +25,14 @@ COPY pom.xml .
 COPY src src
 RUN ./mvnw --batch-mode package -Pnative
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.9 as runtime
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.9 AS runtime
 
-#RUN microdnf install -y nss
+RUN microdnf install -y nss
 WORKDIR /work
 RUN chown 1001 /work \
     && chmod "g+rwX" /work \
     && chown 1001:root /work && pwd && ls
-COPY --from=builder --chown=1001:root /build/target/tester /work/application
+COPY --from=builder --chown=1001:root /build/target/tester /work/tester
 
 EXPOSE 8080
 USER 1001
@@ -40,4 +40,4 @@ USER 1001
 ENV TESTER_SERVER_MODE=true
 ENV TESTER_SERVER_HOST=0.0.0.0
 
-ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0"]
+ENTRYPOINT ["./tester", "-Dquarkus.http.host=0.0.0.0"]

@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tester-config
+data:
+  tester.yaml: |
+    client:
+      topology:
+        local:
+          parallel: 2
+          repeat: 1
+      endpoints:
+      - name: hub-tpv
+        host: momot-istio-tpv.impl.dsh.mp.cmscloud.local
+        port: 443
+        protocol: https
+        prefix: /hub-tpv
+      suites:
+      - name: suite1
+        steps:
+        - path: /hub-conn-service-v1/hubconn/rest/HubConnectivityServiceRest
+          endpoint: hub-tpv
+          method: POST
+          headers:
+          - name: messageid
+            value: 7589637a-81f1-480c-95e5-2a539bf12d4d
+          - name: content-type
+            value: application/json
+          body: |
+            { "hubConnectivityRequest" }
+    servers:
+    - port: 8080
+      handlers:
+      - path: /*
+        method: GET
+        delay: 2000
+        response: This is a sample response

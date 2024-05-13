@@ -32,13 +32,22 @@ spec:
       - env:
         - name: TESTER_SERVER_MODE
           value: "true"
+        - name: TESTER_FILE
+          value: /opt/tester/tester.yaml
         image: image-registry.openshift-image-registry.svc:5000/hub-gradde-tester/tester@sha256:72bc407b1beade8e0b6f679a4ba15f516b0c51f9667863b1e813ca201678e096
         imagePullPolicy: Always
         name: tester
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
+        volumeMounts:
+        - name: tester-volume
+          mountPath: /opt/tester
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
+      volumes:
+      - name: tester-volume
+        configMap:
+          name: tester-config
