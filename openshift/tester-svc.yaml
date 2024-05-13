@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: tester
+    app.kubernetes.io/component: tester
+    app.kubernetes.io/instance: tester
+    app.kubernetes.io/name: tester
+    app.kubernetes.io/part-of: tester
+  name: tester
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: 8080-tcp
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: tester
+    deployment: tester
+  sessionAffinity: None
+  type: ClusterIP

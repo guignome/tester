@@ -11,8 +11,8 @@
 ###
 
 #FROM quay.io/quarkus/ubi-quarkus-mandrel-builder-image:22.3-java17
-FROM registry.access.redhat.com/quarkus/mandrel-22-rhel8:22.3-4 AS builder
-
+#FROM registry.access.redhat.com/quarkus/mandrel-22-rhel8:22.3-4 AS builder
+FROM registry.access.redhat.com/quarkus/mandrel-for-jdk-21-rhel8:23.1 AS builder
 USER root
 WORKDIR /build
 RUN mkdir -p .mvn/wrapper
@@ -25,7 +25,9 @@ COPY pom.xml .
 COPY src src
 RUN ./mvnw --batch-mode package -Pnative
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.8 as runtime
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.9 as runtime
+
+#RUN microdnf install -y nss
 WORKDIR /work
 RUN chown 1001 /work \
     && chmod "g+rwX" /work \

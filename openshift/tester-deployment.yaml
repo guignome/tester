@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"tester:latest","namespace":"hub-gradde-tester"},"fieldPath":"spec.template.spec.containers[?(@.name==\"tester\")].image","pause":"false"}]'
+  labels:
+    app: tester
+    app.kubernetes.io/component: tester
+    app.kubernetes.io/instance: tester
+    app.kubernetes.io/name: tester
+    app.kubernetes.io/part-of: tester
+  name: tester
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: tester
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: tester
+        deployment: tester
+    spec:
+      containers:
+      - env:
+        - name: TESTER_SERVER_MODE
+          value: "true"
+        image: image-registry.openshift-image-registry.svc:5000/hub-gradde-tester/tester@sha256:72bc407b1beade8e0b6f679a4ba15f516b0c51f9667863b1e813ca201678e096
+        imagePullPolicy: Always
+        name: tester
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
