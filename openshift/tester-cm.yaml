@@ -10,24 +10,22 @@ data:
           parallel: 2
           repeat: 1
       endpoints:
-      - name: hub-tpv
-        host: momot-istio-tpv.impl.dsh.mp.cmscloud.local
+      - name: myendpoint
+        host: myhost
         port: 443
         protocol: https
-        prefix: /hub-tpv
+        prefix: /myendpoint
       suites:
       - name: suite1
         steps:
-        - path: /hub-conn-service-v1/hubconn/rest/HubConnectivityServiceRest
-          endpoint: hub-tpv
+        - path: /myservice
+          endpoint: myendpoint
           method: POST
           headers:
-          - name: messageid
-            value: 7589637a-81f1-480c-95e5-2a539bf12d4d
-          - name: content-type
-            value: application/json
+          - name: header1
+            value: value1
           body: |
-            { "hubConnectivityRequest" }
+            { "request" }
     servers:
     - port: 8080
       handlers:
