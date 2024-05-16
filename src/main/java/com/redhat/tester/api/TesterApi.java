@@ -1,7 +1,8 @@
-package com.redhat.tester;
+package com.redhat.tester.api;
 
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.tester.ConfigurationModel;
 import com.redhat.tester.ConfigurationModel.Variable;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;

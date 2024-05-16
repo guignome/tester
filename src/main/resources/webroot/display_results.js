@@ -58,6 +58,7 @@ function loadFile() {
     function receivedText(e) {
         let lines = e.target.result;
         jsonResult = JSON.parse(lines);
+        //jsonResult = jsyaml.load(lines);
         load_results()
     }
 }
@@ -70,7 +71,7 @@ function loadModelFile() {
     fr.readAsText(file)
     function receivedText(e) {
         let lines = e.target.result;
-        model = JSON.parse(lines);
+        model = jsyaml.load(lines);
         renderModel()
     }
 }
@@ -87,6 +88,33 @@ function renderModel() {
             suitesDiv.appendChild(suiteEl);
         });
     }
+    if(model.variables != null) {
+        renderVariables(model.variables);
+    }
+}
+
+/**
+ * Updates the variables-table element with the supplied variables.
+ * @param {variable[]} variables 
+ * @returns {Element} The element view of the provided variables.
+ */
+function renderVariables(variables) {
+    let varTable = document.getElementById("variables-table");
+    variables.forEach(variable => {
+        let tr = document.createElement("tr");
+        
+        let name_td = document.createElement("td");
+        name_td.innerText = variable.name;
+        tr.appendChild(name_td);
+        
+        let value_td = document.createElement("td");
+        value_td.innerText = variable.value;
+        value_td.contentEditable = "true";
+
+        tr.appendChild(value_td);
+
+        varTable.appendChild(tr);
+    })
 }
 
 function renderSuite(suite) {
@@ -107,6 +135,7 @@ function renderSuite(suite) {
 function renderStep(step) {
     let stepElement = document.createElement("div");
     stepElement.className = "step";
+    stepElement.onclick = function () {this.classList.toggle("selected")};
     stepElement.innerText= step.method + " " + step.path;
     return stepElement;
 }
@@ -127,11 +156,11 @@ window.onload = function onLoad() {
     //     eb.send('some-address', {name: 'tim', age: 587});
        
     //    }
-    const ws = new WebSocket("ws://localhost:8081");
-    ws.onopen = function() {
-        console.log("Opened");
-        ws.send("This is the first message.");
-    }
+    // const ws = new WebSocket("ws://localhost:8081");
+    // ws.onopen = function() {
+    //     console.log("Opened");
+    //     ws.send("This is the first message.");
+    // }
 }
 
 function startClient() {

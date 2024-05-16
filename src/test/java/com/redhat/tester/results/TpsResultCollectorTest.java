@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 import com.redhat.tester.Factory;
-import com.redhat.tester.results.TpsResultCollector;
 
 @QuarkusTest
 public class TpsResultCollectorTest {

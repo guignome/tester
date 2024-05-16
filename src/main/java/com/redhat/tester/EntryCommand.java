@@ -6,6 +6,9 @@ import com.redhat.tester.ConfigurationModel.ClientConfiguration;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.tester.api.TesterApi;
+import com.redhat.tester.api.TesterApiImpl;
+import com.redhat.tester.api.UIServer;
 import com.redhat.tester.ConfigurationModel.ServerConfiguration;
 import com.redhat.tester.results.ResultCollector;
 import io.quarkus.logging.Log;
@@ -111,6 +114,8 @@ class EntryCommand implements Runnable {
     @Spec
     CommandSpec spec;
 
+    TesterApi api = new TesterApiImpl();
+
     private ConfigurationModel model = null;
 
     public EntryCommand() throws IOException {
@@ -153,7 +158,7 @@ class EntryCommand implements Runnable {
         runner.setModel(model);
         //UI
         if(ui) {
-            UIServer uiserver = new UIServer(vertx);
+            UIServer uiserver = new UIServer(vertx, api);
             uiserver.init();
         }
 

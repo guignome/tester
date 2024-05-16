@@ -51,3 +51,7 @@ h4 {
     background-color: lightblue;
 }
 
+.selected {
+    background-color: powderblue;
+}
+

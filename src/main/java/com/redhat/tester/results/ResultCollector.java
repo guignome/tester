@@ -4,7 +4,6 @@ import com.redhat.tester.ConfigurationModel;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import io.quarkus.logging.Log;
-import jakarta.websocket.OnMessage;
 
 import java.io.File;
 import java.io.IOException;
