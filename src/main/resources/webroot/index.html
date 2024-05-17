@@ -5,15 +5,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"
         integrity="sha512-CSBhVREyzHAjAFfBlIBakjoRUKp5h7VSweP0InR/pAJyptH7peuhCsqAI/snV+TwZmXZqoUklpXp6R6wMnYf5Q=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script type="importmap">
+    <script type="importmap">
             {
               "imports": {
-                "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+                "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js",
+                "api": "./api.js"
               }
             }
           </script>
-    <script src="display_results.js"></script>
-    <script type="module" src="api.js"></script>
+    <!--script src="display_results.js"></script-->
     <link rel="stylesheet" href="index.css">
 </header>
 
@@ -23,66 +23,28 @@
             <h1>Tester</h1>
         </div>
         <div class="menu">
-            <h1>Model</h1>
-            <fieldset>
-                <div>Model file</div>
-                <input type='file' id='modelFileInput'>
-                <input type='button' id='btnLoad' value='Load' onclick='loadModelFile();'>
-            </fieldset>
-            <div>
-                <button>Start</button>
-            </div>
-            <div id="model">
-                <h2>Client</h2>
 
-                    <h3>Endpoints</h3>
-                    <div id="endpoints"></div>
-
-                    <h3>Suites</h3>
-                    <div id="suites"></div>
-                    <label for="serial">Serial</label>
-                    <input type="number" id="serial" name="serial" min="1" />
-                    <label for="parallel">Parallel</label>
-                    <input type="number" id="parallel" name="parallel" min="1" />
-                    <div>
-                        <button onclick="startClient()">Start</button>
-                    </div>
-
-                <h2>Servers</h2>
-                    <div id="servers"></div>
-
-                <h2>Variables</h2>
-                    <div id="variables">
-                        <table id="variables-table">
-                            <tr>
-                                <th>Name</th>
-                                <th>Value</th>
-                            </tr>
-                        </table>
-                    </div>
-
-            </div>
+            <div id="model"></div>
         </div>
         <div class="main">
-            <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post">
+            <div id="results"></div>
 
-                <fieldset>
-                    <h2>Load JSON Result file</h2>
-                    <input type='file' id='fileinput'>
-                    <input type='button' id='btnLoad' value='Load' onclick='loadFile();'>
-                </fieldset>
-            </form>
-            <table id="table">
-                <tr>
-                    <th>Suite</th>
-                    <th>Step</th>
-                    <th>Assertion</th>
-                    <th>Passed #</th>
-                    <th>Failed #</th>
-                </tr>
-            </table>
         </div>
-    </div>
+        <script type="module">
+            import { createApp } from 'vue'
+            import ModelView from './model-view.js'
+            import ResultsView from './results-view.js'
+
+            createApp(ModelView).mount('#model');
+            createApp(ResultsView).mount('#results')
+
+            //Start the websocket
+            const ws = new WebSocket("ws://localhost:8081");
+            ws.onopen = function () {
+                console.log("Opened");
+                ws.send("This is the first message.");
+            }
+        </script>
 </body>
 
 </html>
