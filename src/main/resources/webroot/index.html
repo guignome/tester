@@ -14,36 +14,43 @@
             }
           </script>
     <!--script src="display_results.js"></script-->
-    <link rel="stylesheet" href="index.css">
+    <!--link rel="stylesheet" href="index.css"-->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-dark-grey.css">
+    <link rel="stylesheet" href="w3css-tester.css">
 </header>
 
 <body>
-    <div class="grid-container">
-        <div class="header">
+    <div class="w3-theme-l4">
+        <div class="w3-row w3-theme-l3">
             <h1>Tester</h1>
         </div>
-        <div class="menu">
+        <div class="w3-col l3 w3-theme-l2">
 
             <div id="model"></div>
         </div>
-        <div class="main">
-            <div id="results"></div>
+        <div class="w3-col l9 w3-theme-l2" >
+            <div id="results" ></div>
 
         </div>
         <script type="module">
             import { createApp } from 'vue'
             import ModelView from './model-view.js'
             import ResultsView from './results-view.js'
+            import {setWebSocket} from 'api'
 
             createApp(ModelView).mount('#model');
             createApp(ResultsView).mount('#results')
 
             //Start the websocket
-            const ws = new WebSocket("ws://localhost:8081");
-            ws.onopen = function () {
-                console.log("Opened");
-                ws.send("This is the first message.");
+            const websocket = new WebSocket("ws://localhost:8081");
+            websocket.onopen = function () {
+                console.log("Websocket Opened.");
+                let init = {command: "init"};
+                websocket.send(JSON.stringify(init));
             }
+            setWebSocket(websocket);
+            
         </script>
 </body>
 

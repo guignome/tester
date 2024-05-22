@@ -8,6 +8,7 @@ import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import com.redhat.tester.ConfigurationModel.Variable;
 
+import java.io.OutputStream;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
@@ -119,6 +120,12 @@ public class TesterApiImpl implements TesterApi{
     public void close() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'close'");
+    }
+
+    @Override
+    public Future<?> execute(Step step, List<Variable> variables, int repeat, int parallel,OutputStream out) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'execute'");
     }
     
 }

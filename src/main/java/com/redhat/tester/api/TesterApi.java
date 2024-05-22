@@ -4,6 +4,8 @@ import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import com.redhat.tester.ConfigurationModel;
 import com.redhat.tester.ConfigurationModel.Variable;
+
+import java.io.OutputStream;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
@@ -21,8 +23,9 @@ public interface TesterApi {
     void initClient(List<Variable> variables);
     Future<?> execute(Suite suite);
     Future<?> execute(List<Suite> suites);
+    Future<?> execute(Step step,List<Variable> variables, int repeat, int parallel,OutputStream out);
     Future<?> execute(List<Suite> suites, int repeat);
-    Future<HttpResponse<Buffer>> execute(Step step);
+    Future<?> execute(Step step);
 
     //Server API
     void initServer();

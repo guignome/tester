@@ -58,7 +58,6 @@ public class Runner {
                 // Run instances.
                 serverFutures.add(currentServer.run());
             }
-
         }
         // Wait for the server to be started
         List<Future<?>> clientFutures = new ArrayList<>();
@@ -81,7 +80,6 @@ public class Runner {
                 System.out.println("Running in Server mode, Press CTRL-C to stop.");
             }
         }
-
         return promise.future();
     }
 
