@@ -83,11 +83,9 @@ public class TesterApiImpl implements TesterApi {
             for (ServerConfiguration serverConfiguration : model.servers) {
 
                 currentServer = factory.createServerRunner();
-                currentServer.setModel(model);
-                currentServer.setServer(serverConfiguration);
                 servers.add(currentServer);
                 // Run instances.
-                serverFutures.add(currentServer.run());
+                serverFutures.add(currentServer.run(model.variables,serverConfiguration));
             }
         }
         // Wait for the server to be started

@@ -36,8 +36,7 @@ public class Factory {
 
     public ServerRunner createServerRunner() {
         Log.debug("Creating ServerRunner.");
-        ServerRunner server = new ServerRunner(vertx);
-        server.setRenderer(renderer);
+        ServerRunner server = new ServerRunner(vertx,renderer);
         return server;
     }
 

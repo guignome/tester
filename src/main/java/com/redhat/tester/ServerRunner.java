@@ -9,13 +9,13 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
+
+import java.util.List;
 import java.util.Map;
 
 public class ServerRunner {
 
   private final Vertx vertx;
-  private ConfigurationModel model;
-  private ServerConfiguration serverConfiguration;
   private TemplateRenderer renderer;
   private Map<String, Object> ctx = new ContextMap();
 
@@ -23,36 +23,22 @@ public class ServerRunner {
     return vertx;
   }
 
-  public ServerRunner(Vertx vertx) {
+  public ServerRunner(Vertx vertx, TemplateRenderer renderer) {
     this.vertx = vertx;
-  }
-
-  public ConfigurationModel getModel() {
-    return model;
-  }
-
-  public void setServer(ServerConfiguration serverConfiguration) {
-    this.serverConfiguration = serverConfiguration;
-  }
-
-  public void setRenderer(TemplateRenderer renderer) {
     this.renderer = renderer;
   }
+  
+  public Future<HttpServer> run(List<Variable> variables, ServerConfiguration config) {
 
-  public Future<HttpServer> run() {
-    if (model.servers == null) {
-      return Future.succeededFuture();
-    }
-
-    // Initialize the context
-    for (Variable var : model.variables) {
-      ctx.put(var.name, var.value);
-    }
+   // Initialize the context
+   for (Variable var : variables) {
+    ctx.put(var.name, var.value);
+  }
 
     Router router = Router.router(vertx);
 
     // Mount the handler for all incoming requests at every path and HTTP method
-    for (Handler handler : serverConfiguration.handlers) {
+    for (Handler handler : config.handlers) {
       router.route(HttpMethod.valueOf(handler.method), handler.path).handler(context -> {
         if (handler.delay == 0) {
           context.response().setStatusCode(handler.status).end(
@@ -70,15 +56,11 @@ public class ServerRunner {
         // Handle every request using the router
         .requestHandler(router)
         // Start listening
-        .listen(serverConfiguration.port, serverConfiguration.host);
+        .listen(config.port, config.host);
     Log.debug(String.format("ServerRunner %s started on interface %s and port %s.",
-        serverConfiguration.name,
-        serverConfiguration.host,
-        serverConfiguration.port));
+        config.name,
+        config.host,
+        config.port));
     return future;
-  }
-
-  public void setModel(ConfigurationModel model) {
-    this.model = model;
   }
 }
