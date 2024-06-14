@@ -97,4 +97,10 @@ public class TpsResultCollector implements ResultCollector{
             Log.error(e);
         }
     }
+
+    @Override
+    public ResultSummary getCurrentResultSummary() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCurrentResultSummary'");
+    }
 }

@@ -7,7 +7,6 @@ import com.redhat.tester.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import com.redhat.tester.api.TesterApi;
-import com.redhat.tester.api.TesterApiImpl;
 import com.redhat.tester.api.UIServer;
 import com.redhat.tester.ConfigurationModel.ServerConfiguration;
 import com.redhat.tester.results.ResultCollector;
@@ -114,7 +113,8 @@ class EntryCommand implements Runnable {
     @Spec
     CommandSpec spec;
 
-    TesterApi api = new TesterApiImpl();
+    @Inject
+    TesterApi api;
 
     private ConfigurationModel model = null;
 

@@ -1,10 +1,13 @@
-import { ref } from 'vue'
 import StepView from './step-view.js'
-import {startClient} from './api.js'
+import api from './api.js'
 
 export default {
     setup() { },
-    created() { },
+    created() {
+        api.watch("runtime",(data)=> {
+            this.running = data.running
+            this.runningReportName= data.reportName});
+     },
     components: {StepView},
     data() {
         return {
@@ -17,10 +20,24 @@ export default {
                         }
                     }
                 }
-            }
+            },
+            /**
+             * Can be Running or Stopped.
+             * @type {boolean}
+             */
+            running: false,
+            reportType: {},
+            runningReportName: null
         };
     },
-    computed: {},
+    computed: {
+        runtimeButtonMessage() {
+            return this.running? "Stop" : "Start";
+        },
+        runtimeStatusMessage() {
+            return this.running? "Running" : "Stopped";
+        }
+    },
     methods: {
         readFile() {
             console.log("Reading file");
@@ -31,11 +48,14 @@ export default {
             }
             fr.readAsText(this.$refs.doc.files[0]);
         },
-        start() {
-            startClient(this.model.client.suites[0].steps[0],
-                this.model.variables,
-                this.model.client.topology.local.repeat,
-                this.model.client.topology.local.parallel);
+        startStop() {
+            if(this.running) {
+                this.running = false;
+                api.stopClient();
+            } else {
+                this.running = true;
+                api.startModel(this.model);
+            }
         }
     },
     mounted() { },
@@ -78,15 +98,6 @@ export default {
         </table>
   </div>
 
-  <div class="w3-panel">
-    <label for="repeat">Repeat</label>
-    <input type="number" min="1" id="repeat" name="repeat" v-model="model.client.topology.local.repeat"/>
-    <label for="parallel">Parallel</label>
-    <input type="number" min="1" id="parallel" name="parallel" v-model="model.client.topology.local.parallel"/>
-    <div>
-        <button @click="start()">Start</button>
-    </div>
-  </div>
 <h2 class="w3-theme-d1">Servers</h2>
   <div v-for="server in model.servers">
     <h3 class="w3-theme-d2">{{server.name}} ({{server.host}}:{{server.port}})</h3>
@@ -110,6 +121,29 @@ export default {
           </tr>
       </table>
   </div>
+
+  <h2 class="w3-theme-d1">Runtime</h2>
+  <div class="w3-panel">
+    <label for="repeat">Repeat</label>
+    <input type="number" min="1" id="repeat" name="repeat" v-model="model.client.topology.local.repeat"/>
+    <label for="parallel">Parallel</label>
+    <input type="number" min="1" id="parallel" name="parallel" v-model="model.client.topology.local.parallel"/>
+    <div>
+        <label for="report-type">Report type:</label>
+
+        <select name="report-type" id="report-type" v-model="reportType">
+        <option value="csv">CSV</option>
+        <option value="tps">TPS</option>
+        <option value="json">JSON</option>
+        <option value="summary">Summary</option>
+        </select>
+    </div>
+
+    <div>
+        <button @click="startStop()">{{runtimeButtonMessage}}</button>
+        <b>Status:</b> <span>{{runtimeStatusMessage}}</span>
+    </div>
+    </div>
 </div>`
     
 
@@ -132,6 +166,9 @@ function initModel(m) {
                 repeat: 1
             }
         }
+    }
+    if(m.variables == undefined) {
+        m.variables = [];
     }
     return m;
 }

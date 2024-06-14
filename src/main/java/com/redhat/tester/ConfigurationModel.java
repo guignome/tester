@@ -56,6 +56,43 @@ public class ConfigurationModel {
         public Topology topology = new Topology();
         public List<Endpoint> endpoints = new ArrayList<>();
         public List<Suite> suites = new ArrayList<>();
+        private Endpoint defaultEndpoint = null;
+
+        public Endpoint getDefaultEndpoint() {
+            if (defaultEndpoint != null) {
+                return defaultEndpoint;
+            }
+            for (Endpoint currentEndpoint : endpoints) {
+                if (currentEndpoint.isdefault) {
+                    defaultEndpoint = currentEndpoint;
+                    return defaultEndpoint;
+                }
+            }
+            if (endpoints.size() == 1) {
+                defaultEndpoint = endpoints.get(0);
+                return defaultEndpoint;
+            } else {
+                defaultEndpoint = doGetEndpoint(ConfigurationModel.DEFAULT_ENDPOINT);
+            }
+            return defaultEndpoint;
+        }
+    
+        public Endpoint getEndpoint(String name) {
+            if (ConfigurationModel.DEFAULT_ENDPOINT.equals(name)) {
+                return getDefaultEndpoint();
+            }
+            return doGetEndpoint(name);
+    
+        }
+    
+        private Endpoint doGetEndpoint(String name) {
+            for (Endpoint endpoint : endpoints) {
+                if (name.equals(endpoint.name)) {
+                    return endpoint;
+                }
+            }
+            return null;
+        }
         
         @RegisterForReflection
         public static class Topology {

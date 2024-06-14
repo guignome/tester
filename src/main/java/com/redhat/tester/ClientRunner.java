@@ -3,6 +3,7 @@ package com.redhat.tester;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration;
 import com.redhat.tester.ConfigurationModel.Header;
 import com.redhat.tester.ConfigurationModel.Variable;
 import com.redhat.tester.results.ResultCollector;
@@ -27,7 +28,6 @@ public class ClientRunner {
     private Vertx vertx;
     //private ResultCollector resultCollector;
     private TemplateRenderer renderer;
-    private Endpoints endpoints;
     WebClient client;
     private ContextMap ctx = new ContextMap();
     private StepIterator it;
@@ -38,12 +38,12 @@ public class ClientRunner {
     private AtomicInteger requestCounter = new AtomicInteger(0);
     public static final String REQUEST_ID = "request_id";
     private ResultCollector resultCollector;
+    private ClientConfiguration config;
 
 
-    public ClientRunner(Vertx vertx, Endpoints endpoints, ResultCollector resultCollector) {
+    public ClientRunner(Vertx vertx, ResultCollector resultCollector) {
         id = String.valueOf(idCounter++);
         this.vertx = vertx;
-        this.endpoints = endpoints;
         client = WebClient.create(vertx);
         this.resultCollector = resultCollector;
         
@@ -67,7 +67,7 @@ public class ClientRunner {
 
     Promise<?> prom;
 
-    public void init(List<Variable> variables) {
+    public void init(List<Variable> variables, ClientConfiguration config) {
         // Initialize the context with model.variables and a clientId.
         Variable clientId = new Variable();
         clientId.name = CLIENT_ID_VAR;
@@ -79,6 +79,8 @@ public class ClientRunner {
 
         prom = Promise.promise();
         requestCounter = new AtomicInteger(0);
+
+        this.config = config;
     }
     
     public Future<?> execute(Suite suite) {
@@ -103,7 +105,7 @@ public class ClientRunner {
     }
 
     private Future<HttpResponse<Buffer>> execute(Step step) {
-        Endpoint targetEndpoint = endpoints.getEndpoint(step.endpoint);
+        Endpoint targetEndpoint = config.getEndpoint(step.endpoint);
         ctx.put(REQUEST_ID, requestCounter.getAndIncrement());
         if (targetEndpoint == null) {
             Log.error("Refering to non-existent endpoint: " + step.endpoint);

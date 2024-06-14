@@ -7,15 +7,16 @@ import io.quarkus.logging.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 public interface ResultCollector {
 
-    public static String FORMAT_CSV = "csv";
-    public static String FORMAT_TPS = "tps";
-    public static String FORMAT_JSON = "json";
+    static String FORMAT_CSV = "csv";
+    static String FORMAT_TPS = "tps";
+    static String FORMAT_JSON = "json";
 
-    public String getFormat();
+    String getFormat();
 
     void beforeStep(Step step, Map<String, Object> ctx);
 
@@ -23,13 +24,15 @@ public interface ResultCollector {
 
     void afterSuite(Suite suite, Map<String, Object> ctx);
 
-    public void init(String file, ConfigurationModel model);
+    void init(String file, ConfigurationModel model);
 
-    public void close();
+    void close();
 
-    public int size();
+    int size();
 
     String renderSummary();
+
+    ResultSummary getCurrentResultSummary();
 
     default File createResultFile(String fileName) {
         File result = null;
@@ -43,5 +46,13 @@ public interface ResultCollector {
             result = new File(fileName);
         }
         return result;
+    }
+
+    public static class ResultSummary {
+        public LocalDateTime startTime;
+        public LocalDateTime endTime;
+        public int numberOfTestsPassed;
+        public int numberOfTestsFailed;
+        public int numberOfSteps;
     }
 }

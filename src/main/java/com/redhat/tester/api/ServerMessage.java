@@ -1,7 +1,6 @@
 package com.redhat.tester.api;
 
 import java.util.List;
-import java.util.Map;
 
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import com.redhat.tester.ConfigurationModel.Variable;
@@ -9,16 +8,16 @@ import com.redhat.tester.ConfigurationModel.Variable;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public class Command {
+public class ServerMessage {
     
-    public Command(){
+    public ServerMessage(){
         super();
     }
-    public String command;
-    public Data data;
+    public String kind;
+    public StartData data;
 
     @RegisterForReflection
-    public static class Data {
+    public static class StartData {
         public Step step;
         public List<Variable> variables;
         public int repeat;

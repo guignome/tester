@@ -1,7 +1,7 @@
-import { ref } from 'vue'
 export default {
     setup() { },
     created() { },
+    components: {},
     data() {
         return {}
     },
@@ -12,6 +12,4 @@ export default {
     mounted() { },
     props: ['step'],
     template: `<a><b>{{step.method}}</b> {{step.path}}</a>`
-    
-
 }

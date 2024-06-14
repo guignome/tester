@@ -1,7 +1,7 @@
 <html>
 <header>
-    <script type="application/javascript" src="https://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vertx3-eventbus-client@3.8.5/vertx-eventbus.min.js"></script>
+    <!--script type="application/javascript" src="https://cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vertx3-eventbus-client@3.8.5/vertx-eventbus.min.js"></script-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"
         integrity="sha512-CSBhVREyzHAjAFfBlIBakjoRUKp5h7VSweP0InR/pAJyptH7peuhCsqAI/snV+TwZmXZqoUklpXp6R6wMnYf5Q=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -21,37 +21,15 @@
 </header>
 
 <body>
-    <div class="w3-theme-l4">
-        <div class="w3-row w3-theme-l3">
-            <h1>Tester</h1>
-        </div>
-        <div class="w3-col l3 w3-theme-l2">
+    <div id="app" class="w3-theme-l4"></div>
 
-            <div id="model"></div>
-        </div>
-        <div class="w3-col l9 w3-theme-l2" >
-            <div id="results" ></div>
+    <script type="module">
+        import { createApp } from 'vue'
+        import AppView from './app-view.js'
+        
+        createApp(AppView).mount('#app');
 
-        </div>
-        <script type="module">
-            import { createApp } from 'vue'
-            import ModelView from './model-view.js'
-            import ResultsView from './results-view.js'
-            import {setWebSocket} from 'api'
-
-            createApp(ModelView).mount('#model');
-            createApp(ResultsView).mount('#results')
-
-            //Start the websocket
-            const websocket = new WebSocket("ws://localhost:8081");
-            websocket.onopen = function () {
-                console.log("Websocket Opened.");
-                let init = {command: "init"};
-                websocket.send(JSON.stringify(init));
-            }
-            setWebSocket(websocket);
-            
-        </script>
+    </script>
 </body>
 
 </html>

@@ -18,9 +18,6 @@ public class Factory {
     @Inject
     TemplateRenderer renderer;
 
-    @Inject
-    Endpoints endpoints;
-
     String format = ResultCollector.FORMAT_CSV;
 
     // public void setFormat(String format) {
@@ -31,7 +28,7 @@ public class Factory {
 
     public ClientRunner createClientRunner() {
         Log.debug("Creating ClientRunner.");
-        ClientRunner client = new ClientRunner(vertx, endpoints,resultCollector);
+        ClientRunner client = new ClientRunner(vertx,resultCollector);
         // client.setResultCollector(resultCollector);
         client.setRenderer(renderer);
         return client;

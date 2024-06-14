@@ -154,4 +154,9 @@ public class JsonResultCollector implements ResultCollector {
         public String name;
         public boolean passed;
     }
+    @Override
+    public ResultSummary getCurrentResultSummary() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCurrentResultSummary'");
+    }
 }

@@ -1,131 +1,151 @@
 package com.redhat.tester.api;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
+import com.redhat.tester.ClientRunner;
 import com.redhat.tester.ConfigurationModel;
-import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
-import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
+import com.redhat.tester.Factory;
+import com.redhat.tester.ServerRunner;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration;
+import com.redhat.tester.ConfigurationModel.ServerConfiguration;
 import com.redhat.tester.ConfigurationModel.Variable;
 
-import java.io.OutputStream;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import io.quarkus.logging.Log;
 import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServer;
-import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.core.Promise;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
-public class TesterApiImpl implements TesterApi{
+@ApplicationScoped
+public class TesterApiImpl implements TesterApi {
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    public static final String STATUS_PROP = "status";
+    public static final String STATUS_RUNNING = "running";
+    public static final String STATUS_STOPPED = "stopped";
+    private String status = STATUS_STOPPED;
+
+    @Inject
+    Factory factory;
 
     public TesterApiImpl() {
-        
+
     }
 
     @Override
-    public int createClient() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createClient'");
+    public Future<?> executeClient(ClientConfiguration config, List<Variable> variables) {
+        setStatus(STATUS_RUNNING);
+
+        List<ClientRunner> clients = new ArrayList<>();
+        List<Future<?>> clientFutures = new ArrayList<>();
+        Promise<?> promise = Promise.promise();
+        ClientRunner currentClient;
+        for (int i = 0; i < config.topology.local.parallel; i++) {
+            currentClient = factory.createClientRunner();
+            currentClient.init(variables,config);
+            clients.add(currentClient);
+        }
+
+        clientFutures.addAll(startClients(clients, config));
+        Future.join(clientFutures).onComplete(v -> promise.complete());
+        promise.future().onComplete(h-> {setStatus(STATUS_STOPPED);});
+        return promise.future();
     }
 
     @Override
-    public int createServer() {
+    public Future<?> executeServer(ServerConfiguration config, List<Variable> variables) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createServer'");
+        throw new UnsupportedOperationException("Unimplemented method 'executeServer'");
     }
 
     @Override
-    public int createResultCollector() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createResultCollector'");
+    public Future<?> executeClientAndServer(ConfigurationModel model) {
+        setStatus(STATUS_RUNNING);
+        var clients = new ArrayList<ClientRunner>();
+        var servers = new ArrayList<ServerRunner>();
+        var promise = Promise.promise();
+
+        // Create clients
+        if (model.client != null) {
+            ClientRunner currentClient;
+            for (int i = 0; i < model.client.topology.local.parallel; i++) {
+                currentClient = factory.createClientRunner();
+                currentClient.init(model.variables,model.client);
+                clients.add(currentClient);
+            }
+        }
+
+        // Create server
+        List<Future<?>> serverFutures = new ArrayList<>();
+        if (model.servers != null) {
+            ServerRunner currentServer;
+            for (ServerConfiguration serverConfiguration : model.servers) {
+
+                currentServer = factory.createServerRunner();
+                currentServer.setModel(model);
+                currentServer.setServer(serverConfiguration);
+                servers.add(currentServer);
+                // Run instances.
+                serverFutures.add(currentServer.run());
+            }
+        }
+        // Wait for the server to be started
+        List<Future<?>> clientFutures = new ArrayList<>();
+        if (serverFutures.size() > 0) {
+            Future<?> allServersFuture = Future.join(serverFutures);
+            allServersFuture.onComplete(h -> {
+                Log.debug("Server startup Completed.");
+                //start clients.
+                clientFutures.addAll(startClients(clients,model.client));
+                if (clientFutures.size() > 0) {
+                    Future.join(clientFutures).onComplete(v -> promise.complete());
+                } else {
+                    System.out.println("Running in Server mode, Press CTRL-C to stop.");
+                }
+            });
+        } else {
+            clientFutures.addAll(startClients(clients,model.client));
+            if (clientFutures.size() > 0) {
+                Future.join(clientFutures).onComplete(v -> promise.complete());
+            } else {
+                System.out.println("Running in Server mode, Press CTRL-C to stop.");
+            }
+        }
+        return promise.future();
+    }
+
+
+    private List<Future<?>> startClients(List<ClientRunner> clients, ClientConfiguration config) {
+        List<Future<?>> clientFutures = new ArrayList<>();
+        for (ClientRunner client : clients) {
+            clientFutures.add(client.execute(config.suites, config.topology.local.repeat));
+        }
+
+        return clientFutures;
     }
 
     @Override
-    public void initClient(List<Variable> variables) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'initClient'");
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        this.pcs.addPropertyChangeListener(listener);
     }
 
     @Override
-    public Future<?> execute(Suite suite) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        this.pcs.removePropertyChangeListener(listener);
     }
 
     @Override
-    public Future<?> execute(List<Suite> suites) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+    public String getStatus() {
+        return status;
+
     }
 
-    @Override
-    public Future<?> execute(List<Suite> suites, int repeat) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
+    private void setStatus(String status) {
+        String oldValue = this.status;
+        this.status = status;
+        this.pcs.firePropertyChange("value", oldValue, status);
     }
 
-    @Override
-    public Future<HttpResponse<Buffer>> execute(Step step) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
-    }
 
-    @Override
-    public void initServer() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'initServer'");
-    }
-
-    @Override
-    public Future<HttpServer> run() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'run'");
-    }
-
-    @Override
-    public void initResultCollector(String file, ConfigurationModel model) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'initResultCollector'");
-    }
-
-    @Override
-    public void beforeStep(Step step, Map<String, Object> ctx) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'beforeStep'");
-    }
-
-    @Override
-    public void afterStep(Step step, Map<String, Object> ctx) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'afterStep'");
-    }
-
-    @Override
-    public void afterSuite(Suite suite, Map<String, Object> ctx) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'afterSuite'");
-    }
-
-    @Override
-    public int size() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'size'");
-    }
-
-    @Override
-    public String renderSummary() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'renderSummary'");
-    }
-
-    @Override
-    public void close() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'close'");
-    }
-
-    @Override
-    public Future<?> execute(Step step, List<Variable> variables, int repeat, int parallel,OutputStream out) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'execute'");
-    }
-    
 }

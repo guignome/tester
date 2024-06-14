@@ -167,4 +167,10 @@ public class CsvResultCollector implements ResultCollector {
         }
     }
 
+    @Override
+    public ResultSummary getCurrentResultSummary() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCurrentResultSummary'");
+    }
+
 }
