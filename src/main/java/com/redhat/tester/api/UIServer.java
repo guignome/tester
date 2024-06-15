@@ -1,20 +1,14 @@
 package com.redhat.tester.api;
 
-import java.util.List;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.tester.ConfigurationModel;
-import com.redhat.tester.ConfigurationModel.ClientConfiguration;
-import com.redhat.tester.ConfigurationModel.Variable;
 import com.redhat.tester.api.views.JSonResultView;
 import com.redhat.tester.api.views.ResultsView;
 import com.redhat.tester.api.views.RuntimeView;
 
 import io.quarkus.logging.Log;
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -57,29 +51,22 @@ public class UIServer {
                                     .put("data", "Initialized!");
                             ws.writeTextMessage(json.encode());
                             break;
-                        case "startClient":
-                            ClientConfiguration config = mapper.readValue(data.get("client").toString(), ClientConfiguration.class);
-                            List<Variable> variables = mapper.readValue(data.get("variables").toString(), new TypeReference<List<Variable>>() { });
-                            Future<?> fut = api.executeClient(config, variables);
-                            JsonNode res = mapper.createObjectNode()
-                                .put("kind", "clientStatus")
-                                .set("data",mapper.createObjectNode()
-                                    .put("running", true)
-                                );
-                            ws.writeTextMessage(res.asText());
-                            break;
                         case "startModel":
                             ConfigurationModel model = mapper.readValue(data.get("model").toString(),ConfigurationModel.class);
                             var future = api.executeClientAndServer(model);
-                        case "stopClient":
+                            break;
+                        case "stopModel":
+                            api.stop();
                             break;
                         case "watch":
                             String resource = data.get("resource").asText();
                             switch (resource) {
                                 case "runtime":
                                     var rtView = new RuntimeView(vertx,ws, api);
+                                    break;
                                 case "results":
                                     var resultsView = new ResultsView(ws);
+                                    break;
                                 case "jsonresult":
                                     var jsonResultView = new JSonResultView(ws);
                                     break;

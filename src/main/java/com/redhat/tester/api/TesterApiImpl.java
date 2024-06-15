@@ -5,13 +5,12 @@ import java.util.List;
 import com.redhat.tester.ClientRunner;
 import com.redhat.tester.ConfigurationModel;
 import com.redhat.tester.Factory;
+import com.redhat.tester.RunningBase;
 import com.redhat.tester.ServerRunner;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration;
 import com.redhat.tester.ConfigurationModel.ServerConfiguration;
 import com.redhat.tester.ConfigurationModel.Variable;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import io.quarkus.logging.Log;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -19,12 +18,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
-public class TesterApiImpl implements TesterApi {
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    public static final String STATUS_PROP = "status";
-    public static final String STATUS_RUNNING = "running";
-    public static final String STATUS_STOPPED = "stopped";
-    private String status = STATUS_STOPPED;
+public class TesterApiImpl extends RunningBase implements TesterApi {
+    
+
+    private ArrayList<ClientRunner> clients = new ArrayList<>();
+    private ArrayList<ServerRunner> servers = new ArrayList<>();
 
     @Inject
     Factory factory;
@@ -34,44 +32,22 @@ public class TesterApiImpl implements TesterApi {
     }
 
     @Override
-    public Future<?> executeClient(ClientConfiguration config, List<Variable> variables) {
-        setStatus(STATUS_RUNNING);
-
-        List<ClientRunner> clients = new ArrayList<>();
-        List<Future<?>> clientFutures = new ArrayList<>();
-        Promise<?> promise = Promise.promise();
-        ClientRunner currentClient;
-        for (int i = 0; i < config.topology.local.parallel; i++) {
-            currentClient = factory.createClientRunner();
-            currentClient.init(variables,config);
-            clients.add(currentClient);
-        }
-
-        clientFutures.addAll(startClients(clients, config));
-        Future.join(clientFutures).onComplete(v -> promise.complete());
-        promise.future().onComplete(h-> {setStatus(STATUS_STOPPED);});
-        return promise.future();
-    }
-
-    @Override
-    public Future<?> executeServer(ServerConfiguration config, List<Variable> variables) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'executeServer'");
-    }
-
-    @Override
     public Future<?> executeClientAndServer(ConfigurationModel model) {
-        setStatus(STATUS_RUNNING);
-        var clients = new ArrayList<ClientRunner>();
-        var servers = new ArrayList<ServerRunner>();
+        setRunning(true);
+        clients = new ArrayList<ClientRunner>();
+        servers = new ArrayList<ServerRunner>();
         var promise = Promise.promise();
+        promise.future().onComplete(
+            h->{
+                setRunning(false);
+            });
 
         // Create clients
         if (model.client != null) {
             ClientRunner currentClient;
             for (int i = 0; i < model.client.topology.local.parallel; i++) {
                 currentClient = factory.createClientRunner();
-                currentClient.init(model.variables,model.client);
+                currentClient.init(model.variables, model.client);
                 clients.add(currentClient);
             }
         }
@@ -85,7 +61,7 @@ public class TesterApiImpl implements TesterApi {
                 currentServer = factory.createServerRunner();
                 servers.add(currentServer);
                 // Run instances.
-                serverFutures.add(currentServer.run(model.variables,serverConfiguration));
+                serverFutures.add(currentServer.run(model.variables, serverConfiguration));
             }
         }
         // Wait for the server to be started
@@ -94,25 +70,35 @@ public class TesterApiImpl implements TesterApi {
             Future<?> allServersFuture = Future.join(serverFutures);
             allServersFuture.onComplete(h -> {
                 Log.debug("Server startup Completed.");
-                //start clients.
-                clientFutures.addAll(startClients(clients,model.client));
+                // start clients.
+                clientFutures.addAll(startClients(clients, model.client));
                 if (clientFutures.size() > 0) {
-                    Future.join(clientFutures).onComplete(v -> promise.complete());
+                    Future.join(clientFutures).onComplete(v -> {
+                        promise.complete();});
                 } else {
                     System.out.println("Running in Server mode, Press CTRL-C to stop.");
                 }
             });
         } else {
-            clientFutures.addAll(startClients(clients,model.client));
+            clientFutures.addAll(startClients(clients, model.client));
             if (clientFutures.size() > 0) {
-                Future.join(clientFutures).onComplete(v -> promise.complete());
+                Future.join(clientFutures).onComplete(v -> {
+                    promise.complete();});
             } else {
                 System.out.println("Running in Server mode, Press CTRL-C to stop.");
             }
         }
+        
         return promise.future();
     }
 
+    @Override
+    public Future<?> stop() {
+        clients.forEach(c -> c.stop());
+        servers.forEach(s -> s.stop());
+        setRunning(false);
+        return null;
+    }
 
     private List<Future<?>> startClients(List<ClientRunner> clients, ClientConfiguration config) {
         List<Future<?>> clientFutures = new ArrayList<>();
@@ -123,27 +109,6 @@ public class TesterApiImpl implements TesterApi {
         return clientFutures;
     }
 
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        this.pcs.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        this.pcs.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public String getStatus() {
-        return status;
-
-    }
-
-    private void setStatus(String status) {
-        String oldValue = this.status;
-        this.status = status;
-        this.pcs.firePropertyChange("value", oldValue, status);
-    }
-
+    
 
 }

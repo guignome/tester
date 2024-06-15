@@ -4,9 +4,14 @@ import api from './api.js'
 export default {
     setup() { },
     created() {
-        api.watch("runtime",(data)=> {
-            this.running = data.running
-            this.runningReportName= data.reportName});
+        api.watch("runtime",
+            /**
+             * 
+             * @param {import('./api.js').ClientMessage} msg 
+             */
+            (msg)=> {
+            this.running = msg.data.running
+            this.runningReportName= msg.data.reportName});
      },
     components: {StepView},
     data() {
@@ -51,7 +56,7 @@ export default {
         startStop() {
             if(this.running) {
                 this.running = false;
-                api.stopClient();
+                api.stopModel();
             } else {
                 this.running = true;
                 api.startModel(this.model);

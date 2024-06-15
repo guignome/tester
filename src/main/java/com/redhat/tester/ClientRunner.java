@@ -23,10 +23,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ClientRunner {
+public class ClientRunner extends RunningBase {
 
     private Vertx vertx;
-    //private ResultCollector resultCollector;
+    // private ResultCollector resultCollector;
     private TemplateRenderer renderer;
     WebClient client;
     private ContextMap ctx = new ContextMap();
@@ -40,13 +40,11 @@ public class ClientRunner {
     private ResultCollector resultCollector;
     private ClientConfiguration config;
 
-
     public ClientRunner(Vertx vertx, ResultCollector resultCollector) {
         id = String.valueOf(idCounter++);
         this.vertx = vertx;
         client = WebClient.create(vertx);
         this.resultCollector = resultCollector;
-        
     }
 
     public String getId() {
@@ -56,10 +54,6 @@ public class ClientRunner {
     public Vertx getVertx() {
         return vertx;
     }
-
-    //public void setResultCollector(ResultCollector resultCollector) {
-    //    this.resultCollector = resultCollector;
-   // }
 
     public void setRenderer(TemplateRenderer renderer) {
         this.renderer = renderer;
@@ -82,7 +76,7 @@ public class ClientRunner {
 
         this.config = config;
     }
-    
+
     public Future<?> execute(Suite suite) {
         return execute(Arrays.asList(suite));
     }
@@ -92,7 +86,7 @@ public class ClientRunner {
     }
 
     public Future<?> execute(List<Suite> suites, int repeat) {
-        if(suites.isEmpty()) {
+        if (suites.isEmpty()) {
             return Future.succeededFuture();
         }
         it = new StepIterator(suites, repeat, ctx);
@@ -132,13 +126,13 @@ public class ClientRunner {
         return request.sendBuffer(body)
                 .onSuccess(r -> {
                     ctx.put("result", r);
-                    resultCollector.afterStep(step, ctx);    
+                    resultCollector.afterStep(step, ctx);
                     System.out.println(renderRequest(request));
                     System.out.println(renderResponse(r));
 
                     // Process the following step
                     if (it.hasNext()) {
-                        //ctx.put(REQUEST_ID, requestCounter.getAndIncrement());
+                        // ctx.put(REQUEST_ID, requestCounter.getAndIncrement());
                         execute(it.next());
                     } else {
                         prom.complete();
@@ -155,18 +149,25 @@ public class ClientRunner {
                 });
     }
 
+    public void stop() {
+        setRunning(false);
+        it.stop();
+    }
+
     public static String renderRequest(HttpRequest<Buffer> req) {
-        String prefix = req.ssl()?"https://":"http://";
+        String prefix = req.ssl() ? "https://" : "http://";
         return new StringBuilder().append(req.method().name())
-            .append(' ').append(prefix).append(req.host()).append(':').append(req.port()).append(req.uri()).toString();
+                .append(' ').append(prefix).append(req.host()).append(':').append(req.port()).append(req.uri())
+                .toString();
     }
 
     public static String renderResponse(HttpResponse<Buffer> response) {
         StringBuilder sb = new StringBuilder()
-                .append("┌───────────────────────────").append(" HTTP ").append(response.statusCode()).append(' ').append("─────────────────────────┐\n");
+                .append("┌───────────────────────────").append(" HTTP ").append(response.statusCode()).append(' ')
+                .append("─────────────────────────┐\n");
         response.headers().forEach(
                 (k, v) -> {
-                    sb.append(String.format("│%-20s│ %-40s│\n", k,v));
+                    sb.append(String.format("│%-20s│ %-40s│\n", k, v));
                 });
         sb.append("├──────────────────────────").append("   Body   ").append("──────────────────────────┤\n")
                 .append(response.bodyAsString())
@@ -183,6 +184,7 @@ public class ClientRunner {
         Suite suite;
         Iterator<Step> stepIterator;
         ContextMap ctx;
+        boolean running = true;
 
         public StepIterator(List<Suite> suites, int repeat, ContextMap ctx) {
             this.suites = suites;
@@ -194,8 +196,15 @@ public class ClientRunner {
             ctx.initializeLocalVariables(suite.variables);
         }
 
+        public void stop() {
+            running = false;
+        }
+
         @Override
         public boolean hasNext() {
+            if(!running) {
+                return false;
+            }
             return stepIterator.hasNext() || suiteIterator.hasNext() || currentRepeat < repeat - 1;
         }
 

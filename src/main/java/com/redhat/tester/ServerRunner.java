@@ -18,6 +18,7 @@ public class ServerRunner {
   private final Vertx vertx;
   private TemplateRenderer renderer;
   private Map<String, Object> ctx = new ContextMap();
+  private HttpServer httpServer;
 
   public Vertx getVertx() {
     return vertx;
@@ -26,8 +27,14 @@ public class ServerRunner {
   public ServerRunner(Vertx vertx, TemplateRenderer renderer) {
     this.vertx = vertx;
     this.renderer = renderer;
+    httpServer = vertx.createHttpServer();
   }
-  
+  /**
+   * Start the server with the given config
+   * @param variables
+   * @param config
+   * @return
+   */
   public Future<HttpServer> run(List<Variable> variables, ServerConfiguration config) {
 
    // Initialize the context
@@ -52,7 +59,7 @@ public class ServerRunner {
     }
 
     // Create the HTTP server
-    Future<HttpServer> future = vertx.createHttpServer()
+    Future<HttpServer> future = httpServer
         // Handle every request using the router
         .requestHandler(router)
         // Start listening
@@ -63,4 +70,13 @@ public class ServerRunner {
         config.port));
     return future;
   }
+
+  /**
+   * Stops the running server
+   * @return A future that completes when the stop operation is completed.
+   */
+  public Future<Void> stop() {
+    return httpServer.close();
+  }
+
 }

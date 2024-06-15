@@ -89,6 +89,12 @@ public class CsvResultCollector implements ResultCollector {
         int requestId = (int) ctx.get(REQUEST_ID);
         Log.debug("Response " + requestId);
         results.get(requestId).receivedTime = new Date();
+        Object response = ctx.get(ClientRunner.RESULT_VAR);
+        if(response instanceof HttpResponse) {
+            results.get(requestId).response = (HttpResponse<?>) response;
+        } else {
+            results.get(requestId).response = null;
+        }
         results.get(requestId).response = (HttpResponse<?>) ctx.get(ClientRunner.RESULT_VAR);
     }
 

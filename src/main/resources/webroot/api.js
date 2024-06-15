@@ -2,6 +2,7 @@
  * A JSON message Server->Client
  * @typedef ClientMessage
  * @property {string} kind The kind of data. Will be used to dispatch the message to the right handler.
+ * @property {String} resource The resource this message is targettted for.
  * @property {any} data The data of the message, will be received by the handler.
  */
 
@@ -16,6 +17,7 @@
 //Start the websocket
 const ws = new WebSocket("ws://localhost:8081");
 const handlers = new Map();
+const views = new Map();
 
 ws.onopen = function () {
     console.log("Websocket Opened.");
@@ -40,7 +42,8 @@ function onmessage(event) {
     const kind = msg.kind;
     if (handlers.has(kind)) {
         //execute the handler if there is one.
-        handlers.get(kind)(msg.data);
+
+        handlers.get(kind)(msg);
     }
 }
 
@@ -52,45 +55,23 @@ const api = {
     startModel(model) {
         console.log("Starting Model");
         /** @type {ServerMessage} */
-        let msg = {kind: "startModel",
-            data: {model}
+        let msg = {
+            kind: "startModel",
+            data: { model }
         };
-        ws.send(JSON.stringify(msg));
+        sendWhenReady(JSON.stringify(msg));
     },
 
-    /**
- * Starts the client with the given parameters;
- * @param {*} step The step to execute.
- * @param {*} variables The variables to replace.
- * @param {number} repeat How many times to repeat.
- * @param {number} parallel Number of parallel clients.
- * @returns {string} reportName The name of the report of the test run.
- */
-    startClient(step, variables, repeat, parallel) {
-        console.log("Starting client.");
-        /**@type {ServerMessage} */
+    stopModel() {
+        console.log("Stopping");
+        /** @type {ServerMessage} */
         let msg = {
-            kind: "startClient",
-            data: {
-                client: {
-                    topology: {
-                        local: {
-                            parallel, repeat
-                        }
-                    },
-                    suites: [
-                        {
-                            name: "singleSuite",
-                            steps: [
-                                step
-                            ]
-                        }
-                    ]
-                }, variables
-            }
+            kind: "stopModel",
+            data: {}
         };
-        ws.send(JSON.stringify(msg));
+        sendWhenReady(JSON.stringify(msg));
     },
+
     /**
      * Registers a handler for a message kind.
      * @param {Function} handler 
@@ -98,18 +79,6 @@ const api = {
      */
     registerHandler(kind, handler) {
         handlers.set(kind, handler);
-    },
-    /**
-     * Stops a running client.
-     */
-    stopClient() {
-        console.log("Stopping client.");
-        /**@type {ServerMessage} */
-        let msg = {
-            kind: "stopClient",
-            data: {}
-        };
-        sendWhenReady(JSON.stringify(msg));
     },
     /** Watch the given resource
      * @param {string} resource The resource to watch
@@ -121,8 +90,11 @@ const api = {
             kind: "watch",
             data: { resource }
         };
-        this.registerHandler("resourceState", handler);
+        this.registerView(resource, handler);
         sendWhenReady(JSON.stringify(msg));
+    },
+    registerView(resource, handler) {
+        views.set(resource, handler);
     }
 }
 
@@ -133,6 +105,19 @@ api.registerHandler("init", (msg) => {
 api.registerHandler("clientStatus", (msg) => {
     console.log("Received clientStatus message: " + msg);
 })
+
+api.registerHandler("viewUpdate",
+    /**
+     * Calls the handler for the given resource.
+     * @param {ClientMessage} msg 
+     */
+    (msg) => {
+        if (views.has(msg.resource)) {
+            views.get(msg.resource)(msg);
+        } else {
+            console.warn("Received view update for resource but no handler registered: " + msg.resource);
+        }
+    })
 
 function sendWhenReady(msg) {
     if (ws.readyState == ws.OPEN) {

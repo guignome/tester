@@ -19,11 +19,10 @@ public interface TesterApi {
     // void initClient(List<Variable> variables);
     // Future<?> execute(Suite suite);
     // Future<?> execute(List<Suite> suites);
-    Future<?> executeClient(ClientConfiguration config, List<Variable> variables);
-
-    Future<?> executeServer(ServerConfiguration config, List<Variable> variables);
 
     Future<?> executeClientAndServer(ConfigurationModel model);
+
+    Future<?> stop();
     // Future<?> execute(List<Suite> suites, int repeat);
     // Future<?> execute(Step step);
 
@@ -46,6 +45,6 @@ public interface TesterApi {
 
     void removePropertyChangeListener(PropertyChangeListener listener);
 
-    String getStatus();
+    boolean isRunning();
 
 }
