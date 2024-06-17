@@ -4,6 +4,7 @@ import api from './api.js'
 
 const sample = {
     creationTime: "2024-05-20T13:23:34.561506982",
+    name: "sample.json",
     model: {
       variables: [],
       client: {
@@ -88,6 +89,11 @@ const sample = {
           }
         ]
       }]}
+const sample1 = {...sample};
+const sample2 = {...sample};
+sample1.name= "sample1.json";
+sample2.name= "sample2.json";
+
 
 export default {
     setup() { },
@@ -96,10 +102,17 @@ export default {
      },
     components: {modelView,resultsView},
     data() {
-        return {resultsets: [sample,sample]}
+        return {
+          
+          resultsets: new Map().set("sample1.json",sample1).set("sample2.json",sample2),
+          activeResultName: "sample1.json"
+        }
     },
     computed: {},
     methods: {
+      onNewReport(report) {
+        this.resultsets.set(report,{name: report});
+      }
         
     },
     mounted() { },
@@ -109,10 +122,10 @@ export default {
     <h1>Tester</h1>
 </div>
 <div class="w3-col l3 w3-theme-l2">
-    <modelView></modelView>
+    <modelView @newReport="onNewReport"></modelView>
 </div>
 <div class="w3-col l9 w3-theme-l2" >
-    <resultsView :resultsets></resultsView>
+    <resultsView v-model:resultsets=resultsets v-model:activeResultName=activeResultName></resultsView>
 </div>
 `
 }

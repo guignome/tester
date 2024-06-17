@@ -9,11 +9,15 @@ export default {
              * 
              * @param {import('./api.js').ClientMessage} msg 
              */
-            (msg)=> {
-            this.running = msg.data.running
-            this.runningReportName= msg.data.reportName});
-     },
-    components: {StepView},
+            (msg) => {
+                this.running = msg.data.running;
+                this.runningReportName = msg.data.reportName;
+                if(msg.data.running){
+                    this.$emit('newReport',this.runningReportName);
+                }
+            });
+    },
+    components: { StepView },
     data() {
         return {
             model: {
@@ -37,12 +41,13 @@ export default {
     },
     computed: {
         runtimeButtonMessage() {
-            return this.running? "Stop" : "Start";
+            return this.running ? "Stop" : "Start";
         },
         runtimeStatusMessage() {
-            return this.running? "Running" : "Stopped";
+            return this.running ? "Running: " + this.runningReportName : "Stopped";
         }
     },
+    emits: ['newReport'],
     methods: {
         readFile() {
             console.log("Reading file");
@@ -54,7 +59,7 @@ export default {
             fr.readAsText(this.$refs.doc.files[0]);
         },
         startStop() {
-            if(this.running) {
+            if (this.running) {
                 this.running = false;
                 api.stopModel();
             } else {
@@ -150,13 +155,13 @@ export default {
     </div>
     </div>
 </div>`
-    
+
 
 }
 
 function initModel(m) {
-    if(m.client === undefined) {
-        m.client =  {
+    if (m.client === undefined) {
+        m.client = {
             topology: {
                 local: {
                     parallel: 1,
@@ -172,7 +177,7 @@ function initModel(m) {
             }
         }
     }
-    if(m.variables == undefined) {
+    if (m.variables == undefined) {
         m.variables = [];
     }
     return m;

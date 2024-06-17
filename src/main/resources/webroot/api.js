@@ -13,6 +13,13 @@
  * @property {any} data The data of the message, will be received by the handler.
  */
 
+/**
+ * A Single result set
+ * @typedef ResultSet
+ * @property {string} name The name of the resultset, is also typically the file name.
+ * @property {any} data The data of the message, will be received by the handler.
+ */
+
 
 //Start the websocket
 const ws = new WebSocket("ws://localhost:8081");

@@ -67,8 +67,9 @@ public class UIServer {
                                 case "results":
                                     var resultsView = new ResultsView(ws);
                                     break;
-                                case "jsonresult":
-                                    var jsonResultView = new JSonResultView(ws);
+                                case "jsonResult":
+                                    String filename = data.get("filename").asText();
+                                    var jsonResultView = new JSonResultView(ws,filename);
                                     break;
                             }
                             break;

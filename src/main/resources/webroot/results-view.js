@@ -3,7 +3,9 @@ import api from 'api'
 import jsonResultsView from './json-results-view.js'
 
 
-
+/**
+ * 
+ */
 export default {
   data() {
     return {}
@@ -11,15 +13,15 @@ export default {
   components: {jsonResultsView},
   methods: {
      showResults: function(resultSet) {
-      var i;
-      var x = document.getElementsByClassName("jsonResultsView");
-      for (i = 0; i < x.length; i++) {
-        x[i].style.display = "none";  
-      }
-      document.getElementById(resultSet).style.display = "block"; 
+      console.log("Showing result: " + resultSet.name); 
+      this.activeResultName = resultSet.name;
+    },
+    isActive(resultset) {
+      return this.activeResultName === resultset.name;
     }
   },
-  props: ['resultsets'],
+  props: ['resultsets','activeResultName'],
+  emits: ['update:resultsets','update:activeResultName'],
 
   template: `<div>
   <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post">
@@ -32,10 +34,10 @@ export default {
             </form>
             
             <div class="w3-bar w3-black">
-                <button v-for="resultset in resultsets" class="w3-bar-item w3-button resultset"
-                 onclick="showResults(resultset)">{{resultset.creationTime}}</button>
+                <button v-for="resultset in resultsets.values()" class="w3-bar-item w3-button resultset"
+                 @click="$emit('update:activeResultName', resultset.name)">{{resultset.name}}</button>
             </div>
-            <jsonResultsView v-for="resultset in resultsets" :result="resultset"></jsonResultsView>
+            <jsonResultsView :result="resultsets.get(activeResultName)"></jsonResultsView>
 </div>`
 }
 

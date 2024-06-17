@@ -21,8 +21,9 @@ export default {
     template: `<div class="jsonResultsView">
     <div>
     <h2>Test summary</h2>
-    Start Time: {{}}
-    Tests Passed: 
+    <h3>{{result.name}}</h3>
+    <p>Start Time: {{}}</p>
+    <p>Tests Passed:</p> 
     </div>
     <table id="resultset" class="w3-table-all">
         <tr>
