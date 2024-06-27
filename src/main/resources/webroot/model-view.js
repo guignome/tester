@@ -72,23 +72,23 @@ export default {
     props: [],
     template: `
 <div class="">
-  <h1 class="w3-container w3-theme-l1">Model</h1>
+  <h1 class="">Model</h1>
             <fieldset>
                 <div>Model file</div>
                 <input type="file" ref="doc" @change="readFile()" />
             </fieldset>
-  <h2 class="w3-theme-d1">Client</h2>
-    <h3 class="w3-theme-d2">Suites</h3>
+  <h2 class="">Client</h2>
+    <h3 class="">Suites</h3>
     <div v-for="suite in model?.client?.suites">
-        <h4 class="w3-theme-d3">{{suite.name}}</h4>
+        <h4 class="">{{suite.name}}</h4>
         <div v-for="step in suite?.steps">
             <StepView :step="step"/>
         </div>
     </div>
 
-    <h3 class="w3-theme-d2">Endpoints</h3>
+    <h3 class="">Endpoints</h3>
     <div id="endpoints">
-    <table v-if="model?.client?.endpoints" class="w3-table-all">
+    <table v-if="model?.client?.endpoints" class="">
             <tr>
                 <th>Name</th>
                 <th>Protocol</th>
@@ -108,9 +108,9 @@ export default {
         </table>
   </div>
 
-<h2 class="w3-theme-d1">Servers</h2>
+<h2 class="">Servers</h2>
   <div v-for="server in model.servers">
-    <h3 class="w3-theme-d2">{{server.name}} ({{server.host}}:{{server.port}})</h3>
+    <h3 class="">{{server.name}} ({{server.host}}:{{server.port}})</h3>
     <div v-for="handler in server.handlers">
       <b>{{handler.method}}</b> {{handler.path}} -> {{handler.response}} 
     </div>
@@ -118,7 +118,7 @@ export default {
   
   </div>
 
-<h2 class="w3-theme-d1">Variables</h2>
+<h2 class="">Variables</h2>
   <div id="variables">
       <table id="variables-table" class="w3-table-all">
           <tr>
@@ -132,8 +132,8 @@ export default {
       </table>
   </div>
 
-  <h2 class="w3-theme-d1">Runtime</h2>
-  <div class="w3-panel">
+  <h2 class="">Runtime</h2>
+  <div class="">
     <label for="repeat">Repeat</label>
     <input type="number" min="1" id="repeat" name="repeat" v-model="model.client.topology.local.repeat"/>
     <label for="parallel">Parallel</label>

@@ -35,8 +35,8 @@ export default {
                 </fieldset>
             </form>
             
-            <div class="w3-bar w3-black">
-                <button v-for="resultset in resultsets" class="w3-bar-item w3-button resultset"
+            <div class="">
+                <button v-for="resultset in resultsets" class="resultset"
                  @click="$emit('update:activeResultName', resultset.name)">{{resultset.name}}</button>
             </div>
             <!--jsonResultsView :result="resultsets.get(activeResultName)"></jsonResultsView-->

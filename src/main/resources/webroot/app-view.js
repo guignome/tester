@@ -126,13 +126,13 @@ export default {
     mounted() { },
     props: [],
     template: `
-<div class="w3-row w3-theme-l3">
+<div class="header">
     <h1>Tester</h1>
 </div>
-<div class="w3-col l3 w3-theme-l2">
+<div class="menu">
     <modelView @newReport="onNewReport"></modelView>
 </div>
-<div class="w3-col l9 w3-theme-l2" >
+<div class="main" >
     <resultsView @updateResult="newResult=>this.updateResult(newResult)" :resultsets="this.resultsets" v-model:activeResultName=activeResultName></resultsView>
 </div>
 `

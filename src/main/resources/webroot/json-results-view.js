@@ -28,7 +28,7 @@ export default {
     <p>Creation Time: {{result.creationTime}}</p>
     <p>Tests Passed:</p> 
     </div>
-    <table id="resultset" class="w3-table-all">
+    <table id="resultset" class="">
         <tr>
             <th>Start Time</th>
             <th>End Time</th>
