@@ -21,26 +21,29 @@ export default {
           this.$emit('update:resultsets',this.resultsets);
       }
       fr.readAsText(this.$refs.doc.files[0]);
-  },
+    },
+    closeTab(resultset){
+      this.$emit('closeResult',resultset);
+    }
   },
   props: ['resultsets','activeResultName'],
-  emits: ['updateResult','update:activeResultName'],
+  emits: ['updateResult','update:activeResultName','closeResult'],
 
-  template: `<div>
+  template: `
+<div>
   <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post">
 
-                <fieldset>
-                    <h2>Load JSON Result file</h2>
-                    <input type="file" ref="doc" @change="readFile()" />
-                </fieldset>
-            </form>
-            
-            <div class="">
-                <button v-for="resultset in resultsets" class="resultset"
-                 @click="$emit('update:activeResultName', resultset.name)">{{resultset.name}}</button>
-            </div>
-            <!--jsonResultsView :result="resultsets.get(activeResultName)"></jsonResultsView-->
-            <jsonResultsView @updateResult="newResult=>this.$emit('updateResult',newResult)" v-for="r in resultsets" :result="r" v-show="r.name === activeResultName"></jsonResultsView>
+    <fieldset>
+      <legend>Load JSON Result file</legend>
+      <input type="file" ref="doc" @change="readFile()" />
+    </fieldset>
+  </form>
+
+  <div class="">
+    <button v-for="resultset in resultsets" class="resultset"
+      @click="$emit('update:activeResultName', resultset.name)">{{resultset.name}} <span @click="closeTab(resultset)">&times;</span></button>
+  </div>
+  <jsonResultsView @updateResult="newResult=>this.$emit('updateResult',newResult)" v-for="r in resultsets" :result="r" v-show="r.name === activeResultName"></jsonResultsView>
 </div>`
 }
 

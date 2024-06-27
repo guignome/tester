@@ -113,6 +113,15 @@ export default {
       onNewReport(report) {
         this.resultsets.push({name: report});
       },
+      closeResult(r) {
+        let foundindex;
+        this.resultsets.forEach((element,index,arr) => {
+          if(resultsView.name === element.name) {
+            foundindex = index;
+          }
+        });
+        this.resultsets.splice(foundindex,1);
+      },
       updateResult(newResult) {
         let foundindex;
         this.resultsets.forEach((element,index,arr) => {
@@ -133,7 +142,12 @@ export default {
     <modelView @newReport="onNewReport"></modelView>
 </div>
 <div class="main" >
-    <resultsView @updateResult="newResult=>this.updateResult(newResult)" :resultsets="this.resultsets" v-model:activeResultName=activeResultName></resultsView>
+    <resultsView 
+      @updateResult="newResult=>this.updateResult(newResult)" 
+      @closeResult="r=>this.closeResult(r)"
+      :resultsets="this.resultsets" 
+      v-model:activeResultName=activeResultName>
+    </resultsView>
 </div>
 `
 }

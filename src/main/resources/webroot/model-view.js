@@ -72,23 +72,26 @@ export default {
     props: [],
     template: `
 <div class="">
-  <h1 class="">Model</h1>
             <fieldset>
-                <div>Model file</div>
+            <legend>Load Model</legend>
                 <input type="file" ref="doc" @change="readFile()" />
             </fieldset>
-  <h2 class="">Client</h2>
-    <h3 class="">Suites</h3>
+    <fieldset>
+    <legend>Client</legend>
+    <fieldset>
+    <legend>Suites</legend>
     <div v-for="suite in model?.client?.suites">
         <h4 class="">{{suite.name}}</h4>
         <div v-for="step in suite?.steps">
             <StepView :step="step"/>
         </div>
     </div>
+    </fieldset>
 
-    <h3 class="">Endpoints</h3>
+    <fieldset>
+    <legend>Endpoints</legend>
     <div id="endpoints">
-    <table v-if="model?.client?.endpoints" class="">
+        <table v-if="model?.client?.endpoints" class="">
             <tr>
                 <th>Name</th>
                 <th>Protocol</th>
@@ -106,10 +109,13 @@ export default {
                 <td>{{endpoint.isdefault}}</td>
             </tr>
         </table>
-  </div>
+    </div>
+    </fieldset>
+    </fieldset>
 
-<h2 class="">Servers</h2>
-  <div v-for="server in model.servers">
+<fieldset>
+    <legend>Servers</legend>
+    <div v-for="server in model.servers">
     <h3 class="">{{server.name}} ({{server.host}}:{{server.port}})</h3>
     <div v-for="handler in server.handlers">
       <b>{{handler.method}}</b> {{handler.path}} -> {{handler.response}} 
@@ -117,8 +123,9 @@ export default {
   
   
   </div>
-
-<h2 class="">Variables</h2>
+</fieldset>
+<fieldset>
+    <legend>Variables</legend>
   <div id="variables">
       <table id="variables-table" class="w3-table-all">
           <tr>
@@ -131,8 +138,10 @@ export default {
           </tr>
       </table>
   </div>
+  </fieldset>
 
-  <h2 class="">Runtime</h2>
+  <fieldset>
+    <legend>Runtime</legend>
   <div class="">
     <label for="repeat">Repeat</label>
     <input type="number" min="1" id="repeat" name="repeat" v-model="model.client.topology.local.repeat"/>
@@ -154,9 +163,8 @@ export default {
         <b>Status:</b> <span>{{runtimeStatusMessage}}</span>
     </div>
     </div>
+    </fieldset>
 </div>`
-
-
 }
 
 function initModel(m) {
