@@ -29,6 +29,8 @@ public class JsonResultCollector implements ResultCollector {
     JsonGenerator jsonGenerator;
     TemplateRenderer renderer;
     ConfigurationModel model;
+    String fileName;
+    int size = 0;
 
     Map<String,StepResult> inflight = new HashMap<>();
 
@@ -40,11 +42,16 @@ public class JsonResultCollector implements ResultCollector {
     public String getFormat() {
         return FORMAT_JSON;
     }
+    @Override
+    public String getResultFileName() {
+        return fileName;
+    }
 
     @Override
-    public void init(String fileName, ConfigurationModel model) {
+    public void init(ConfigurationModel model) {
         Log.debug("Initializing JSONResultCollector.");
         this.model = model;
+        this.fileName = model.results.filename;
         File result = createResultFile(fileName);
 
         try {
@@ -61,6 +68,7 @@ public class JsonResultCollector implements ResultCollector {
 
             // Write the start of the object
             jsonGenerator.writeStartObject();
+            jsonGenerator.writeObjectField("name", this.fileName);
             jsonGenerator.writeObjectField("creationTime", LocalDateTime.now());
             jsonGenerator.writeObjectField("model", model);
             jsonGenerator.writeFieldName("results");
@@ -73,7 +81,7 @@ public class JsonResultCollector implements ResultCollector {
 
     @Override
     public int size() {
-        throw new UnsupportedOperationException("Unimplemented method 'size'");
+        return size;
     }
 
     @Override
@@ -106,6 +114,7 @@ public class JsonResultCollector implements ResultCollector {
         String clientId =(String) ctx.get(ClientRunner.CLIENT_ID_VAR);
         stepResult.clientId = clientId;
         inflight.put(clientId, stepResult);
+        size++;
      }
 
     @Override

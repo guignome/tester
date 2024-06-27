@@ -59,8 +59,9 @@ public class UIServer {
                             api.stop();
                             break;
                         case "watch":
-                            String resource = data.get("resource").asText();
-                            switch (resource) {
+                            String resourceType = jsonMsg.get("resourceType").asText();
+                            String instance = jsonMsg.get("resourceInstance").asText();
+                            switch (resourceType) {
                                 case "runtime":
                                     var rtView = new RuntimeView(vertx,ws, api);
                                     break;
@@ -68,9 +69,10 @@ public class UIServer {
                                     var resultsView = new ResultsView(ws);
                                     break;
                                 case "jsonResult":
-                                    String filename = data.get("filename").asText();
-                                    var jsonResultView = new JSonResultView(ws,filename);
+                                    var jsonResultView = new JSonResultView(vertx,ws,instance);
                                     break;
+                                default:
+                                    Log.errorf("Unknown message resource type: %s", resourceType);
                             }
                             break;
                         default:

@@ -23,6 +23,8 @@ public interface TesterApi {
     Future<?> executeClientAndServer(ConfigurationModel model);
 
     Future<?> stop();
+
+    String getResultFileName();
     // Future<?> execute(List<Suite> suites, int repeat);
     // Future<?> execute(Step step);
 

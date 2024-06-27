@@ -26,6 +26,8 @@ public class ConfigurationModel {
 
     public List<ServerConfiguration> servers = new ArrayList<>();
 
+    public Results results = new Results();
+
     public ServerConfiguration getDefaultServer() {
         return getServer(DEFAULT_SERVER);
     }
@@ -37,6 +39,12 @@ public class ConfigurationModel {
             }
         }
         return null;
+    }
+
+    @RegisterForReflection
+    public static class Results {
+        public String format;
+        public String filename;
     }
 
     @RegisterForReflection

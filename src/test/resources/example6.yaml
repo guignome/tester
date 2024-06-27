@@ -36,7 +36,6 @@ client:
     - path: /{myuri}
       method: GET
 
-
 servers:
 - name: application
   host: localhost
@@ -54,4 +53,3 @@ servers:
   - path: /theuri
     method: GET
     response: This is the URI
-  

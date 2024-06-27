@@ -40,11 +40,12 @@ public class ClientRunner extends RunningBase {
     private ResultCollector resultCollector;
     private ClientConfiguration config;
 
-    public ClientRunner(Vertx vertx, ResultCollector resultCollector) {
+    public ClientRunner(Vertx vertx, ResultCollector resultCollector,TemplateRenderer renderer) {
         id = String.valueOf(idCounter++);
         this.vertx = vertx;
         client = WebClient.create(vertx);
         this.resultCollector = resultCollector;
+        this.renderer = renderer;
     }
 
     public String getId() {
@@ -55,9 +56,6 @@ public class ClientRunner extends RunningBase {
         return vertx;
     }
 
-    public void setRenderer(TemplateRenderer renderer) {
-        this.renderer = renderer;
-    }
 
     Promise<?> prom;
 

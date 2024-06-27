@@ -104,16 +104,24 @@ export default {
     data() {
         return {
           
-          resultsets: new Map().set("sample1.json",sample1).set("sample2.json",sample2),
-          activeResultName: "sample1.json"
+          resultsets: [sample1,sample2],
+          activeResultName: sample1.name
         }
     },
     computed: {},
     methods: {
       onNewReport(report) {
-        this.resultsets.set(report,{name: report});
+        this.resultsets.push({name: report});
+      },
+      updateResult(newResult) {
+        let foundindex;
+        this.resultsets.forEach((element,index,arr) => {
+          if(newResult.name === element.name) {
+            foundindex = index;
+          }
+        });
+        this.resultsets[foundindex]=newResult;
       }
-        
     },
     mounted() { },
     props: [],
@@ -125,7 +133,7 @@ export default {
     <modelView @newReport="onNewReport"></modelView>
 </div>
 <div class="w3-col l9 w3-theme-l2" >
-    <resultsView v-model:resultsets=resultsets v-model:activeResultName=activeResultName></resultsView>
+    <resultsView @updateResult="newResult=>this.updateResult(newResult)" :resultsets="this.resultsets" v-model:activeResultName=activeResultName></resultsView>
 </div>
 `
 }

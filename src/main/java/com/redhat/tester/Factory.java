@@ -20,17 +20,11 @@ public class Factory {
 
     String format = ResultCollector.FORMAT_CSV;
 
-    // public void setFormat(String format) {
-    // this.format = format;
-    // }
-
     private ResultCollector resultCollector;
 
     public ClientRunner createClientRunner() {
         Log.debug("Creating ClientRunner.");
-        ClientRunner client = new ClientRunner(vertx,resultCollector);
-        // client.setResultCollector(resultCollector);
-        client.setRenderer(renderer);
+        ClientRunner client = new ClientRunner(vertx,resultCollector,renderer);
         return client;
     }
 
@@ -41,23 +35,11 @@ public class Factory {
     }
 
     public ResultCollector getResultCollector() {
-        // if (resultCollector == null || !resultCollector.getFormat().equals(format)) {
-        // if (format == null || ResultCollector.FORMAT_CSV.equals(format)) {
-        // resultCollector = new CsvResultCollector();
-        // } else if (ResultCollector.FORMAT_JSON.equals(format)) {
-        // resultCollector = new JsonResultCollector(renderer);
-        // } else {
-        // TpsResultCollector tps = new TpsResultCollector();
-        // tps.setVertx(vertx);
-        // resultCollector = tps;
-        // }
-        // }
-
         return resultCollector;
     }
 
-    public void registerResultCollector(String format, String resultFile, ConfigurationModel model) {
-        this.format = format;
+    public ResultCollector registerResultCollector(ConfigurationModel model) {
+        this.format = model.results.format;
         if (resultCollector == null || !resultCollector.getFormat().equals(format)) {
             if (format == null || ResultCollector.FORMAT_CSV.equals(format)) {
                 resultCollector = new CsvResultCollector();
@@ -69,6 +51,8 @@ public class Factory {
         }
        
         // send the init signal
-        resultCollector.init(resultFile, model);
+        resultCollector.init(model);
+        
+        return resultCollector;
     }
 }

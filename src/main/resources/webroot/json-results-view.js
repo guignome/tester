@@ -3,26 +3,29 @@ import api from 'api'
 export default {
     setup() { },
     created() {
-        api.watch("jsonresults",(data)=> {
-            this.running = data.running
-            this.runningReportName= data.reportName});
-     },
+        api.watch("jsonResult",this.result.name,(data)=> {
+            console.log(`Received jsonresults update: ${data}`);
+            if(data.data != null){
+                this.$emit('updateResult',data.data);
+            }
+        });
+        
+    },
     data() {
         return {}}
     ,
     computed: {},
     methods: {
-        update(data){
-            this.results = data;
-        }
+        
     },
     mounted() { },
     props: ['result'],
+    emits: ['updateResult'],
     template: `<div class="jsonResultsView">
     <div>
     <h2>Test summary</h2>
     <h3>{{result.name}}</h3>
-    <p>Start Time: {{}}</p>
+    <p>Creation Time: {{result.creationTime}}</p>
     <p>Tests Passed:</p> 
     </div>
     <table id="resultset" class="w3-table-all">
@@ -42,5 +45,4 @@ export default {
         </tr>
     </table>
     </div>`
-
 }

@@ -130,9 +130,8 @@ class EntryCommand implements Runnable {
         } catch (Exception e) {
             Log.error("Couldn't initialize model: ", e);
         }
-        //factory.setFormat(format);
-        //factory.getResultCollector().init(resultFile,this.model);
-        factory.registerResultCollector(format, resultFile,model );
+
+        factory.registerResultCollector(model);
 
         // Endpoint list
         if (endpointLists) {
@@ -213,6 +212,9 @@ class EntryCommand implements Runnable {
             if (pr.hasMatchedOption("--parallel")) {
                 this.model.client.topology.local.parallel = parallel.get();
             }
+
+            // override result format and file
+            
             return;
         }
 

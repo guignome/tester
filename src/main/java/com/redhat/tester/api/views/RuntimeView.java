@@ -30,11 +30,12 @@ public class RuntimeView implements PropertyChangeListener{
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.createObjectNode()
             .put("kind", "viewUpdate")
-            .put("resource","runtime")
+            .put("resourceType","runtime")
+            .put("resourceInstance","main")
             .set("data",
                 objectMapper.createObjectNode()
                 .put("running",api.isRunning())
-                .put("reportName", "result123.json")
+                .put("reportName", api.getResultFileName())
             );
     }
 

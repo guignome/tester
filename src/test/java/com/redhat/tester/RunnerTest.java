@@ -84,7 +84,7 @@ public class RunnerTest {
         ConfigurationModel model = ConfigurationModel
                 .loadFromFile(new File("src/test/resources/example" + scenarioNumber + ".yaml"));
         runner.setModel(model);
-        factory.registerResultCollector(ResultCollector.FORMAT_CSV, "/tmp/test.csv", model);
+        factory.registerResultCollector(model);
         final ResultCollector resultCollector = factory.getResultCollector();
 
         Future<?> future = runner.run();

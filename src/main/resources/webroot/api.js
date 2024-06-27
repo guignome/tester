@@ -2,7 +2,8 @@
  * A JSON message Server->Client
  * @typedef ClientMessage
  * @property {string} kind The kind of data. Will be used to dispatch the message to the right handler.
- * @property {String} resource The resource this message is targettted for.
+ * @property {String} resourceType The resource type this message is targettted for.
+ * @property {String} resourceInstance The resource instance this message is targettted for.
  * @property {any} data The data of the message, will be received by the handler.
  */
 
@@ -90,18 +91,21 @@ const api = {
     /** Watch the given resource
      * @param {string} resource The resource to watch
      * @param {Function} handler Then handler to execute.
+     * @param {any} params Extra parameters
      */
-    watch(resource, handler) {
-        console.log("Watching " + resource);
+    watch(resourceType,resourceInstance, handler) {
+        console.log(`Watching ${resourceType}/${resourceInstance}`);
         let msg = {
             kind: "watch",
-            data: { resource }
+            resourceType,
+            resourceInstance,
+            data: { }
         };
-        this.registerView(resource, handler);
+        this.registerView(resourceType, resourceInstance, handler);
         sendWhenReady(JSON.stringify(msg));
     },
-    registerView(resource, handler) {
-        views.set(resource, handler);
+    registerView(resourceType, resourceInstance, handler) {
+        views.set(resourceType + "/" + resourceInstance, handler);
     }
 }
 
@@ -119,10 +123,11 @@ api.registerHandler("viewUpdate",
      * @param {ClientMessage} msg 
      */
     (msg) => {
-        if (views.has(msg.resource)) {
-            views.get(msg.resource)(msg);
+        const key = msg.resourceType + "/" + msg.resourceInstance;
+        if (views.has(key)) {
+            views.get(key)(msg);
         } else {
-            console.warn("Received view update for resource but no handler registered: " + msg.resource);
+            console.warn("Received view update for resource but no handler registered: " + key);
         }
     })
 

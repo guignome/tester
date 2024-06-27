@@ -4,7 +4,7 @@ import api from './api.js'
 export default {
     setup() { },
     created() {
-        api.watch("runtime",
+        api.watch("runtime","main",
             /**
              * 
              * @param {import('./api.js').ClientMessage} msg 

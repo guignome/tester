@@ -24,7 +24,7 @@ public interface ResultCollector {
 
     void afterSuite(Suite suite, Map<String, Object> ctx);
 
-    void init(String file, ConfigurationModel model);
+    void init(ConfigurationModel model);
 
     void close();
 
@@ -47,6 +47,7 @@ public interface ResultCollector {
         }
         return result;
     }
+    String getResultFileName();
 
     public static class ResultSummary {
         public LocalDateTime startTime;

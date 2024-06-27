@@ -9,7 +9,6 @@ import com.redhat.tester.RunningBase;
 import com.redhat.tester.ServerRunner;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration;
 import com.redhat.tester.ConfigurationModel.ServerConfiguration;
-import com.redhat.tester.ConfigurationModel.Variable;
 
 import io.quarkus.logging.Log;
 import io.vertx.core.Future;
@@ -33,12 +32,15 @@ public class TesterApiImpl extends RunningBase implements TesterApi {
 
     @Override
     public Future<?> executeClientAndServer(ConfigurationModel model) {
+        //create resultcollector
+        factory.registerResultCollector(model);
+        
         setRunning(true);
         clients = new ArrayList<ClientRunner>();
         servers = new ArrayList<ServerRunner>();
         var promise = Promise.promise();
         promise.future().onComplete(
-            h->{
+            h->{factory.getResultCollector().close();
                 setRunning(false);
             });
 
@@ -109,6 +111,9 @@ public class TesterApiImpl extends RunningBase implements TesterApi {
         return clientFutures;
     }
 
-    
+    @Override
+    public String getResultFileName() {
+        return factory.getResultCollector().getResultFileName();
+    }
 
 }

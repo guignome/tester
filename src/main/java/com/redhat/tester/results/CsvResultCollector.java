@@ -20,6 +20,7 @@ import java.util.Map;
 public class CsvResultCollector implements ResultCollector {
     private ArrayList<Result> results = new ArrayList<>();
     private Writer writer;
+    private String fileName;
 
     static final String pattern = "yyyy-MM-dd hh:mm:ss.SSS";
     static final SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
@@ -43,10 +44,15 @@ public class CsvResultCollector implements ResultCollector {
             return ChronoUnit.MILLIS.between(sentTime.toInstant(), receivedTime.toInstant());
         }
     }
+    @Override
+    public String getResultFileName() {
+        return fileName;
+    }
 
     @Override
-    public void init(String fileName, ConfigurationModel model) {
+    public void init(ConfigurationModel model) {
         Log.debug("Initializing CsvResultCollector.");
+        this.fileName = model.results.filename;
         results = new ArrayList<>();
         File result = createResultFile(fileName);
 
@@ -64,15 +70,21 @@ public class CsvResultCollector implements ResultCollector {
     }
 
     public long minDuration() {
-        return results.stream().mapToLong(r -> r.duration()).summaryStatistics().getMin();
+        return results.stream()
+        .filter(r -> r.receivedTime != null && r.sentTime != null)
+        .mapToLong(r -> r.duration()).summaryStatistics().getMin();
     }
 
     public long maxDuration() {
-        return results.stream().mapToLong(r -> r.duration()).summaryStatistics().getMax();
+        return results.stream()
+        .filter(r -> r.receivedTime != null && r.sentTime != null)
+        .mapToLong(r -> r.duration()).summaryStatistics().getMax();
     }
 
     public double averageDuration() {
-        return results.stream().mapToLong(r -> r.duration()).summaryStatistics().getAverage();
+        return results.stream()
+        .filter(r -> r.receivedTime != null && r.sentTime != null)
+        .mapToLong(r -> r.duration()).summaryStatistics().getAverage();
     }
 
     public static final String REQUEST_ID = "request_id";

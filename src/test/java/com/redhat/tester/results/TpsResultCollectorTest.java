@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
+import com.redhat.tester.ConfigurationModel;
 import com.redhat.tester.Factory;
 
 @QuarkusTest
@@ -23,7 +24,7 @@ public class TpsResultCollectorTest {
         //factory.registerResultCollector(ResultCollector.FORMAT_TPS, "/tmp/test.tps", null);
 
         TpsResultCollector tpsResultCollector = new TpsResultCollector(vertx);
-        tpsResultCollector.init("/tmp/results.tps", null);
+        tpsResultCollector.init(new ConfigurationModel());
         System.out.println("TPSResultCollector created. ");
         printStats(tpsResultCollector);
         assertEquals(0, tpsResultCollector.size.get());

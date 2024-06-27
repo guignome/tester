@@ -1,4 +1,4 @@
-package com.redhat.tester.api;
+package com.redhat.tester.results;
 
 import java.io.File;
 import java.util.Arrays;

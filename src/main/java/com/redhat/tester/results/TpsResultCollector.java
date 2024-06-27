@@ -17,6 +17,7 @@ public class TpsResultCollector implements ResultCollector{
     AtomicInteger lastTPS =new AtomicInteger(0);
     AtomicInteger currentBucketTPS = new AtomicInteger(0);
     AtomicInteger size =new AtomicInteger(0);
+    private String fileName;
 
     AtomicInteger requestCounter = new AtomicInteger(0);
 
@@ -25,6 +26,11 @@ public class TpsResultCollector implements ResultCollector{
 
     public TpsResultCollector(Vertx v) {
         this.vertx = v;
+    }
+
+    @Override
+    public String getResultFileName() {
+        return fileName;
     }
 
     @Override
@@ -46,8 +52,9 @@ public class TpsResultCollector implements ResultCollector{
     }
 
     @Override
-    public void init(String fileName, ConfigurationModel model) {
+    public void init(ConfigurationModel model) {
         Log.debug("Initializing TpsResultCollector.");
+        this.fileName = model.results.filename;
         requestCounter = new AtomicInteger(0);
         lastTPS.set(0);
         currentBucketTPS.set(0);

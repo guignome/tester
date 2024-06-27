@@ -31,3 +31,6 @@ servers:
     method: GET
     response: Good Bye!
     status: 404
+results:
+  format: json
+  filename: example7.json
