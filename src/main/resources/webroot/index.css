@@ -77,14 +77,23 @@ td {
 }
 
 tr:nth-child(even) {
-    background-color: #f2f2f2;
+    background-color: #f2f2f2bf;
+}
+
+fieldset {
+    border-radius: 8px;
 }
 
 legend {
     background-color: gray;
     color: white;
-    padding: 5px 10px;
+    padding: 5px 15px;
+    font-weight: bold;
+    border-radius: 8px;
+
+
 }
+
 
 .resultset {
     background-color: gray;

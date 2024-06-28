@@ -145,6 +145,7 @@ public class ConfigurationModel {
                 public String body = "";
                 public String endpoint = DEFAULT_ENDPOINT;
                 public String name = "Step " + stepNumber++;
+                public String register;
                 public List<Header> headers = new ArrayList<>();
                 public List<Assertion> assertions = new ArrayList<>();
 

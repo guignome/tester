@@ -28,7 +28,8 @@ export default {
                             repeat: 5
                         }
                     }
-                }
+                },
+                results: {format: "json", filename: "sample.json"}
             },
             /**
              * Can be Running or Stopped.
@@ -150,12 +151,14 @@ export default {
     <div>
         <label for="report-type">Report type:</label>
 
-        <select name="report-type" id="report-type" v-model="reportType">
-        <option value="csv">CSV</option>
-        <option value="tps">TPS</option>
-        <option value="json">JSON</option>
-        <option value="summary">Summary</option>
+        <select name="report-type" id="report-type" v-model="model.results.format">
+            <option value="csv">CSV</option>
+            <option value="tps">TPS</option>
+            <option value="json">JSON</option>
+            <option value="summary">Summary</option>
         </select>
+        <label for="report-name">Report name:</label>
+        <input id="report-name" v-model=model.results.filename>
     </div>
 
     <div>
@@ -185,8 +188,11 @@ function initModel(m) {
             }
         }
     }
-    if (m.variables == undefined) {
+    if (m.variables === undefined) {
         m.variables = [];
+    }
+    if(m.results === undefined) {
+        m.results = {format:"json", filename:"test.json"}
     }
     return m;
 }

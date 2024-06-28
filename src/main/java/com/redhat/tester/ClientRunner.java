@@ -123,7 +123,10 @@ public class ClientRunner extends RunningBase {
         Log.debugf("  Sending request: %s %s", request.method().toString(), request.uri());
         return request.sendBuffer(body)
                 .onSuccess(r -> {
-                    ctx.put("result", r);
+                    ctx.put(RESULT_VAR, r);
+                    if(step.register != null && ! step.register.isEmpty()) {
+                        ctx.put(step.register, r);
+                    }
                     resultCollector.afterStep(step, ctx);
                     System.out.println(renderRequest(request));
                     System.out.println(renderResponse(r));

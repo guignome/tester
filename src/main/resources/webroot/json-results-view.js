@@ -1,5 +1,13 @@
 import api from 'api'
 
+const options = {
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    fractionalSecondDigits: 3
+  };
+const timeFormat = new Intl.DateTimeFormat("en-US",options);
+
 export default {
     setup() { },
     created() {
@@ -16,32 +24,46 @@ export default {
     ,
     computed: {},
     methods: {
-        
+        formatStartTime(start) {
+            const time = new Date(start);
+            return timeFormat.format(time);
+        },
+        formatDuration(start,end) {
+            return new Date(end) - new Date(start);
+        },
+        /**
+         * 
+         * @param {Array} assertions 
+         */
+        formatAssertions(assertions) {
+            const size = assertions.length;
+            const passed = assertions.filter(a => a.passed).length;
+            return `${passed}/${size}`;
+        }
     },
     mounted() { },
     props: ['result'],
     emits: ['updateResult'],
     template: `<div class="jsonResultsView">
     <div>
-    <h2>Test summary</h2>
-    <h3>{{result.name}}</h3>
-    <p>Creation Time: {{result.creationTime}}</p>
-    <p>Tests Passed:</p> 
+    <p><b>Name:</b> {{result.name}}</p>
+    <p><b>Creation Time:</b> {{result.creationTime}}</p>
+    <p><b>Tests Passed:</b></p> 
     </div>
     <table id="resultset" class="">
         <tr>
+            <th>Step Name</th>
             <th>Start Time</th>
-            <th>End Time</th>
+            <th>Duration (ms)</th>
             <th>Client ID</th>
-            <th>StepName</th>
-            <th>Assertions #</th>
+            <th>Assertions (Passed/Total)</th>
         </tr>
         <tr v-for="res in result.results">
-            <td>{{res.startTime}}</td>
-            <td>{{res.endTime}}</td>
+            <td>{{res.stepName}}</td>
+            <td>{{formatStartTime(res.startTime)}}</td>
+            <td>{{formatDuration(res.startTime,res.endTime)}}</td>
             <td>{{res.clientId}}</td>
-            <td>{{res.StepName}}</td>
-            <td>{{res.assertions.length}}</td>
+            <td>{{formatAssertions(res.assertions)}}</td>
         </tr>
     </table>
     </div>`

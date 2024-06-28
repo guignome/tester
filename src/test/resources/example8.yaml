@@ -1,0 +1,61 @@
+client:
+  topology:
+    local:
+      parallel: 1
+      repeat: 1
+  endpoints:
+  - name: Token Server
+    host: localhost
+    port: 8092
+  - name: Application Server
+    host: localhost
+    port: 8093
+  suites:
+  - name: Simple flow
+    steps:
+    - name: Request a token
+      endpoint: Token Server
+      path: /token
+      method: POST
+      body: "{\"request\":\"token\"'}"
+      register: token
+      headers:
+      - name: tokensize
+        value: "8"
+      assertions:
+      - name: Token length should be 8 characters
+        body: "{token.length().equals(8)}"
+    - name: Request resource using token
+      endpoint: Application Server
+      path: /resource
+      method: GET
+      headers:
+      - name: token
+        value: "{token.bodyAsString()}"
+      assertions:
+      - name: Verify return code
+        body: "{result.statusCode().equals(200)}"
+
+servers:
+- name: Token Server
+  host: localhost
+  port: 8092
+  handlers:
+  - path: /token
+    method: POST
+    response: "{default_token}"
+- name: Application Server
+  host: localhost
+  port: 8093
+  handlers:
+  - path: /resource
+    method: GET
+    response: This is the resource.
+variables:
+- name: default_token
+  value: abcdefgh
+- name: environment
+  value: dev
+results:
+  format: json
+  filename: example8.json
