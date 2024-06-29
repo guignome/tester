@@ -23,7 +23,7 @@ COPY pom.xml .
 #RUN ./mvnw dependency:go-offline
 
 COPY src src
-RUN ./mvnw --batch-mode package -Pnative
+RUN ./mvnw --batch-mode package -DskipTests -Pnative
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.9 AS runtime
 
