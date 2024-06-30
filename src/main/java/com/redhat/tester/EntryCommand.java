@@ -96,7 +96,7 @@ class EntryCommand implements Runnable {
             "--response" }, description = "Response body of requests.", defaultValue = "${TESTER_SERVER_RESPONSE:-Hi}")
     String response;
 
-    @Option(names = {"--ui"}, description= "Starts the User Interface")
+    @Option(names = {"--ui"}, description= "Starts the User Interface",defaultValue = "${TESTER_SERVER_UI:-false}")
     Boolean ui = false;
 
     // Other fields
