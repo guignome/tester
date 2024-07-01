@@ -35,6 +35,7 @@ RUN chown 1001 /work \
 COPY --from=builder --chown=1001:root /build/target/tester /work/tester
 
 EXPOSE 8080
+EXPOSE 8081
 USER 1001
 
 ENV TESTER_SERVER_MODE=true

@@ -1,4 +1,5 @@
 resources:
+  - tester-is.yaml
   - tester-bc.yaml
   - tester-deployment.yaml
   - tester-route.yaml

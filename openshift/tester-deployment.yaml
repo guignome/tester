@@ -34,7 +34,7 @@ spec:
           value: "true"
         - name: TESTER_FILE
           value: /opt/tester/tester.yaml
-        image: image-registry.openshift-image-registry.svc:5000/hub-gradde-tester/tester@sha256:72bc407b1beade8e0b6f679a4ba15f516b0c51f9667863b1e813ca201678e096
+        image: tester:latest
         imagePullPolicy: Always
         name: tester
         terminationMessagePath: /dev/termination-log

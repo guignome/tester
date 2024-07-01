@@ -23,7 +23,7 @@
 
 
 //Start the websocket
-const ws = new WebSocket("ws://localhost:8081");
+const ws = new WebSocket("ws://" + location.host + ":" + location.port);
 const handlers = new Map();
 const views = new Map();
 
@@ -104,8 +104,22 @@ const api = {
         this.registerView(resourceType, resourceInstance, handler);
         sendWhenReady(JSON.stringify(msg));
     },
+    stopWatch(resourceType,resourceInstance){
+        console.log(`Stop Watching ${resourceType}/${resourceInstance}`);
+        let msg = {
+            kind: "stopWatch",
+            resourceType,
+            resourceInstance,
+            data: { }
+        };
+        this.unregisterView(resourceType, resourceInstance);
+        sendWhenReady(JSON.stringify(msg));
+    },
     registerView(resourceType, resourceInstance, handler) {
         views.set(resourceType + "/" + resourceInstance, handler);
+    },
+    unregisterView(resourceType, resourceInstance) {
+        views.delete(resourceType + "/" + resourceInstance);
     }
 }
 
