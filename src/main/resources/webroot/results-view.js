@@ -40,10 +40,20 @@ export default {
   </form>
 
   <div class="">
-    <button v-for="resultset in resultsets" class="resultset"
-      @click="$emit('update:activeResultName', resultset.name)">{{resultset.name}} <span @click="closeTab(resultset)">&times;</span></button>
+    <button 
+      v-for="(resultset,index) in resultsets" 
+      class="resultset" 
+      :key="resultset.name"
+      @click="$emit('update:activeResultName', resultset.name)"
+      >{{resultset.name}} <span @click="closeTab(resultset)">&times;</span></button>
   </div>
-  <jsonResultsView @updateResult="newResult=>this.$emit('updateResult',newResult)" v-for="r in resultsets" :result="r" v-show="r.name === activeResultName"></jsonResultsView>
+  <jsonResultsView 
+    @updateResult="newResult=>this.$emit('updateResult',newResult)" 
+    v-for="r in resultsets" 
+    :result="r" 
+    v-show="r.name === activeResultName"
+    :key="r.name"
+    ></jsonResultsView>
 </div>`
 }
 

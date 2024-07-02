@@ -16,6 +16,8 @@ public interface ResultCollector {
     static String FORMAT_TPS = "tps";
     static String FORMAT_JSON = "json";
 
+    static File DEFAULT_RESULT_REPOSITORY_FOLDER=new File("results");
+
     String getFormat();
 
     void beforeStep(Step step, Map<String, Object> ctx);
@@ -35,15 +37,19 @@ public interface ResultCollector {
     ResultSummary getCurrentResultSummary();
 
     default File createResultFile(String fileName) {
+        //Create the result folder if it doesn't exist.
+        if(!DEFAULT_RESULT_REPOSITORY_FOLDER.exists()) {
+            DEFAULT_RESULT_REPOSITORY_FOLDER.mkdirs();
+        }
         File result = null;
         if (fileName == null || fileName.isEmpty()) {
             try {
-                result = File.createTempFile("results", "." + getFormat());
+                result = File.createTempFile("results", "." + getFormat(),DEFAULT_RESULT_REPOSITORY_FOLDER);
             } catch (IOException e) {
                 Log.error("Can't create temp file.", e);
             }
         } else {
-            result = new File(fileName);
+            result = new File(DEFAULT_RESULT_REPOSITORY_FOLDER,fileName);
         }
         return result;
     }

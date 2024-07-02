@@ -19,6 +19,10 @@ export default {
         });
         
     },
+    unmounted() {
+        api.stopWatch("jsonResult",this.result.name);
+    },
+
     data() {
         return {}}
     ,

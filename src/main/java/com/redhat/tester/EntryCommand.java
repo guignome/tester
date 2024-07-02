@@ -50,6 +50,10 @@ class EntryCommand implements Runnable {
             "--result" }, description = "The file name where to save the results in the format specified by -o .")
     String resultFile;
 
+    @Option(names = { 
+            "--result-folder" }, description = "The folder where result files are created.",defaultValue = "${TESTER_RESULT_FOLDER:-results}")
+    String resultFolder;
+
     @Option(names = { "-o",
             "--format" }, description = "The format of the result collector. Can be CSV, TPS, or JSON.", defaultValue = ResultCollector.FORMAT_CSV)
     String format = ResultCollector.FORMAT_CSV;

@@ -116,11 +116,14 @@ export default {
       closeResult(r) {
         let foundindex;
         this.resultsets.forEach((element,index,arr) => {
-          if(resultsView.name === element.name) {
+          if(r.name === element.name) {
             foundindex = index;
           }
         });
         this.resultsets.splice(foundindex,1);
+        if(this.resultsets.length >0) {
+          this.activeResultName=this.resultsets[0].name;
+        }
       },
       updateResult(newResult) {
         let foundindex;

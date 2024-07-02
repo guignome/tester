@@ -11,5 +11,5 @@ export default {
     },
     mounted() { },
     props: ['step'],
-    template: `<a><b>{{step.method}}</b> {{step.path}}</a>`
+    template: `<a>{{step.name}} (<b>{{step.method}}</b> {{step.path}})</a>`
 }

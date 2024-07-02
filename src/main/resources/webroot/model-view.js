@@ -143,28 +143,34 @@ export default {
 
   <fieldset>
     <legend>Runtime</legend>
-  <div class="">
-    <label for="repeat">Repeat</label>
-    <input type="number" min="1" id="repeat" name="repeat" v-model="model.client.topology.local.repeat"/>
-    <label for="parallel">Parallel</label>
-    <input type="number" min="1" id="parallel" name="parallel" v-model="model.client.topology.local.parallel"/>
-    <div>
-        <label for="report-type">Report type:</label>
+    <div style="display: grid; grid-template-columns:auto auto">
+        <div>
+            <label for="repeat">Repeat</label>
+            <input type="number" min="1" id="repeat" name="repeat" v-model="model.client.topology.local.repeat"/>
+        </div>
+        <div>
+            <label for="parallel">Parallel</label>
+            <input type="number" min="1" id="parallel" name="parallel" v-model="model.client.topology.local.parallel"/>
+        </div>
+        <div>
+            <label for="report-type">Report type:</label>
 
-        <select name="report-type" id="report-type" v-model="model.results.format">
-            <option value="csv">CSV</option>
-            <option value="tps">TPS</option>
-            <option value="json">JSON</option>
-            <option value="summary">Summary</option>
-        </select>
-        <label for="report-name">Report name:</label>
-        <input id="report-name" v-model=model.results.filename>
-    </div>
+            <select name="report-type" id="report-type" v-model="model.results.format">
+                <option value="csv">CSV</option>
+                <option value="tps">TPS</option>
+                <option value="json">JSON</option>
+                <option value="summary">Summary</option>
+            </select>
+        </div>
+        <div>
+            <label for="report-name">Report name:</label>
+            <input id="report-name" v-model=model.results.filename>
+        </div>
 
-    <div>
-        <button @click="startStop()">{{runtimeButtonMessage}}</button>
-        <b>Status:</b> <span>{{runtimeStatusMessage}}</span>
-    </div>
+        <div>
+            <button @click="startStop()">{{runtimeButtonMessage}}</button>
+            <b>Status:</b> <span>{{runtimeStatusMessage}}</span>
+        </div>
     </div>
     </fieldset>
 </div>`

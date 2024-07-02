@@ -23,7 +23,8 @@
 
 
 //Start the websocket
-const ws = new WebSocket("ws://" + location.host + ":" + location.port);
+const wsprotocol = location.protocol === "http:" ? "ws:": "wss:";
+const ws = new WebSocket(wsprotocol + "//" + location.host );
 const handlers = new Map();
 const views = new Map();
 
