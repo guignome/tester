@@ -24,7 +24,7 @@ client:
         value: "8"
       assertions:
       - name: Token length should be 8 characters
-        body: "{token.token.bodyAsString().length().equals(8)}"
+        body: "{token.bodyAsString().length().equals(8)}"
     - name: Request resource using token
       endpoint: Application Server
       path: /resource
