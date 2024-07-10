@@ -31,7 +31,7 @@ public class UIServer {
     public void init() {
         // Start the static content router:
         Router router = Router.router(vertx);
-        router.route("/static/*").handler(StaticHandler.create());
+        router.route("/*").handler(StaticHandler.create());
 
         vertx.createHttpServer().webSocketHandler(ws -> {
             System.out.println("Web Socket Connected.");
