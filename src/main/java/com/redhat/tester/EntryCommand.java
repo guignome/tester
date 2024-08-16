@@ -139,22 +139,22 @@ class EntryCommand implements Runnable {
 
         // Endpoint list
         if (endpointLists) {
-            System.out.printf("List of Endpoints: \n\n");
-            System.out.printf("┌────────────────────────────────────────────────────────────────────────────────────────────┐\n");
-            System.out.printf("│%-15s |%-5s │%-30s │%-6s │%-20s │%-5s │\n", "Name", "Proto", "Host", "Port", "Prefix",
+            Log.info("List of Endpoints: \n\n");
+            Log.info("┌────────────────────────────────────────────────────────────────────────────────────────────┐");
+            Log.infof("│%-15s |%-5s │%-30s │%-6s │%-20s │%-5s │", "Name", "Proto", "Host", "Port", "Prefix",
                     "Default");
-            System.out.printf("├────────────────────────────────────────────────────────────────────────────────────────────┤\n");
+            Log.info("├────────────────────────────────────────────────────────────────────────────────────────────┤");
 
             if (model.client == null || model.client.endpoints == null) {
                 Quarkus.asyncExit(0);
                 return;
             }
             for (Endpoint ep : model.client.endpoints) {
-                System.out.printf("│%-15s │%-5s │%-30s │%-6s │%-20s │%-5s │\n", ep.name, ep.protocol, ep.host, ep.port,
+                Log.infof("│%-15s │%-5s │%-30s │%-6s │%-20s │%-5s │\n", ep.name, ep.protocol, ep.host, ep.port,
                         ep.prefix, ep.isdefault);
             }
-            System.out.printf("└────────────────────────────────────────────────────────────────────────────────────────────┘\n");
-            System.out.println();
+            Log.info("└────────────────────────────────────────────────────────────────────────────────────────────┘");
+            Log.info("");
             Quarkus.asyncExit(0);
             return;
         }
@@ -178,7 +178,7 @@ class EntryCommand implements Runnable {
 
         Log.debug("Waiting For Exit.");
         Quarkus.waitForExit();
-        System.out.println(factory.getResultCollector().renderSummary());
+        Log.info(factory.getResultCollector().renderSummary());
         Log.debug("Exiting now.");
     }
 

@@ -6,9 +6,12 @@ import com.redhat.tester.ConfigurationModel.Variable;
 import io.quarkus.logging.Log;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.client.HttpRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -29,24 +32,28 @@ public class ServerRunner {
     this.renderer = renderer;
     httpServer = vertx.createHttpServer();
   }
+
   /**
    * Start the server with the given config
+   * 
    * @param variables
    * @param config
    * @return
    */
   public Future<HttpServer> run(List<Variable> variables, ServerConfiguration config) {
 
-   // Initialize the context
-   for (Variable var : variables) {
-    ctx.put(var.name, var.value);
-  }
+    // Initialize the context
+    for (Variable var : variables) {
+      ctx.put(var.name, var.value);
+    }
 
     Router router = Router.router(vertx);
 
     // Mount the handler for all incoming requests at every path and HTTP method
     for (Handler handler : config.handlers) {
       router.route(HttpMethod.valueOf(handler.method), handler.path).handler(context -> {
+        Log.infof("Received Request: %s %s", context.request().method(), context.request().path());
+        renderFullRequest(context.request());
         if (handler.delay == 0) {
           context.response().setStatusCode(handler.status).end(
               renderer.extrapolate(handler.response, ctx));
@@ -54,7 +61,7 @@ public class ServerRunner {
           context.vertx().setTimer(handler.delay, tid -> context.response().setStatusCode(handler.status).end(
               renderer.extrapolate(handler.response, ctx)));
         }
-        System.out.println("Request received. Response sent.");
+        Log.info("Response sent.");
       });
     }
 
@@ -73,10 +80,27 @@ public class ServerRunner {
 
   /**
    * Stops the running server
+   * 
    * @return A future that completes when the stop operation is completed.
    */
   public Future<Void> stop() {
     return httpServer.close();
+  }
+
+  public static void renderFullRequest(HttpServerRequest req) {
+
+    StringBuilder sb = new StringBuilder()
+        .append("┌──────────────────────────────────────────────────────────────┐\n");
+    req.headers().forEach(
+        (k, v) -> {
+          sb.append(String.format("│%-20s│ %-40s│\n", k, v));
+        });
+    sb.append("├──────────────────────────").append("   Body   ").append("──────────────────────────┤\n");
+    req.body().onComplete(a -> {
+      sb.append(a.result().toString())
+          .append("\n└──────────────────────────────────────────────────────────────┘\n");
+      Log.info(sb.toString());
+    });
   }
 
 }

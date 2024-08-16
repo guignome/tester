@@ -34,10 +34,10 @@ public class UIServer {
         router.route("/*").handler(StaticHandler.create());
 
         vertx.createHttpServer().webSocketHandler(ws -> {
-            System.out.println("Web Socket Connected.");
+            Log.info("Web Socket Connected.");
 
             ws.textMessageHandler(text -> {
-                System.out.println("Received: " + text);
+                Log.info("Received: " + text);
                 // Create JSON object
                 ObjectMapper mapper = new ObjectMapper();
 
@@ -50,7 +50,7 @@ public class UIServer {
                     // switch(msg.kind) {
                     switch (kind) {
                         case "init":
-                            System.out.println("Received init message.");
+                            Log.info("Received init message.");
                             JsonObject json = new JsonObject()
                                     .put("kind", "init")
                                     .put("data", "Initialized!");
@@ -102,6 +102,6 @@ public class UIServer {
                 }
             });
         }).requestHandler(router).listen(8081);
-        System.out.println("UIServer started.");
+        Log.info("UIServer started.");
     }
 }

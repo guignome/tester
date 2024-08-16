@@ -128,8 +128,8 @@ public class ClientRunner extends RunningBase {
                         ctx.put(step.register, r);
                     }
                     resultCollector.afterStep(step, ctx);
-                    System.out.println(renderRequest(request));
-                    System.out.println(renderResponse(r));
+                    Log.info(renderRequest(request));
+                    Log.info(renderResponse(r));
 
                     // Process the following step
                     if (it.hasNext()) {

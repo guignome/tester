@@ -78,7 +78,7 @@ public class TesterApiImpl extends RunningBase implements TesterApi {
                     Future.join(clientFutures).onComplete(v -> {
                         promise.complete();});
                 } else {
-                    System.out.println("Running in Server mode, Press CTRL-C to stop.");
+                    Log.info("Running in Server mode, Press CTRL-C to stop.");
                 }
             });
         } else {
@@ -87,7 +87,7 @@ public class TesterApiImpl extends RunningBase implements TesterApi {
                 Future.join(clientFutures).onComplete(v -> {
                     promise.complete();});
             } else {
-                System.out.println("Running in Server mode, Press CTRL-C to stop.");
+                Log.info("Running in Server mode, Press CTRL-C to stop.");
             }
         }
         
