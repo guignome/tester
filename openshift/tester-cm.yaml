@@ -28,6 +28,7 @@ data:
             { "request" }
     servers:
     - port: 8080
+      host: 0.0.0.0
       handlers:
       - path: /*
         method: GET

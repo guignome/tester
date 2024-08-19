@@ -52,7 +52,7 @@ public class ServerRunner {
     // Mount the handler for all incoming requests at every path and HTTP method
     for (Handler handler : config.handlers) {
       router.route(HttpMethod.valueOf(handler.method), handler.path).handler(context -> {
-        Log.infof("Received Request: %s %s", context.request().method(), context.request().path());
+        Log.infof("Received %s Request: %s %s",context.request().version().name() ,context.request().method(), context.request().path());
         renderFullRequest(context.request());
         if (handler.delay == 0) {
           context.response().setStatusCode(handler.status).end(
