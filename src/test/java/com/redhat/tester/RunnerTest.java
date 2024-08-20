@@ -77,6 +77,7 @@ public class RunnerTest {
         testScenario(5, 6);
         testScenario(6,6);
         testScenario(7, 2);
+        testScenario(9, 1);
     }
 
     private void testScenario(final int scenarioNumber, int expectedResultSize) throws Exception {

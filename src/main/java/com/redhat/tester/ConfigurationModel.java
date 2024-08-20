@@ -51,7 +51,10 @@ public class ConfigurationModel {
     public static class Variable {
         public String name;
         public String value;
-        public Variable(){}
+
+        public Variable() {
+        }
+
         public Variable(String name, String value) {
             this.name = name;
             this.value = value;
@@ -84,15 +87,15 @@ public class ConfigurationModel {
             }
             return defaultEndpoint;
         }
-    
+
         public Endpoint getEndpoint(String name) {
             if (ConfigurationModel.DEFAULT_ENDPOINT.equals(name)) {
                 return getDefaultEndpoint();
             }
             return doGetEndpoint(name);
-    
+
         }
-    
+
         private Endpoint doGetEndpoint(String name) {
             for (Endpoint endpoint : endpoints) {
                 if (name.equals(endpoint.name)) {
@@ -101,7 +104,7 @@ public class ConfigurationModel {
             }
             return null;
         }
-        
+
         @RegisterForReflection
         public static class Topology {
             public Local local = new Local();
@@ -122,6 +125,13 @@ public class ConfigurationModel {
             public int port;
             public String prefix = "";
             public boolean isdefault = false;
+            public HttpOptions httpOptions = new HttpOptions();
+
+            @RegisterForReflection
+            public static class HttpOptions {
+                public boolean trustAll = true;
+                public String protocolVersion = "HTTP_1_1";
+            }
         }
 
         @RegisterForReflection
@@ -136,8 +146,8 @@ public class ConfigurationModel {
                 public static int stepNumber = 0;
                 static {
                     DEFAULT_ASSERTION = new Assertion();
-                    DEFAULT_ASSERTION.name="HTTP Return Code is OK";
-                    DEFAULT_ASSERTION.body="{result.statusCode().equals(200)}";
+                    DEFAULT_ASSERTION.name = "HTTP Return Code is OK";
+                    DEFAULT_ASSERTION.body = "{result.statusCode().equals(200)}";
                 }
 
                 public String method = "GET";
@@ -178,6 +188,7 @@ public class ConfigurationModel {
             public String keyPath;
             public String certPath;
         }
+
         @RegisterForReflection
         public static class Handler {
             public String path;

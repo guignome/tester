@@ -1,0 +1,40 @@
+client:
+  topology:
+    local:
+      parallel: 1
+      repeat: 1
+  endpoints:
+  - name: TLS Server
+    host: localhost
+    protocol: https
+    port: 8443
+    httpOptions:
+      trustAll: true
+      protocolVersion: HTTP_2
+  suites:
+  - name: Simple TLS request
+    steps:
+    - name: Request over TLS
+      endpoint: TLS Server
+      path: /tls
+      method: GET
+      assertions:
+      - name: Token length should be 8 characters
+        body: "{token.bodyAsString().contains(abcd)}"
+servers:
+- port: 8080
+  host: 0.0.0.0
+  handlers:
+  - path: /*
+    method: GET
+    response: hello from non TLS
+- name: tls
+  host: localhost
+  port: 8443
+  tls:
+    keyPath: src/test/resources/cert/key.pem
+    certPath: src/test/resources/cert/cert.pem
+  handlers:
+  - path: /tls
+    method: GET
+    response: Hello from TLS abcd

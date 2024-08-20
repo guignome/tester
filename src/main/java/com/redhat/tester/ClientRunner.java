@@ -2,6 +2,7 @@ package com.redhat.tester;
 
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
+import com.redhat.tester.ConfigurationModel.ClientConfiguration.Endpoint.HttpOptions;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration;
 import com.redhat.tester.ConfigurationModel.Header;
@@ -14,6 +15,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpVersion;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
@@ -21,8 +23,10 @@ import io.vertx.ext.web.client.WebClientOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ClientRunner extends RunningBase {
@@ -30,7 +34,7 @@ public class ClientRunner extends RunningBase {
     private Vertx vertx;
     // private ResultCollector resultCollector;
     private TemplateRenderer renderer;
-    WebClient client;
+    private Map<Endpoint,WebClient> clients = new HashMap<>();
     private ContextMap ctx = new ContextMap();
     private StepIterator it;
     public static final String CLIENT_ID_VAR = "clientId";
@@ -45,7 +49,6 @@ public class ClientRunner extends RunningBase {
     public ClientRunner(Vertx vertx, ResultCollector resultCollector,TemplateRenderer renderer) {
         id = String.valueOf(idCounter++);
         this.vertx = vertx;
-        client = WebClient.create(vertx,new WebClientOptions().setTrustAll(true));
         this.resultCollector = resultCollector;
         this.renderer = renderer;
     }
@@ -114,6 +117,7 @@ public class ClientRunner extends RunningBase {
                 .append(step.path)
                 .toString();
         String renderedUri = renderer.extrapolate(absoluteUri, ctx);
+        WebClient client = getClientForEndpoint(targetEndpoint);
         HttpRequest<Buffer> request = client.requestAbs(HttpMethod.valueOf(step.method),
                 renderedUri);
         for (Header header : step.headers) {
@@ -155,6 +159,26 @@ public class ClientRunner extends RunningBase {
     public void stop() {
         setRunning(false);
         it.stop();
+    }
+
+    private WebClient getClientForEndpoint(Endpoint endpoint) {
+        if(!clients.containsKey(endpoint)) {
+            //Initialize the webclient for that endpoint if it's not in the map
+            WebClientOptions opts = new WebClientOptions();
+            if(endpoint.httpOptions != null) {
+                HttpOptions options = endpoint.httpOptions;
+                opts.setTrustAll(options.trustAll);
+                opts.setProtocolVersion(HttpVersion.valueOf(options.protocolVersion));
+                if(endpoint.protocol.equals("https")) {
+                    opts.setSsl(true);
+                }
+                if(options.protocolVersion.equals(HttpVersion.HTTP_2.toString())) {
+                    opts.setUseAlpn(true);
+                }
+            }
+            clients.put(endpoint, WebClient.create(vertx,opts));
+        } 
+        return clients.get(endpoint);
     }
 
     public static String renderRequest(HttpRequest<Buffer> req) {
