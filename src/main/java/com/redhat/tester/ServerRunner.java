@@ -9,10 +9,15 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.net.JksOptions;
+import io.vertx.core.net.KeyCertOptions;
+import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.client.HttpRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +26,7 @@ public class ServerRunner {
   private final Vertx vertx;
   private TemplateRenderer renderer;
   private Map<String, Object> ctx = new ContextMap();
-  private HttpServer httpServer;
+  List<HttpServer> servers = new ArrayList<>();
 
   public Vertx getVertx() {
     return vertx;
@@ -30,7 +35,6 @@ public class ServerRunner {
   public ServerRunner(Vertx vertx, TemplateRenderer renderer) {
     this.vertx = vertx;
     this.renderer = renderer;
-    httpServer = vertx.createHttpServer();
   }
 
   /**
@@ -52,7 +56,8 @@ public class ServerRunner {
     // Mount the handler for all incoming requests at every path and HTTP method
     for (Handler handler : config.handlers) {
       router.route(HttpMethod.valueOf(handler.method), handler.path).handler(context -> {
-        Log.infof("Received %s Request: %s %s",context.request().version().name() ,context.request().method(), context.request().path());
+        Log.infof("Received %s Request: %s %s", context.request().version().name(), context.request().method(),
+            context.request().path());
         renderFullRequest(context.request());
         if (handler.delay == 0) {
           context.response().setStatusCode(handler.status).end(
@@ -66,6 +71,23 @@ public class ServerRunner {
     }
 
     // Create the HTTP server
+    HttpServer httpServer = null;
+    if (config.tls != null) {
+      // TLS config
+      KeyCertOptions opts = new PemKeyCertOptions()
+          .setCertPath(config.tls.certPath)
+          .setKeyPath(config.tls.keyPath);
+      HttpServerOptions options = new HttpServerOptions()
+          .setUseAlpn(true)
+          .setSsl(true)
+          .setKeyCertOptions(opts);
+      httpServer = vertx.createHttpServer(options);
+    } else {
+      // non TLS
+      httpServer = vertx.createHttpServer();
+    }
+    servers.add(httpServer);
+
     Future<HttpServer> future = httpServer
         // Handle every request using the router
         .requestHandler(router)
@@ -83,8 +105,12 @@ public class ServerRunner {
    * 
    * @return A future that completes when the stop operation is completed.
    */
-  public Future<Void> stop() {
-    return httpServer.close();
+  public Future<?> stop() {
+    List<Future<Void>> futures = new ArrayList<>();
+    servers.forEach(s -> {
+      futures.add(s.close());
+    });
+    return Future.all(futures);
   }
 
   public static void renderFullRequest(HttpServerRequest req) {

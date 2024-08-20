@@ -169,9 +169,15 @@ public class ConfigurationModel {
         public String name;
         public String host = "localhost";
         public int port;
+        public Tls tls = null;
 
         public List<Handler> handlers = new ArrayList<>();
 
+        @RegisterForReflection
+        public static class Tls {
+            public String keyPath;
+            public String certPath;
+        }
         @RegisterForReflection
         public static class Handler {
             public String path;

@@ -17,6 +17,8 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -43,7 +45,7 @@ public class ClientRunner extends RunningBase {
     public ClientRunner(Vertx vertx, ResultCollector resultCollector,TemplateRenderer renderer) {
         id = String.valueOf(idCounter++);
         this.vertx = vertx;
-        client = WebClient.create(vertx);
+        client = WebClient.create(vertx,new WebClientOptions().setTrustAll(true));
         this.resultCollector = resultCollector;
         this.renderer = renderer;
     }
@@ -111,16 +113,16 @@ public class ClientRunner extends RunningBase {
                 .append(targetEndpoint.prefix)
                 .append(step.path)
                 .toString();
+        String renderedUri = renderer.extrapolate(absoluteUri, ctx);
         HttpRequest<Buffer> request = client.requestAbs(HttpMethod.valueOf(step.method),
-                renderer.extrapolate(absoluteUri, ctx));
+                renderedUri);
         for (Header header : step.headers) {
             request.putHeader(renderer.extrapolate(header.name, ctx),
                     renderer.extrapolate(header.value, ctx));
         }
-
         Buffer body = Buffer.buffer(renderer.extrapolate(step.body, ctx));
         resultCollector.beforeStep(step, ctx);
-        Log.debugf("  Sending request: %s %s", request.method().toString(), request.uri());
+        Log.debugf("  Sending request: %s %s", request.method().toString(), renderedUri);
         return request.sendBuffer(body)
                 .onSuccess(r -> {
                     ctx.put(RESULT_VAR, r);

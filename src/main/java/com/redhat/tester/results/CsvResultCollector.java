@@ -107,7 +107,6 @@ public class CsvResultCollector implements ResultCollector {
         } else {
             results.get(requestId).response = null;
         }
-        results.get(requestId).response = (HttpResponse<?>) ctx.get(ClientRunner.RESULT_VAR);
     }
 
     @Override
