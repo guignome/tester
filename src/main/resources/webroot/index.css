@@ -105,3 +105,8 @@ legend {
 .resultset>span:hover {
     background-color: lightgray;
 }
+
+.form > label {
+    justify-self: end;
+    font-weight: bold;
+}

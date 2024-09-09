@@ -1,6 +1,8 @@
 import StepView from './step-view.js'
 import api from './api.js'
-
+/**
+ * @ty
+ */
 export default {
     setup() { },
     created() {
@@ -48,7 +50,7 @@ export default {
             return this.running ? "Running: " + this.runningReportName : "Stopped";
         }
     },
-    emits: ['newReport'],
+    emits: ['newReport','selected'],
     methods: {
         readFile() {
             console.log("Reading file");
@@ -67,12 +69,21 @@ export default {
                 this.running = true;
                 api.startModel(this.model);
             }
+        },
+        selected(element) {
+            this.$emit('selected',element);
+        },
+        addVariable() {
+            this.model.variables.push({name: "name", value:"value"});
+        },
+        deleteVariable() {
+
         }
     },
     mounted() { },
     props: [],
     template: `
-<div class="">
+<div>
             <fieldset>
             <legend>Load Model</legend>
                 <input type="file" ref="doc" @change="readFile()" />
@@ -82,17 +93,25 @@ export default {
     <fieldset>
     <legend>Suites</legend>
     <div v-for="suite in model?.client?.suites">
-        <h4 class="">{{suite.name}}</h4>
+        <h4>{{suite.name}}</h4>
         <div v-for="step in suite?.steps">
-            <StepView :step="step"/>
+            <StepView :step="step" @selected="selected"/>
+        </div>
+        <div style="float: right;">
+            <button>Add Step</button>
+            <button>Delete Step</button>
         </div>
     </div>
+    <div style="float: right;">
+            <button>Add Suite</button>
+            <button>Delete Suite</button>
+        </div>
     </fieldset>
 
     <fieldset>
     <legend>Endpoints</legend>
     <div id="endpoints">
-        <table v-if="model?.client?.endpoints" class="">
+        <table v-if="model?.client?.endpoints">
             <tr>
                 <th>Name</th>
                 <th>Protocol</th>
@@ -110,6 +129,10 @@ export default {
                 <td>{{endpoint.isdefault}}</td>
             </tr>
         </table>
+        <div style="float: right;">
+            <button>Add Endpoint</button>
+            <button>Delete Endpoint</button>
+        </div>
     </div>
     </fieldset>
     </fieldset>
@@ -121,9 +144,17 @@ export default {
     <div v-for="handler in server.handlers">
       <b>{{handler.method}}</b> {{handler.path}} -> {{handler.response}} 
     </div>
+    <div style="float: right;">
+            <button>Add Handler</button>
+            <button>Delete Handler</button>
+        </div>
   
   
   </div>
+  <div style="float: right;">
+            <button>Add Server</button>
+            <button>Delete Server</button>
+        </div>
 </fieldset>
 <fieldset>
     <legend>Variables</legend>
@@ -138,41 +169,37 @@ export default {
               <td contenteditable="true">{{variable.value}}</td>
           </tr>
       </table>
+      <div style="float: right;">
+            <button @click="addVariable">Add Variable</button>
+            <button @click="deleteVariable">Delete Variable</button>
+        </div>
   </div>
   </fieldset>
 
   <fieldset>
     <legend>Runtime</legend>
-    <div style="display: grid; grid-template-columns:auto auto">
-        <div>
-            <label for="repeat">Repeat</label>
-            <input type="number" min="1" id="repeat" name="repeat" v-model="model.client.topology.local.repeat"/>
-        </div>
-        <div>
-            <label for="parallel">Parallel</label>
-            <input type="number" min="1" id="parallel" name="parallel" v-model="model.client.topology.local.parallel"/>
-        </div>
-        <div>
-            <label for="report-type">Report type:</label>
-
-            <select name="report-type" id="report-type" v-model="model.results.format">
-                <option value="csv">CSV</option>
-                <option value="tps">TPS</option>
-                <option value="json">JSON</option>
-                <option value="summary">Summary</option>
-            </select>
-        </div>
-        <div>
-            <label for="report-name">Report name:</label>
-            <input id="report-name" v-model=model.results.filename>
-        </div>
-
-        <div>
-            <button @click="startStop()">{{runtimeButtonMessage}}</button>
-            <b>Status:</b> <span>{{runtimeStatusMessage}}</span>
-        </div>
+    <div style="display: grid; grid-template-columns:auto auto auto auto" class="form">
+        <label for="repeat">Repeat</label>
+        <input type="number" min="1" id="repeat" name="repeat" v-model="model.client.topology.local.repeat"/>
+        
+        <label for="parallel">Parallel</label>
+        <input type="number" min="1" id="parallel" name="parallel" v-model="model.client.topology.local.parallel"/>
+        
+        <label for="report-type">Report type:</label>
+        <select name="report-type" id="report-type" v-model="model.results.format">
+            <option value="csv">CSV</option>
+            <option value="tps">TPS</option>
+            <option value="json">JSON</option>
+            <option value="summary">Summary</option>
+        </select>
+    
+        <label for="report-name">Report name:</label>
+        <input id="report-name" v-model=model.results.filename>
     </div>
-    </fieldset>
+        <button @click="startStop()">{{runtimeButtonMessage}}</button>
+        <b>Status:</b> <span>{{runtimeStatusMessage}}</span>
+   
+  </fieldset>
 </div>`
 }
 

@@ -1,7 +1,7 @@
 export default {
     setup() { },
     created() { },
-    emits: ['selected'],
+    emits: [],
     components: {},
     data() {
         return {}
@@ -10,14 +10,10 @@ export default {
 
     },
     methods: {
-        selected() {
-            this.$emit('selected',this.step);
-        }
+        
     },
     mounted() { },
     props: ['step'],
     template: `
-    <div @click="selected">
-        <a>{{step.name}} (<b>{{step.method}}</b> {{step.path}})</a>
-    </div>`
+    `
 }
