@@ -118,6 +118,7 @@ class EntryCommand implements Runnable {
     TesterApi api;
 
     private ConfigurationModel model = null;
+    private static final String SERVER_MODE_MESSAGE="Running in Server mode, Press CTRL-C to stop.";
 
     public EntryCommand() throws IOException {
 
@@ -125,7 +126,7 @@ class EntryCommand implements Runnable {
 
     @Override
     public void run() {
-        
+        serverMode = serverMode || ui;
         try {
             loadModelFromOptions();
         } catch (Exception e) {
@@ -164,13 +165,21 @@ class EntryCommand implements Runnable {
 
         Future<?> appFuture = api.executeClientAndServer(model);
         appFuture.onSuccess(h -> {
-            Log.debug("All clients succeeded, exiting.");
+            Log.debug("All clients succeeded.");
             factory.getResultCollector().close();
-            Quarkus.asyncExit(0);
+            if(!serverMode) {
+                Quarkus.asyncExit(0);
+            } else {
+                Log.info(SERVER_MODE_MESSAGE);
+            }
         }).onFailure(h -> {
-            Log.debug("All clients failed, exiting.");
+            Log.debug("All clients failed.");
             factory.getResultCollector().close();
-            Quarkus.asyncExit(1);
+            if(!serverMode) {
+                Quarkus.asyncExit(1);
+            } else {
+                Log.info(SERVER_MODE_MESSAGE);
+            }
         });
 
         Log.debug("Waiting For Exit.");
