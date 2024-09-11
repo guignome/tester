@@ -11,6 +11,7 @@ export default {
     },
     methods: {
         selected() {
+            this.step.kind='step';
             this.$emit('selected',this.step);
         }
     },

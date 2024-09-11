@@ -49,4 +49,7 @@ public interface TesterApi {
 
     boolean isRunning();
 
+    void registerCommandLineModel(ConfigurationModel model);
+    ConfigurationModel getCommandLineModel();
+
 }

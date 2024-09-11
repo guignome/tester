@@ -19,7 +19,7 @@ client:
       method: GET
     - path: /bye
       method: POST
-    - path: /myprefix/hello
+    - path: /bonjour
       endpoint: database
 servers:
 - name: application
@@ -37,3 +37,4 @@ servers:
   handlers:
   - path: /myprefix/*
     response: This is a response with prefix.
+    method: GET

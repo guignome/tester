@@ -2,6 +2,7 @@ package com.redhat.tester;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
+import com.redhat.tester.api.TesterApi;
 import com.redhat.tester.results.ResultCollector;
 
 import io.quarkus.logging.Log;
@@ -19,10 +20,10 @@ import picocli.CommandLine;
 public class RunnerTest {
 
     @Inject
-    Runner runner;
+    Factory factory;
 
     @Inject
-    Factory factory;
+    TesterApi api;
 
   
 
@@ -84,11 +85,10 @@ public class RunnerTest {
         Log.info("\n Running testScenario " + scenarioNumber + "\n");
         ConfigurationModel model = ConfigurationModel
                 .loadFromFile(new File("src/test/resources/example" + scenarioNumber + ".yaml"));
-        runner.setModel(model);
-        factory.registerResultCollector(model);
-        final ResultCollector resultCollector = factory.getResultCollector();
+       
 
-        Future<?> future = runner.run();
+        Future<?> future = api.executeClientAndServer(model);
+        final ResultCollector resultCollector = factory.getResultCollector();
 
         synchronized (obj) {
             future.onComplete(h -> {

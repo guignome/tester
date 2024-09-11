@@ -25,6 +25,7 @@ public class TesterApiImpl extends RunningBase implements TesterApi {
 
     @Inject
     Factory factory;
+    private ConfigurationModel commandLineModel;
 
     public TesterApiImpl() {
 
@@ -100,6 +101,16 @@ public class TesterApiImpl extends RunningBase implements TesterApi {
         servers.forEach(s -> s.stop());
         setRunning(false);
         return null;
+    }
+
+    @Override
+    public void registerCommandLineModel(ConfigurationModel model) {
+        this.commandLineModel = model;
+    }
+
+    @Override
+    public ConfigurationModel getCommandLineModel() {
+        return commandLineModel;
     }
 
     private List<Future<?>> startClients(List<ClientRunner> clients, ClientConfiguration config) {

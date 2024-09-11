@@ -111,9 +111,6 @@ class EntryCommand implements Runnable {
     @Inject
     Vertx vertx;
 
-    @Inject
-    Runner runner;
-
     @Spec
     CommandSpec spec;
 
@@ -134,6 +131,7 @@ class EntryCommand implements Runnable {
         } catch (Exception e) {
             Log.error("Couldn't initialize model: ", e);
         }
+        api.registerCommandLineModel(model);
 
         factory.registerResultCollector(model);
 
@@ -158,14 +156,13 @@ class EntryCommand implements Runnable {
             Quarkus.asyncExit(0);
             return;
         }
-        runner.setModel(model);
         //UI
         if(ui) {
             UIServer uiserver = new UIServer(vertx, api);
             uiserver.init();
         }
 
-        Future<?> appFuture = runner.run();
+        Future<?> appFuture = api.executeClientAndServer(model);
         appFuture.onSuccess(h -> {
             Log.debug("All clients succeeded, exiting.");
             factory.getResultCollector().close();

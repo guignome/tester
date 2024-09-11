@@ -18,6 +18,9 @@ export default {
                     this.$emit('newReport',this.runningReportName);
                 }
             });
+        api.registerHandler("init", (msg) => {
+            this.model = initModel(msg.data);
+        })
     },
     components: { StepView },
     data() {
@@ -78,6 +81,14 @@ export default {
         },
         deleteVariable() {
 
+        },
+        /**
+         * The selected variable.
+         * @param {*} variable 
+         */
+        variable_selected(variable) {
+            variable.kind = 'variable';
+            this.$emit('selected',variable);
         }
     },
     mounted() { },
@@ -112,6 +123,7 @@ export default {
     <legend>Endpoints</legend>
     <div id="endpoints">
         <table v-if="model?.client?.endpoints">
+            <thead>
             <tr>
                 <th>Name</th>
                 <th>Protocol</th>
@@ -120,6 +132,8 @@ export default {
                 <th>Prefix</th>
                 <th>Default</th>
             </tr>
+            </thead>
+            <tbody>
             <tr v-for="endpoint in model.client.endpoints">
                 <td>{{endpoint.name}}</td>
                 <td>{{endpoint.protocol}}</td>
@@ -128,6 +142,7 @@ export default {
                 <td>{{endpoint.prefix}}</td>
                 <td>{{endpoint.isdefault}}</td>
             </tr>
+            </tbody>
         </table>
         <div style="float: right;">
             <button>Add Endpoint</button>
@@ -160,14 +175,18 @@ export default {
     <legend>Variables</legend>
   <div id="variables">
       <table id="variables-table" class="w3-table-all">
-          <tr>
-              <th>Name</th>
-              <th>Value</th>
-          </tr>
-          <tr v-for="variable in model.variables">
-              <td contenteditable="true">{{variable.name}}</td>
-              <td contenteditable="true">{{variable.value}}</td>
-          </tr>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="variable in model.variables" @click='variable_selected(variable)'>
+                    <td>{{variable.name}}</td>
+                    <td>{{variable.value}}</td>
+                </tr>
+            </tbody>
       </table>
       <div style="float: right;">
             <button @click="addVariable">Add Variable</button>
@@ -204,7 +223,7 @@ export default {
 }
 
 function initModel(m) {
-    if (m.client === undefined) {
+    if (m.client == null) {
         m.client = {
             topology: {
                 local: {

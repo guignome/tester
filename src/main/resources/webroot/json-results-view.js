@@ -55,20 +55,24 @@ export default {
     <p><b>Tests Passed:</b></p> 
     </div>
     <table id="resultset" class="">
-        <tr>
-            <th>Step Name</th>
-            <th>Start Time</th>
-            <th>Duration (ms)</th>
-            <th>Client ID</th>
-            <th>Assertions (Passed/Total)</th>
-        </tr>
-        <tr v-for="res in result.results">
-            <td>{{res.stepName}}</td>
-            <td>{{formatStartTime(res.startTime)}}</td>
-            <td>{{formatDuration(res.startTime,res.endTime)}}</td>
-            <td>{{res.clientId}}</td>
-            <td>{{formatAssertions(res.assertions)}}</td>
-        </tr>
+        <thead>  
+            <tr>
+                <th>Step Name</th>
+                <th>Start Time</th>
+                <th>Duration (ms)</th>
+                <th>Client ID</th>
+                <th>Assertions (Passed/Total)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="res in result.results">
+                <td>{{res.stepName}}</td>
+                <td>{{formatStartTime(res.startTime)}}</td>
+                <td>{{formatDuration(res.startTime,res.endTime)}}</td>
+                <td>{{res.clientId}}</td>
+                <td>{{formatAssertions(res.assertions)}}</td>
+            </tr>
+        </tbody>
     </table>
     </div>`
 }
