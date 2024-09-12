@@ -1,5 +1,6 @@
 package com.redhat.tester;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +29,7 @@ public class ConfigurationModel {
 
     public Results results = new Results();
 
+    @JsonIgnore
     public ServerConfiguration getDefaultServer() {
         return getServer(DEFAULT_SERVER);
     }
@@ -59,7 +61,6 @@ public class ConfigurationModel {
             this.name = name;
             this.value = value;
         }
-
     }
 
     @RegisterForReflection
@@ -197,7 +198,6 @@ public class ConfigurationModel {
             public String response;
             public int status = 200;
         }
-
     }
 
     @RegisterForReflection
@@ -253,7 +253,6 @@ public class ConfigurationModel {
                 mergedModel.variables.addAll(currentModel.variables);
             }
         }
-
         return mergedModel;
     }
 

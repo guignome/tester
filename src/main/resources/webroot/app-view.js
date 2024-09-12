@@ -49,7 +49,6 @@ const sample = {
         ]
       },
       servers: [],
-      defaultServer: null
     },
     results: [
       {
