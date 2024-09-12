@@ -36,13 +36,25 @@ export default {
             return new Date(end) - new Date(start);
         },
         /**
-         * 
+         * Create the text for assertions
          * @param {Array} assertions 
          */
         formatAssertions(assertions) {
             const size = assertions.length;
             const passed = assertions.filter(a => a.passed).length;
             return `${passed}/${size}`;
+        },
+        /**
+         * Create css style for an array of assertions
+         * @param {Array} assertions 
+         */
+        styleAssertions(assertions) {
+            const failed = assertions.filter(a => !a.passed).length;
+            if(failed > 0) {
+                return {backgroundColor: 'red'};
+            } else {
+                return {backgroundColor: 'green'};
+            }
         }
     },
     mounted() { },
@@ -57,20 +69,20 @@ export default {
     <table id="resultset" class="">
         <thead>  
             <tr>
+                <th>Client ID</th>
                 <th>Step Name</th>
                 <th>Start Time</th>
                 <th>Duration (ms)</th>
-                <th>Client ID</th>
                 <th>Assertions (Passed/Total)</th>
             </tr>
         </thead>
         <tbody>
             <tr v-for="res in result.results">
+                <td>{{res.clientId}}</td>
                 <td>{{res.stepName}}</td>
                 <td>{{formatStartTime(res.startTime)}}</td>
                 <td>{{formatDuration(res.startTime,res.endTime)}}</td>
-                <td>{{res.clientId}}</td>
-                <td>{{formatAssertions(res.assertions)}}</td>
+                <td :style="styleAssertions(res.assertions)">{{formatAssertions(res.assertions)}}</td>
             </tr>
         </tbody>
     </table>
