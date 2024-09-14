@@ -13,6 +13,8 @@ import com.redhat.tester.TemplateRenderer;
 
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import io.vertx.ext.web.client.HttpResponse;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -123,6 +125,13 @@ public class JsonResultCollector implements ResultCollector {
 
         StepResult stepResult = inflight.remove(clientId);
         stepResult.endTime = LocalDateTime.now();
+
+        Object response = ctx.get(ClientRunner.RESULT_VAR);
+        if(response instanceof HttpResponse) {
+            stepResult.statusCode =((HttpResponse<?>) response).statusCode();
+        } else {
+            stepResult.statusCode=0;
+        }
         
         for(Assertion assertion: step.assertions) {
             AssertionResult assertionResult = new AssertionResult();
@@ -156,6 +165,7 @@ public class JsonResultCollector implements ResultCollector {
         public String clientId;
 
         public String stepName;
+        public int statusCode;
         public List<AssertionResult> assertions;    
     }
     @RegisterForReflection

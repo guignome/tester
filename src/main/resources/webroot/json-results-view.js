@@ -73,6 +73,7 @@ export default {
                 <th>Step Name</th>
                 <th>Start Time</th>
                 <th>Duration (ms)</th>
+                <th>HTTP Status</th>
                 <th>Assertions (Passed/Total)</th>
             </tr>
         </thead>
@@ -82,6 +83,7 @@ export default {
                 <td>{{res.stepName}}</td>
                 <td>{{formatStartTime(res.startTime)}}</td>
                 <td>{{formatDuration(res.startTime,res.endTime)}}</td>
+                <td>{{res.statusCode}}</td>
                 <td :style="styleAssertions(res.assertions)">{{formatAssertions(res.assertions)}}</td>
             </tr>
         </tbody>
