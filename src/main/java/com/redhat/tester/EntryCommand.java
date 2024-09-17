@@ -55,8 +55,8 @@ class EntryCommand implements Runnable {
     String resultFolder;
 
     @Option(names = { "-o",
-            "--format" }, description = "The format of the result collector. Can be CSV, TPS, or JSON.", defaultValue = ResultCollector.FORMAT_CSV)
-    String format = ResultCollector.FORMAT_CSV;
+            "--format" }, description = "The format of the result collector. Can be CSV, TPS, or JSON.", defaultValue = ResultCollector.FORMAT_JSON)
+    String format = ResultCollector.FORMAT_JSON;
 
     @Option(names = { "-v",
             "--verbose" }, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
@@ -134,8 +134,6 @@ class EntryCommand implements Runnable {
         }
         api.registerCommandLineModel(model);
 
-        factory.registerResultCollector(model);
-
         // Endpoint list
         if (endpointLists) {
             Log.info("List of Endpoints: \n\n");
@@ -166,7 +164,6 @@ class EntryCommand implements Runnable {
         Future<?> appFuture = api.executeClientAndServer(model);
         appFuture.onSuccess(h -> {
             Log.debug("All clients succeeded.");
-            factory.getResultCollector().close();
             if(!serverMode) {
                 Quarkus.asyncExit(0);
             } else {

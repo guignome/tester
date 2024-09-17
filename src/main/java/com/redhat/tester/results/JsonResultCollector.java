@@ -18,7 +18,9 @@ import io.vertx.ext.web.client.HttpResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +34,7 @@ public class JsonResultCollector implements ResultCollector {
     TemplateRenderer renderer;
     ConfigurationModel model;
     String fileName;
-    int size = 0;
+    ResultSummary summary;
 
     Map<String,StepResult> inflight = new HashMap<>();
 
@@ -52,6 +54,11 @@ public class JsonResultCollector implements ResultCollector {
     @Override
     public void init(ConfigurationModel model) {
         Log.debug("Initializing JSONResultCollector.");
+        //initialize the summary
+        this.summary = new ResultSummary();
+        this.summary.startTime = ZonedDateTime.now();
+        this.summary.statusCodesCount = new HashMap<>();
+
         this.model = model;
         this.fileName = model.results.filename;
         File result = createResultFile(fileName);
@@ -71,7 +78,7 @@ public class JsonResultCollector implements ResultCollector {
             // Write the start of the object
             jsonGenerator.writeStartObject();
             jsonGenerator.writeObjectField("name", this.fileName);
-            jsonGenerator.writeObjectField("creationTime", LocalDateTime.now());
+            jsonGenerator.writeObjectField("creationTime", ZonedDateTime.now());
             jsonGenerator.writeObjectField("model", model);
             jsonGenerator.writeFieldName("results");
             jsonGenerator.writeStartArray();
@@ -83,17 +90,13 @@ public class JsonResultCollector implements ResultCollector {
 
     @Override
     public int size() {
-        return size;
-    }
-
-    @Override
-    public String renderSummary() {
-        return "See output file.";
+        return summary.size;
     }
 
     @Override
     public void close() {
         Log.debug("Closing JsonResultCollector.");
+        summary.endTime = ZonedDateTime.now();
         try {
             jsonGenerator.writeEndArray();
             jsonGenerator.writeEndObject();
@@ -110,13 +113,12 @@ public class JsonResultCollector implements ResultCollector {
      public void beforeStep(Step step, Map<String,Object> ctx){
         StepResult stepResult = new StepResult();
         stepResult.stepName = step.name;
-        stepResult.startTime = LocalDateTime.now();
+        stepResult.startTime = ZonedDateTime.now();
         stepResult.assertions = new ArrayList<>();
         
         String clientId =(String) ctx.get(ClientRunner.CLIENT_ID_VAR);
         stepResult.clientId = clientId;
         inflight.put(clientId, stepResult);
-        size++;
      }
 
     @Override
@@ -124,7 +126,7 @@ public class JsonResultCollector implements ResultCollector {
         String clientId =(String) ctx.get(ClientRunner.CLIENT_ID_VAR);
 
         StepResult stepResult = inflight.remove(clientId);
-        stepResult.endTime = LocalDateTime.now();
+        stepResult.endTime = ZonedDateTime.now();
 
         Object response = ctx.get(ClientRunner.RESULT_VAR);
         if(response instanceof HttpResponse) {
@@ -144,24 +146,60 @@ public class JsonResultCollector implements ResultCollector {
         } catch (IOException e) {
             Log.error("Couldn't write to json file.", e);
         }
+        
+        //update the summary
+        
+        long duration = ChronoUnit.MILLIS.between(stepResult.startTime,stepResult.endTime);
+        if(duration>summary.maxDuration) {
+            summary.maxDuration = duration;
+        }
+        if(duration<summary.minDuration) {
+            summary.minDuration = duration;
+        }
+        summary.averageDuration = (summary.size * summary.averageDuration + duration) / (summary.size + 1);
+        summary.size++;
+        // Increment the count in the map ( 400: i++, )
+        summary.statusCodesCount.put(stepResult.statusCode, summary.statusCodesCount.getOrDefault(stepResult.statusCode, 0) + 1);
+
     }
 
     @Override
     public void afterSuite(Suite suite, Map<String,Object> ctx){}
 
+    @Override
+    public String renderSummary() {
+        //Open the Json file, calculate statusCodesCount and duration stats
+
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%s Requests sent. Duration (ms): min=%d, max=%d, avg=%.3f",
+                summary.size,summary.minDuration, summary.maxDuration,
+                summary.averageDuration))
+                .append("\n")
+                .append("HTTP Return Codes: { ");
+        for (int code : summary.statusCodesCount.keySet()) {
+            sb.append(code).append(":").append(summary.statusCodesCount.get(code))
+                    .append(' ');
+        }
+        sb.append('}');
+
+        return sb.toString();
+    }
+
     //JSON Object
 
     @RegisterForReflection
     public static class TestExecution {
-        public LocalDateTime creationTime;
+        public ZonedDateTime creationTime;
+        public String name;
         public ConfigurationModel model;
         public List<StepResult> results;
     }
 
     @RegisterForReflection
     public static class StepResult {
-        public LocalDateTime startTime;
-        public LocalDateTime endTime;
+        public ZonedDateTime startTime;
+        public ZonedDateTime endTime;
         public String clientId;
 
         public String stepName;
@@ -173,9 +211,13 @@ public class JsonResultCollector implements ResultCollector {
         public String name;
         public boolean passed;
     }
+
+    // Result Summary
+
+    
+
     @Override
     public ResultSummary getCurrentResultSummary() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getCurrentResultSummary'");
+        return summary;
     }
 }

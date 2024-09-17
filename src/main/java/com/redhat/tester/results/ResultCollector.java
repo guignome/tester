@@ -4,10 +4,11 @@ import com.redhat.tester.ConfigurationModel;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import io.quarkus.logging.Log;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 public interface ResultCollector {
@@ -55,11 +56,14 @@ public interface ResultCollector {
     }
     String getResultFileName();
 
+    @RegisterForReflection
     public static class ResultSummary {
-        public LocalDateTime startTime;
-        public LocalDateTime endTime;
-        public int numberOfTestsPassed;
-        public int numberOfTestsFailed;
-        public int numberOfSteps;
+        public Map<Integer, Integer> statusCodesCount;
+        public int size = 0;
+        public ZonedDateTime startTime;
+        public ZonedDateTime endTime;
+        long minDuration = Long.MAX_VALUE;
+        long maxDuration = 0;
+        float averageDuration =0;
     }
 }

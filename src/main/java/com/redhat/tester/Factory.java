@@ -18,7 +18,7 @@ public class Factory {
     @Inject
     TemplateRenderer renderer;
 
-    String format = ResultCollector.FORMAT_CSV;
+    String format = ResultCollector.FORMAT_JSON;
 
     private ResultCollector resultCollector;
 
@@ -41,10 +41,10 @@ public class Factory {
     public ResultCollector registerResultCollector(ConfigurationModel model) {
         this.format = model.results.format;
         if (resultCollector == null || !resultCollector.getFormat().equals(format)) {
-            if (format == null || ResultCollector.FORMAT_CSV.equals(format)) {
-                resultCollector = new CsvResultCollector();
-            } else if (ResultCollector.FORMAT_JSON.equals(format)) {
+            if (format == null || ResultCollector.FORMAT_JSON.equals(format)) {
                 resultCollector = new JsonResultCollector(renderer);
+            } else if (ResultCollector.FORMAT_CSV.equals(format)) {
+                resultCollector = new CsvResultCollector();
             } else {
                 resultCollector = new TpsResultCollector(vertx);
             }
