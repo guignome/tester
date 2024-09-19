@@ -11,14 +11,14 @@ export default {
     },
     methods: {
         selected() {
-            this.step.kind='step';
-            this.$emit('selected',this.step);
+            this.serverhandler.kind='serverhandler';
+            this.$emit('selected',this.serverhandler);
         }
     },
     mounted() { },
-    props: ['step'],
+    props: ['serverhandler'],
     template: `
     <div @click="selected" class="selectable">
-        <a>{{step.name}} (<b>{{step.method}}</b> {{step.path}})</a>
+        <b>{{serverhandler.method}}</b> {{serverhandler.path}} -> {{serverhandler.response}} 
     </div>`
 }

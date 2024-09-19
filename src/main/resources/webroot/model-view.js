@@ -1,4 +1,8 @@
 import StepView from './step-view.js'
+import EndpointsView from './endpoints-view.js';
+import ServersView from './servers-view.js';
+import VariablesView from './variables-view.js';
+
 import api from './api.js'
 /**
  * @ty
@@ -22,7 +26,7 @@ export default {
             this.model = initModel(msg.data);
         })
     },
-    components: { StepView },
+    components: { StepView, EndpointsView,ServersView,VariablesView },
     data() {
         return {
             model: {
@@ -81,15 +85,8 @@ export default {
         },
         deleteVariable() {
 
-        },
-        /**
-         * The selected variable.
-         * @param {*} variable 
-         */
-        variable_selected(variable) {
-            variable.kind = 'variable';
-            this.$emit('selected',variable);
         }
+
     },
     mounted() { },
     props: [],
@@ -102,98 +99,38 @@ export default {
     <fieldset>
     <legend>Client</legend>
     <fieldset>
-    <legend>Suites</legend>
-    <div v-for="suite in model?.client?.suites">
-        <h4>{{suite.name}}</h4>
-        <div v-for="step in suite?.steps">
-            <StepView :step="step" @selected="selected"/>
+        <legend>Suites</legend>
+        <div v-for="suite in model?.client?.suites">
+            <h4>{{suite.name}}</h4>
+            <div v-for="step in suite?.steps">
+                <StepView :step="step" @selected="selected"/>
+            </div>
+            <div style="float: right;">
+                <button>Add Step</button>
+                <button>Delete Step</button>
+            </div>
         </div>
         <div style="float: right;">
-            <button>Add Step</button>
-            <button>Delete Step</button>
-        </div>
-    </div>
-    <div style="float: right;">
-            <button>Add Suite</button>
-            <button>Delete Suite</button>
-        </div>
+                <button>Add Suite</button>
+                <button>Delete Suite</button>
+            </div>
+        </fieldset>
+
+        <EndpointsView 
+        :endpoints="model?.client?.endpoints"
+        @selected="selected" />
+    
     </fieldset>
 
-    <fieldset>
-    <legend>Endpoints</legend>
-    <div id="endpoints">
-        <table v-if="model?.client?.endpoints">
-            <thead>
-            <tr>
-                <th>Name</th>
-                <th>Protocol</th>
-                <th>Host</th>
-                <th>Port</th>
-                <th>Prefix</th>
-                <th>Default</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="endpoint in model.client.endpoints">
-                <td>{{endpoint.name}}</td>
-                <td>{{endpoint.protocol}}</td>
-                <td>{{endpoint.host}}</td>
-                <td>{{endpoint.port}}</td>
-                <td>{{endpoint.prefix}}</td>
-                <td>{{endpoint.isdefault}}</td>
-            </tr>
-            </tbody>
-        </table>
-        <div style="float: right;">
-            <button>Add Endpoint</button>
-            <button>Delete Endpoint</button>
-        </div>
-    </div>
-    </fieldset>
-    </fieldset>
+    <ServersView 
+      :servers="model.servers"
+      @selected="selected" />
 
-<fieldset>
-    <legend>Servers</legend>
-    <div v-for="server in model.servers">
-    <h3 class="">{{server.name}} ({{server.host}}:{{server.port}})</h3>
-    <div v-for="handler in server.handlers">
-      <b>{{handler.method}}</b> {{handler.path}} -> {{handler.response}} 
-    </div>
-    <div style="float: right;">
-            <button>Add Handler</button>
-            <button>Delete Handler</button>
-        </div>
-  
-  
-  </div>
-  <div style="float: right;">
-            <button>Add Server</button>
-            <button>Delete Server</button>
-        </div>
-</fieldset>
-<fieldset>
-    <legend>Variables</legend>
-  <div id="variables">
-      <table id="variables-table" class="w3-table-all">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Value</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="variable in model.variables" @click='variable_selected(variable)'>
-                    <td>{{variable.name}}</td>
-                    <td>{{variable.value}}</td>
-                </tr>
-            </tbody>
-      </table>
-      <div style="float: right;">
-            <button @click="addVariable">Add Variable</button>
-            <button @click="deleteVariable">Delete Variable</button>
-        </div>
-  </div>
-  </fieldset>
+    <VariablesView
+      :variables="model.variables"
+      @selected="selected" />
+
+
 
   <fieldset>
     <legend>Runtime</legend>
