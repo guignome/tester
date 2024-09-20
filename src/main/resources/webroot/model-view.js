@@ -2,6 +2,7 @@ import StepView from './step-view.js'
 import EndpointsView from './endpoints-view.js';
 import ServersView from './servers-view.js';
 import VariablesView from './variables-view.js';
+import SuitesView from './suites-view.js';
 
 import api from './api.js'
 /**
@@ -26,7 +27,7 @@ export default {
             this.model = initModel(msg.data);
         })
     },
-    components: { StepView, EndpointsView,ServersView,VariablesView },
+    components: { StepView, EndpointsView,ServersView,VariablesView,SuitesView },
     data() {
         return {
             model: {
@@ -80,13 +81,6 @@ export default {
         selected(element) {
             this.$emit('selected',element);
         },
-        addVariable() {
-            this.model.variables.push({name: "name", value:"value"});
-        },
-        deleteVariable() {
-
-        }
-
     },
     mounted() { },
     props: [],
@@ -96,31 +90,12 @@ export default {
             <legend>Load Model</legend>
                 <input type="file" ref="doc" @change="readFile()" />
             </fieldset>
-    <fieldset>
-    <legend>Client</legend>
-    <fieldset>
-        <legend>Suites</legend>
-        <div v-for="suite in model?.client?.suites">
-            <h4>{{suite.name}}</h4>
-            <div v-for="step in suite?.steps">
-                <StepView :step="step" @selected="selected"/>
-            </div>
-            <div style="float: right;">
-                <button>Add Step</button>
-                <button>Delete Step</button>
-            </div>
-        </div>
-        <div style="float: right;">
-                <button>Add Suite</button>
-                <button>Delete Suite</button>
-            </div>
-        </fieldset>
-
-        <EndpointsView 
-        :endpoints="model?.client?.endpoints"
-        @selected="selected" />
     
-    </fieldset>
+    <SuitesView :suites="model?.client?.suites"
+        @selected="selected"/>
+
+    <EndpointsView :endpoints="model?.client?.endpoints"
+      @selected="selected"/>
 
     <ServersView 
       :servers="model.servers"

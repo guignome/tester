@@ -3,7 +3,7 @@ export default {
         return {}
     },
     computed: {
-        variable(){
+        server(){
             return this.initialElement;
         }
     },
@@ -20,7 +20,7 @@ export default {
     props: ['initialElement'],
     template: `
         <fieldset>
-        <legend>Variable Editor</legend>
+        <legend>Server Editor</legend>
         <div style="display: grid; grid-template-columns: auto auto auto auto;" class="form">
                 <label for="name">Name:</label>
                 <input id="name" v-model="variable.name" />

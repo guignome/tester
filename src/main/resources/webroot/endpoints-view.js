@@ -13,6 +13,14 @@ export default {
         selected(endpoint) {
            endpoint.kind='endpoint';
             this.$emit('selected',endpoint);
+        },
+        addEndpoint(){
+            this.endpoints.push({name: "myapp", protocol:"http",host:"localhost",
+                port: 1234, prefix:"",isdefault: false
+            });
+        },
+        deleteEndpoint(){
+
         }
     },
     mounted() { },
@@ -48,8 +56,8 @@ export default {
                 </tbody>
             </table>
             <div style="float: right;">
-                <button>Add Endpoint</button>
-                <button>Delete Endpoint</button>
+                <button @click="addEndpoint">Add Endpoint</button>
+                <button @click="deleteEndpoint">Delete Endpoint</button>
             </div>
         </div>
     </fieldset>`

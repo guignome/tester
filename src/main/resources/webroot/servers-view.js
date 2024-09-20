@@ -18,6 +18,18 @@ export default {
         },
         handlerselected(handler) {
              this.$emit('selected',handler);
+         },
+         addHandler(server){
+            server.handlers.push({method:"GET",path:"/",response:"This is a body"});
+         },
+         deleteHandler(){
+
+         },
+         addServer(){
+            this.servers.push({name:"name",host:"localhost", port:1234,handlers:[]});
+         },
+         deleteServer(){
+
          }
     },
     mounted() { },
@@ -34,13 +46,13 @@ export default {
                 />
             </div>
             <div style="float: right;">
-                <button>Add Handler</button>
-                <button>Delete Handler</button>
+                <button @click="addHandler(server)">Add Handler</button>
+                <button @click="deleteHandler">Delete Handler</button>
             </div>
         </div>
         <div style="float: right;">
-            <button>Add Server</button>
-            <button>Delete Server</button>
+            <button @click="addServer">Add Server</button>
+            <button @click="deleteServer">Delete Server</button>
         </div>
     </fieldset>`
 }

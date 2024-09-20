@@ -1,6 +1,7 @@
 package com.redhat.tester;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonIgnoreProperties(value="kind")
 @RegisterForReflection
 public class ConfigurationModel {
     public static final String DEFAULT_ENDPOINT = "default";

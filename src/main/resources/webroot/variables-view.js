@@ -15,7 +15,7 @@ export default {
             this.$emit('selected',variable);
         },
         addVariable() {
-            this.model.variables.push({name: "name", value:"value"});
+            this.variables.push({name: "name", value:"value"});
         },
         deleteVariable() {
 
