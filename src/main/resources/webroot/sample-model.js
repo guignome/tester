@@ -90,4 +90,13 @@ export default  {
             passed: false
           }
         ]
-      }]}
+      }],
+      "summary": {
+        "statusCodesCount": {
+            "200": 12,
+            "0": 1
+        },
+        "size": 3,
+        "startTime": "2024-09-20T20:49:59.647505752-04:00",
+        "endTime": "2024-09-20T20:49:59.710551747-04:00"
+    }}

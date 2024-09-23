@@ -47,7 +47,8 @@ export default {
              */
             running: false,
             reportType: {},
-            runningReportName: null
+            runningReportName: null,
+            modelUri: null
         };
     },
     computed: {
@@ -75,6 +76,9 @@ export default {
                 api.stopModel();
             } else {
                 this.running = true;
+                if(this.model?.results?.filename === undefined || this.model?.results?.filename == null) {
+                    this.model.results.filename = "report.json"
+                }
                 api.startModel(this.model);
             }
         },
@@ -86,10 +90,14 @@ export default {
     props: [],
     template: `
 <div>
-            <fieldset>
-            <legend>Load Model</legend>
-                <input type="file" ref="doc" @change="readFile()" />
-            </fieldset>
+    <fieldset>
+    <legend>Load Model</legend>
+        <input type="file" ref="doc" @change="readFile()" />
+        <label for="modelUri">Load from uri:</label>
+        <input type="uri" id="modelUri" name="modelUri" v-model="modelUri"/>
+        <button @click="load()">Load</button>
+        
+    </fieldset>
     
     <SuitesView :suites="model?.client?.suites"
         @selected="selected"/>
@@ -104,8 +112,6 @@ export default {
     <VariablesView
       :variables="model.variables"
       @selected="selected" />
-
-
 
   <fieldset>
     <legend>Runtime</legend>

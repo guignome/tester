@@ -98,6 +98,7 @@ public class JsonResultCollector implements ResultCollector {
         summary.endTime = ZonedDateTime.now();
         try {
             jsonGenerator.writeEndArray();
+            jsonGenerator.writeObjectField("summary", summary);
             jsonGenerator.writeEndObject();
             jsonGenerator.close();
             fos.close();

@@ -64,7 +64,9 @@ export default {
     <div>
     <p><b>Name:</b> {{result.name}}</p>
     <p><b>Creation Time:</b> {{result.creationTime}}</p>
-    <p><b>Tests Passed:</b></p> 
+    <p><b>Total Duration:</b> {{formatDuration(result?.summary?.startTime,result?.summary?.endTime)}}</p> 
+    <p><b>Total Size:</b> {{result?.summary?.size}}</p> 
+
     </div>
     <table id="resultset" class="">
         <thead>  
