@@ -6,10 +6,10 @@ import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import io.quarkus.logging.Log;
 import io.vertx.ext.web.client.HttpResponse;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -56,11 +56,11 @@ public class CsvResultCollector implements ResultCollector {
         Log.debug("Initializing CsvResultCollector.");
         this.fileName = model.results.filename;
         results = new HashMap<>();
-        File result = createResultFile(fileName);
+        Path result = createResultFile(fileName);
 
         // Prepare the result output
         try {
-            this.writer = new FileWriter(result);
+            this.writer = Files.newBufferedWriter(result);
         } catch (IOException e) {
             Log.error("Not able to create Output result file.", e);
         }

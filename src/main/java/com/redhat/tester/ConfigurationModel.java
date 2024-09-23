@@ -8,8 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.annotations.RegisterForReflection;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -216,16 +217,13 @@ public class ConfigurationModel {
         }
     }
 
-    public static ConfigurationModel loadFromFile(File[] files)
+    public static ConfigurationModel loadFromFile(Path[] paths)
             throws StreamReadException, DatabindException, IOException {
         List<ConfigurationModel> loadedModels = new ArrayList<>();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                loadedModels.add(loadFromFile(file.listFiles((d, n) -> {
-                    return n.endsWith(".yml") || n.endsWith(".yaml");
-                })));
-            } else {
-                loadedModels.add(loadFromFile(file));
+        for (Path path : paths) {
+            ConfigurationModel loadedModel = loadFromFile(path);
+            if(loadedModel != null){
+                loadedModels.add(loadedModel);
             }
         }
         // merge
@@ -258,10 +256,23 @@ public class ConfigurationModel {
         return mergedModel;
     }
 
-    public static ConfigurationModel loadFromFile(File file)
+    public static ConfigurationModel loadFromFile(Path path)
             throws StreamReadException, DatabindException, IOException {
 
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        return mapper.readValue(file, ConfigurationModel.class);
+        if(Files.isDirectory(path)) {
+            ArrayList<Path> paths = new ArrayList<>();
+            Files.newDirectoryStream(path).forEach(p-> paths.add(p));
+            return loadFromFile((Path[])paths.toArray());
+        } else if (path.toString().endsWith(".yml") || path.toString().endsWith(".yaml")){
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+            return mapper.readValue(path.toFile(), ConfigurationModel.class);
+        } else {
+            Log.warnf("Ignoring file %s",path.toString());
+            return null;
+        }
     }
+
+    //public static ConfigurationModel loadFromUri(String uri) {
+        
+    //}
 }

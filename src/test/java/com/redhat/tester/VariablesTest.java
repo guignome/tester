@@ -11,8 +11,9 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.impl.HttpResponseImpl;
 import jakarta.inject.Inject;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +33,9 @@ public class VariablesTest {
     @Test
     public void testLoadYaml() throws StreamReadException, DatabindException, IOException {
         Log.info("Running testLoadYaml test.\n");
-        File[] files = new File[1];
-        files[0] = new File("src/test/resources/example6.yaml");
-        ConfigurationModel model = ConfigurationModel.loadFromFile(files);
+        Path[] paths = new Path[1];
+        paths[0] = Paths.get("src/test/resources/example6.yaml");
+        ConfigurationModel model = ConfigurationModel.loadFromFile(paths);
         assertNotNull(model);
         assertEquals(3, model.variables.size());
     }

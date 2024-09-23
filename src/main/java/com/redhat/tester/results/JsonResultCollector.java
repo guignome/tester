@@ -15,9 +15,10 @@ import io.quarkus.logging.Log;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.vertx.ext.web.client.HttpResponse;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 @RegisterForReflection
 public class JsonResultCollector implements ResultCollector {
-    FileOutputStream fos;
+    BufferedWriter w;
     ObjectMapper mapper;
     JsonGenerator jsonGenerator;
     TemplateRenderer renderer;
@@ -60,11 +61,11 @@ public class JsonResultCollector implements ResultCollector {
 
         this.model = model;
         this.fileName = model.results.filename;
-        File result = createResultFile(fileName);
+        Path result = createResultFile(fileName);
 
         try {
 
-            fos = new FileOutputStream(result);
+            w = Files.newBufferedWriter(result);
 
             // Create and configure an ObjectMapper instance
             mapper = new ObjectMapper();
@@ -72,7 +73,7 @@ public class JsonResultCollector implements ResultCollector {
             mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
             //mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
-            jsonGenerator = mapper.getFactory().createGenerator(fos);
+            jsonGenerator = mapper.getFactory().createGenerator(w);
 
             // Write the start of the object
             jsonGenerator.writeStartObject();
@@ -101,7 +102,7 @@ public class JsonResultCollector implements ResultCollector {
             jsonGenerator.writeObjectField("summary", summary);
             jsonGenerator.writeEndObject();
             jsonGenerator.close();
-            fos.close();
+            w.close();
         } catch (IOException e) {
             Log.error(e);
         }

@@ -15,9 +15,9 @@ import io.quarkus.runtime.Quarkus;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import jakarta.inject.Inject;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +44,7 @@ class EntryCommand implements Runnable {
     // File mode
     @Option(names = { "-f",
             "--file" }, description = "Files to load from. If a directory is specified, all the yaml files in it will be loaded.", defaultValue = "${TESTER_FILE}")
-    File[] files;
+    Path[] files;
 
     @Option(names = { "-t",
             "--result" }, description = "The file name where to save the results in the format specified by -o .")
