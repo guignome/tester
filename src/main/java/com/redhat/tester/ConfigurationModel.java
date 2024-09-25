@@ -9,12 +9,17 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-@JsonIgnoreProperties(value="kind")
+@JsonIgnoreProperties(value = "kind")
 @RegisterForReflection
 public class ConfigurationModel {
     public static final String DEFAULT_ENDPOINT = "default";
@@ -217,12 +222,12 @@ public class ConfigurationModel {
         }
     }
 
-    public static ConfigurationModel loadFromFile(Path[] paths)
-            throws StreamReadException, DatabindException, IOException {
+    public static ConfigurationModel load(URL[] urls)
+            throws StreamReadException, DatabindException, IOException, URISyntaxException {
         List<ConfigurationModel> loadedModels = new ArrayList<>();
-        for (Path path : paths) {
-            ConfigurationModel loadedModel = loadFromFile(path);
-            if(loadedModel != null){
+        for (URL url : urls) {
+            ConfigurationModel loadedModel = load(url);
+            if (loadedModel != null) {
                 loadedModels.add(loadedModel);
             }
         }
@@ -256,23 +261,80 @@ public class ConfigurationModel {
         return mergedModel;
     }
 
-    public static ConfigurationModel loadFromFile(Path path)
-            throws StreamReadException, DatabindException, IOException {
+    public static ConfigurationModel load(URL url)
+            throws StreamReadException, DatabindException, IOException, URISyntaxException, MalformedURLException {
 
-        if(Files.isDirectory(path)) {
-            ArrayList<Path> paths = new ArrayList<>();
-            Files.newDirectoryStream(path).forEach(p-> paths.add(p));
-            return loadFromFile((Path[])paths.toArray());
-        } else if (path.toString().endsWith(".yml") || path.toString().endsWith(".yaml")){
-            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            return mapper.readValue(path.toFile(), ConfigurationModel.class);
+        if (url.getProtocol().equals("file")) {
+            Path path = Path.of(url.getPath());
+            if (Files.isDirectory(path)) {
+                ArrayList<URL> paths = new ArrayList<>();
+                Files.newDirectoryStream(path).forEach(p -> {
+                    try {
+                        paths.add(p.toUri().toURL());
+                    } catch (MalformedURLException e) {
+                        Log.error("Invalid url: " + p, e);
+                    }
+                });
+                return load((URL[]) paths.toArray());
+            } else if (path.toString().endsWith(".yml") || path.toString().endsWith(".yaml")) {
+                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+                return mapper.readValue(path.toUri().toURL(), ConfigurationModel.class);
+            } else {
+                Log.warnf("Ignoring file %s", path.toString());
+            }
         } else {
-            Log.warnf("Ignoring file %s",path.toString());
-            return null;
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+            return mapper.readValue(url, ConfigurationModel.class);
+        }
+        return null;
+    }
+
+    private static URL toURL(URI uri) throws MalformedURLException, URISyntaxException {
+        if (uri.isAbsolute()) {
+            return uri.toURL();
+        } else {
+            // Default to file protocol if the uri does not have a scheme.
+            return new URI("file", uri.toString(), null).toURL();
         }
     }
 
-    //public static ConfigurationModel loadFromUri(String uri) {
-        
-    //}
+    public static ConfigurationModel load(URI uri)
+            throws StreamReadException, DatabindException, MalformedURLException, IOException, URISyntaxException {
+        return load(toURL(uri));
+    }
+
+    public static ConfigurationModel load(String uri)
+            throws StreamReadException, DatabindException, MalformedURLException, IOException, URISyntaxException {
+        return load(new URI(uri));
+    }
+
+    public static ConfigurationModel load(String[] paths)
+            throws StreamReadException, DatabindException, MalformedURLException, IOException, URISyntaxException {
+        URI[] uris = Arrays.stream(paths)
+        .map(p -> {
+            try {
+                return new URI(p);
+            } catch (URISyntaxException e) {
+                Log.errorf("Wrong uri format: %s", p);
+            }
+            return null;
+        })
+        .toArray(URI[]::new);
+        return load(uris);
+    }
+
+    public static ConfigurationModel load(URI[] uris)
+            throws StreamReadException, DatabindException, IOException, URISyntaxException {
+        URL[] urls = Arrays.stream(uris)
+                .map(uri -> {
+                    try {
+                        return toURL(uri);
+                    } catch (MalformedURLException | URISyntaxException e) {
+                        Log.errorf("Wrong uri format: %s", uri);
+                    }
+                    return null;
+                })
+                .toArray(URL[]::new);
+        return load(urls);
+    }
 }

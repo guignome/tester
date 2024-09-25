@@ -10,8 +10,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.vertx.core.Future;
 import jakarta.inject.Inject;
 import java.io.IOException;
-import java.nio.file.Paths;
-
+import java.net.URISyntaxException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
@@ -26,18 +25,16 @@ public class RunnerTest {
     @Inject
     TesterApi api;
 
-  
-
     public final static Object obj = new Object();
 
     @Test
-    public void testLoadYaml() throws StreamReadException, DatabindException, IOException {
+    public void testLoadYaml() throws StreamReadException, DatabindException, IOException, URISyntaxException {
         Log.info("Running testLoadYaml test.\n");
-        ConfigurationModel model1 = ConfigurationModel.loadFromFile(Paths.get("src/test/resources/example1.yaml"));
+        ConfigurationModel model1 = ConfigurationModel.load("src/test/resources/example1.yaml");
         assertNotNull(model1);
-        ConfigurationModel model2 = ConfigurationModel.loadFromFile(Paths.get("src/test/resources/example2.yaml"));
+        ConfigurationModel model2 = ConfigurationModel.load("src/test/resources/example2.yaml");
         assertNotNull(model2);
-        ConfigurationModel model3 = ConfigurationModel.loadFromFile(Paths.get("src/test/resources/example3.yaml"));
+        ConfigurationModel model3 = ConfigurationModel.load("src/test/resources/example3.yaml");
         assertNotNull(model3);
     }
 
@@ -85,7 +82,7 @@ public class RunnerTest {
     private void testScenario(final int scenarioNumber, int expectedResultSize) throws Exception {
         Log.info("\n Running testScenario " + scenarioNumber + "\n");
         ConfigurationModel model = ConfigurationModel
-                .loadFromFile(Paths.get("src/test/resources/example" + scenarioNumber + ".yaml"));
+                .load("src/test/resources/example" + scenarioNumber + ".yaml");
        
 
         Future<?> future = api.executeClientAndServer(model);

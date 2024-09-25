@@ -16,6 +16,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import jakarta.inject.Inject;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -44,7 +46,7 @@ class EntryCommand implements Runnable {
     // File mode
     @Option(names = { "-f",
             "--file" }, description = "Files to load from. If a directory is specified, all the yaml files in it will be loaded.", defaultValue = "${TESTER_FILE}")
-    Path[] files;
+    URI[] uris;
 
     @Option(names = { "-t",
             "--result" }, description = "The file name where to save the results in the format specified by -o .")
@@ -185,12 +187,12 @@ class EntryCommand implements Runnable {
         Log.debug("Exiting now.");
     }
 
-    void loadModelFromOptions() throws StreamReadException, DatabindException, IOException {
+    void loadModelFromOptions() throws StreamReadException, DatabindException, IOException, URISyntaxException {
         ParseResult pr = spec.commandLine().getParseResult();
 
-        if (files != null) {
+        if (uris != null) {
             // load files first
-            this.model = ConfigurationModel.loadFromFile(files);
+            this.model = ConfigurationModel.load(uris);
             // Then override with extra options
             // override url
             if (pr.hasMatchedPositional(0)) {
