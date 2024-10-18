@@ -27,7 +27,8 @@ servers:
   handlers:
   - path: /*
     method: GET
-    response: hello from non TLS
+    response: 
+      body: hello from non TLS
 - name: tls
   host: localhost
   port: 8443
@@ -37,4 +38,5 @@ servers:
   handlers:
   - path: /tls
     method: GET
-    response: Hello from TLS abcd
+    response: 
+      body: Hello from TLS abcd

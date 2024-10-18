@@ -26,10 +26,12 @@ servers:
   handlers:
   - path: /test1
     method: GET
-    response: response1
+    response: 
+      body: response1
   - path: /test2
     method: GET
-    response: Good Bye!
+    response: 
+      body: Good Bye!
     status: 404
 results:
   format: json

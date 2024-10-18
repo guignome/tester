@@ -148,7 +148,9 @@ function initModel(m) {
                     parallel: 1,
                     repeat: 1
                 }
-            }
+            },
+            endpoints: [],
+            suites: []
         };
     } else if (m.client.topology === undefined) {
         m.client.topology = {

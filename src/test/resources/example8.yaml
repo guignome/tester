@@ -43,14 +43,16 @@ servers:
   handlers:
   - path: /token
     method: POST
-    response: "{default_token}"
+    response: 
+      body: "{default_token}"
 - name: Application Server
   host: localhost
   port: 8093
   handlers:
   - path: /resource
     method: GET
-    response: This is the resource.
+    response: 
+      body: This is the resource.
 variables:
 - name: default_token
   value: abcdefgh

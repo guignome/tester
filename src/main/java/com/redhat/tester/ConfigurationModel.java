@@ -52,12 +52,14 @@ public class ConfigurationModel {
     }
 
     @RegisterForReflection
+    @JsonIgnoreProperties(value = "kind")
     public static class Results {
         public String format;
         public String filename;
     }
 
     @RegisterForReflection
+    @JsonIgnoreProperties(value = "kind")
     public static class Variable {
         public String name;
         public String value;
@@ -72,6 +74,7 @@ public class ConfigurationModel {
     }
 
     @RegisterForReflection
+    @JsonIgnoreProperties(value = "kind")
     public static class ClientConfiguration {
         public Topology topology = new Topology();
         public List<Endpoint> endpoints = new ArrayList<>();
@@ -102,7 +105,6 @@ public class ConfigurationModel {
                 return getDefaultEndpoint();
             }
             return doGetEndpoint(name);
-
         }
 
         private Endpoint doGetEndpoint(String name) {
@@ -115,10 +117,12 @@ public class ConfigurationModel {
         }
 
         @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
         public static class Topology {
             public Local local = new Local();
 
             @RegisterForReflection
+            @JsonIgnoreProperties(value = "kind")
             public static class Local {
                 public int parallel = 1;
                 public int repeat = 1;
@@ -126,6 +130,7 @@ public class ConfigurationModel {
         }
 
         @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
         public static class Endpoint {
 
             public String protocol = "http";
@@ -137,6 +142,7 @@ public class ConfigurationModel {
             public HttpOptions httpOptions = new HttpOptions();
 
             @RegisterForReflection
+            @JsonIgnoreProperties(value = "kind")
             public static class HttpOptions {
                 public boolean trustAll = true;
                 public String protocolVersion = "HTTP_1_1";
@@ -144,12 +150,14 @@ public class ConfigurationModel {
         }
 
         @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
         public static class Suite {
             public String name = "suite1";
             public List<Variable> variables = new ArrayList<>();
             public List<Step> steps = new ArrayList<>();
 
             @RegisterForReflection
+            @JsonIgnoreProperties(value = "kind")
             public static class Step {
                 public static Assertion DEFAULT_ASSERTION;
                 public static int stepNumber = 0;
@@ -174,15 +182,16 @@ public class ConfigurationModel {
             }
 
             @RegisterForReflection
+            @JsonIgnoreProperties(value = "kind")
             public static class Assertion {
                 public String name;
                 public String body;
-
             }
         }
     }
 
     @RegisterForReflection
+    @JsonIgnoreProperties(value = "kind")
     public static class ServerConfiguration {
 
         public String name;
@@ -193,22 +202,33 @@ public class ConfigurationModel {
         public List<Handler> handlers = new ArrayList<>();
 
         @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
         public static class Tls {
             public String keyPath;
             public String certPath;
         }
 
         @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
         public static class Handler {
             public String path;
             public String method = "GET";
             public int delay = 0;
-            public String response;
+            public Response response;
             public int status = 200;
+        }
+
+        @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
+        public static class Response {
+            public String body;
+            public int generatedBodySize;
+            public List<Header> headers = new ArrayList<>();
         }
     }
 
     @RegisterForReflection
+    @JsonIgnoreProperties(value = "kind")
     public static class Header {
         public String name = "";
         public String value = "";

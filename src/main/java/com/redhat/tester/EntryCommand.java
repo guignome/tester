@@ -9,6 +9,7 @@ import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import com.redhat.tester.api.TesterApi;
 import com.redhat.tester.api.UIServer;
 import com.redhat.tester.ConfigurationModel.ServerConfiguration;
+import com.redhat.tester.ConfigurationModel.ServerConfiguration.Response;
 import com.redhat.tester.results.ResultCollector;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.Quarkus;
@@ -236,7 +237,8 @@ class EntryCommand implements Runnable {
             modelFromOptions.servers.get(0).host = host;
             ServerConfiguration.Handler handler = new ServerConfiguration.Handler();
             handler.delay = delay;
-            handler.response = response;
+            handler.response = new Response();
+            handler.response.body = response;
             handler.method = "GET";
             handler.path = "/*";
             modelFromOptions.servers.get(0).handlers.add(handler);

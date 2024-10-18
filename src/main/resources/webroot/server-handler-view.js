@@ -19,6 +19,11 @@ export default {
     props: ['serverhandler'],
     template: `
     <div @click="selected" class="selectable">
-        <b>{{serverhandler.method}}</b> {{serverhandler.path}} -> {{serverhandler.response}} 
+        <div v-if="serverhandler?.response.body != null">
+            <b>{{serverhandler.method}}</b> {{serverhandler.path}} -> {{serverhandler?.response.body}} 
+        </div>
+        <div v-else>
+            <b>{{serverhandler.method}}</b> {{serverhandler.path}} -> Generated({{serverhandler?.response.generatedBodySize}}) 
+        </div>
     </div>`
 }

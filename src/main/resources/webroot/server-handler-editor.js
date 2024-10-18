@@ -1,11 +1,28 @@
 export default {
+    created() {
+        this.generated= this.serverhandler.response.body == null;
+    },
     data() {
-        return {}
+        return {
+            _generated: false
+        }
     },
     computed: {
         serverhandler(){
             return this.initialElement;
+        },
+        generated: {
+            get(){
+                return this._generated;
+            },
+            set(newValue) {
+                this._generated = newValue;
+                if(newValue) {
+                    this.serverhandler.response.body = null;
+                }
+            }
         }
+        
     },
     methods: {
         save() {
@@ -34,13 +51,23 @@ export default {
                     <option>TRACE</option>
                     <option>PATCH</option>
                 </select>
-            
 
                 <label for="path" >Path:</label>
                 <input id="path" v-model="serverhandler.path"/>
                  
-                <label for="response" >Response:</label>
-                <input id="response" v-model="serverhandler.response"/>
+                <p>Response:</p>
+                <div>
+                    <form>
+                        <input name="generated" type="radio" id="generated" :value="true" v-model="generated" />
+                        <label for="generated">Generated</label>
+
+                        <input name="generated" type="radio" id="static" :value="false" v-model="generated" />
+                        <label for="static">Static</label>
+                    </form>
+                </div>
+
+                <input v-if="generated" type="number" min="0" v-model="serverhandler.response.generatedBodySize"/>
+                <textarea v-else v-model="serverhandler.response.body"/>
 
             <div style="float: right;">
                 <button>Cancel</button>
