@@ -53,7 +53,7 @@ public class UIServer {
                             Log.info("Received init message.");
                             JsonObject json = new JsonObject()
                                     .put("kind", "init")
-                                    .put("data", "Initialized!");
+                                    .put("data", api.getCommandLineModel());
                             ws.writeTextMessage(json.encode());
                             break;
                         case "startModel":

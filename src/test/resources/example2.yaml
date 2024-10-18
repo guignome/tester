@@ -4,4 +4,10 @@ servers:
   - path: /*
     method: GET
     delay: 2000
-    response: Hello how are you
+    response: 
+      generatedBodySize: 50
+      headers:
+      - name: my-header
+        value: header Value
+      - name: second-header
+        value: header Value

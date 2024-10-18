@@ -1,16 +1,25 @@
 package com.redhat.tester;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.annotations.RegisterForReflection;
-import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+@JsonIgnoreProperties(value = "kind")
 @RegisterForReflection
 public class ConfigurationModel {
     public static final String DEFAULT_ENDPOINT = "default";
@@ -28,6 +37,7 @@ public class ConfigurationModel {
 
     public Results results = new Results();
 
+    @JsonIgnore
     public ServerConfiguration getDefaultServer() {
         return getServer(DEFAULT_SERVER);
     }
@@ -42,12 +52,14 @@ public class ConfigurationModel {
     }
 
     @RegisterForReflection
+    @JsonIgnoreProperties(value = "kind")
     public static class Results {
         public String format;
         public String filename;
     }
 
     @RegisterForReflection
+    @JsonIgnoreProperties(value = "kind")
     public static class Variable {
         public String name;
         public String value;
@@ -59,10 +71,10 @@ public class ConfigurationModel {
             this.name = name;
             this.value = value;
         }
-
     }
 
     @RegisterForReflection
+    @JsonIgnoreProperties(value = "kind")
     public static class ClientConfiguration {
         public Topology topology = new Topology();
         public List<Endpoint> endpoints = new ArrayList<>();
@@ -93,7 +105,6 @@ public class ConfigurationModel {
                 return getDefaultEndpoint();
             }
             return doGetEndpoint(name);
-
         }
 
         private Endpoint doGetEndpoint(String name) {
@@ -106,10 +117,12 @@ public class ConfigurationModel {
         }
 
         @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
         public static class Topology {
             public Local local = new Local();
 
             @RegisterForReflection
+            @JsonIgnoreProperties(value = "kind")
             public static class Local {
                 public int parallel = 1;
                 public int repeat = 1;
@@ -117,6 +130,7 @@ public class ConfigurationModel {
         }
 
         @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
         public static class Endpoint {
 
             public String protocol = "http";
@@ -128,6 +142,7 @@ public class ConfigurationModel {
             public HttpOptions httpOptions = new HttpOptions();
 
             @RegisterForReflection
+            @JsonIgnoreProperties(value = "kind")
             public static class HttpOptions {
                 public boolean trustAll = true;
                 public String protocolVersion = "HTTP_1_1";
@@ -135,12 +150,14 @@ public class ConfigurationModel {
         }
 
         @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
         public static class Suite {
             public String name = "suite1";
             public List<Variable> variables = new ArrayList<>();
             public List<Step> steps = new ArrayList<>();
 
             @RegisterForReflection
+            @JsonIgnoreProperties(value = "kind")
             public static class Step {
                 public static Assertion DEFAULT_ASSERTION;
                 public static int stepNumber = 0;
@@ -165,15 +182,16 @@ public class ConfigurationModel {
             }
 
             @RegisterForReflection
+            @JsonIgnoreProperties(value = "kind")
             public static class Assertion {
                 public String name;
                 public String body;
-
             }
         }
     }
 
     @RegisterForReflection
+    @JsonIgnoreProperties(value = "kind")
     public static class ServerConfiguration {
 
         public String name;
@@ -184,23 +202,33 @@ public class ConfigurationModel {
         public List<Handler> handlers = new ArrayList<>();
 
         @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
         public static class Tls {
             public String keyPath;
             public String certPath;
         }
 
         @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
         public static class Handler {
             public String path;
             public String method = "GET";
             public int delay = 0;
-            public String response;
+            public Response response;
             public int status = 200;
         }
 
+        @RegisterForReflection
+        @JsonIgnoreProperties(value = "kind")
+        public static class Response {
+            public String body;
+            public int generatedBodySize;
+            public List<Header> headers = new ArrayList<>();
+        }
     }
 
     @RegisterForReflection
+    @JsonIgnoreProperties(value = "kind")
     public static class Header {
         public String name = "";
         public String value = "";
@@ -214,16 +242,13 @@ public class ConfigurationModel {
         }
     }
 
-    public static ConfigurationModel loadFromFile(File[] files)
-            throws StreamReadException, DatabindException, IOException {
+    public static ConfigurationModel load(URL[] urls)
+            throws StreamReadException, DatabindException, IOException, URISyntaxException {
         List<ConfigurationModel> loadedModels = new ArrayList<>();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                loadedModels.add(loadFromFile(file.listFiles((d, n) -> {
-                    return n.endsWith(".yml") || n.endsWith(".yaml");
-                })));
-            } else {
-                loadedModels.add(loadFromFile(file));
+        for (URL url : urls) {
+            ConfigurationModel loadedModel = load(url);
+            if (loadedModel != null) {
+                loadedModels.add(loadedModel);
             }
         }
         // merge
@@ -253,14 +278,83 @@ public class ConfigurationModel {
                 mergedModel.variables.addAll(currentModel.variables);
             }
         }
-
         return mergedModel;
     }
 
-    public static ConfigurationModel loadFromFile(File file)
-            throws StreamReadException, DatabindException, IOException {
+    public static ConfigurationModel load(URL url)
+            throws StreamReadException, DatabindException, IOException, URISyntaxException, MalformedURLException {
 
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        return mapper.readValue(file, ConfigurationModel.class);
+        if (url.getProtocol().equals("file")) {
+            Path path = Path.of(url.getPath());
+            if (Files.isDirectory(path)) {
+                ArrayList<URL> paths = new ArrayList<>();
+                Files.newDirectoryStream(path).forEach(p -> {
+                    try {
+                        paths.add(p.toUri().toURL());
+                    } catch (MalformedURLException e) {
+                        Log.error("Invalid url: " + p, e);
+                    }
+                });
+                return load((URL[]) paths.toArray());
+            } else if (path.toString().endsWith(".yml") || path.toString().endsWith(".yaml")) {
+                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+                return mapper.readValue(path.toUri().toURL(), ConfigurationModel.class);
+            } else {
+                Log.warnf("Ignoring file %s", path.toString());
+            }
+        } else {
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+            return mapper.readValue(url, ConfigurationModel.class);
+        }
+        return null;
+    }
+
+    private static URL toURL(URI uri) throws MalformedURLException, URISyntaxException {
+        if (uri.isAbsolute()) {
+            return uri.toURL();
+        } else {
+            // Default to file protocol if the uri does not have a scheme.
+            return new URI("file", uri.toString(), null).toURL();
+        }
+    }
+
+    public static ConfigurationModel load(URI uri)
+            throws StreamReadException, DatabindException, MalformedURLException, IOException, URISyntaxException {
+        return load(toURL(uri));
+    }
+
+    public static ConfigurationModel load(String uri)
+            throws StreamReadException, DatabindException, MalformedURLException, IOException, URISyntaxException {
+        return load(new URI(uri));
+    }
+
+    public static ConfigurationModel load(String[] paths)
+            throws StreamReadException, DatabindException, MalformedURLException, IOException, URISyntaxException {
+        URI[] uris = Arrays.stream(paths)
+        .map(p -> {
+            try {
+                return new URI(p);
+            } catch (URISyntaxException e) {
+                Log.errorf("Wrong uri format: %s", p);
+            }
+            return null;
+        })
+        .toArray(URI[]::new);
+        return load(uris);
+    }
+
+    public static ConfigurationModel load(URI[] uris)
+            throws StreamReadException, DatabindException, IOException, URISyntaxException {
+        URL[] urls = Arrays.stream(uris)
+                .map(uri -> {
+                    try {
+                        return toURL(uri);
+                    } catch (MalformedURLException | URISyntaxException e) {
+                        Log.errorf("Wrong uri format: %s", uri);
+                    }
+                    return null;
+                })
+                .toArray(URL[]::new);
+        return load(urls);
     }
 }

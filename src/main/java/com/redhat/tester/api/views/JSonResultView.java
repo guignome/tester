@@ -31,7 +31,7 @@ public class JSonResultView implements Stoppable{
     }
 
     void sendViewUpdate() {
-        String fullFileName = Paths.get(ResultCollector.DEFAULT_RESULT_REPOSITORY_FOLDER.getName(), filename).toString();
+        String fullFileName = ResultCollector.DEFAULT_RESULT_REPOSITORY_FOLDER.resolve(filename).toString();
         vertx.fileSystem().readFile(fullFileName)
                 .onFailure(h -> {
                     Log.error(h);

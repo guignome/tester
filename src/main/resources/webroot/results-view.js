@@ -45,7 +45,9 @@ export default {
       class="resultset" 
       :key="resultset.name"
       @click="$emit('update:activeResultName', resultset.name)"
-      >{{resultset.name}} <span @click="closeTab(resultset)">&times;</span></button>
+      >
+      {{resultset.name}} <span @click="closeTab(resultset)">&times;</span>
+    </button>
   </div>
   <jsonResultsView 
     @updateResult="newResult=>this.$emit('updateResult',newResult)" 

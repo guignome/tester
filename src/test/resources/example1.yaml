@@ -19,7 +19,7 @@ client:
       method: GET
     - path: /bye
       method: POST
-    - path: /myprefix/hello
+    - path: /bonjour
       endpoint: database
 servers:
 - name: application
@@ -28,12 +28,16 @@ servers:
   handlers:
   - path: /hello
     method: GET
-    response: Hello how are you
+    response: 
+      body: Hello how are you
   - path: /bye
     method: POST
-    response: Good Bye!
+    response: 
+      generatedBodySize: 25
 - name: with-prefix
   port: 1234
   handlers:
   - path: /myprefix/*
-    response: This is a response with prefix.
+    response: 
+      body: This is a response with prefix.
+    method: GET

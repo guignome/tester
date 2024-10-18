@@ -2,14 +2,15 @@ package com.redhat.tester;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
+import com.redhat.tester.api.TesterApi;
 import com.redhat.tester.results.ResultCollector;
 
 import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import io.vertx.core.Future;
 import jakarta.inject.Inject;
-import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
@@ -19,23 +20,21 @@ import picocli.CommandLine;
 public class RunnerTest {
 
     @Inject
-    Runner runner;
-
-    @Inject
     Factory factory;
 
-  
+    @Inject
+    TesterApi api;
 
     public final static Object obj = new Object();
 
     @Test
-    public void testLoadYaml() throws StreamReadException, DatabindException, IOException {
+    public void testLoadYaml() throws StreamReadException, DatabindException, IOException, URISyntaxException {
         Log.info("Running testLoadYaml test.\n");
-        ConfigurationModel model1 = ConfigurationModel.loadFromFile(new File("src/test/resources/example1.yaml"));
+        ConfigurationModel model1 = ConfigurationModel.load("src/test/resources/example1.yaml");
         assertNotNull(model1);
-        ConfigurationModel model2 = ConfigurationModel.loadFromFile(new File("src/test/resources/example2.yaml"));
+        ConfigurationModel model2 = ConfigurationModel.load("src/test/resources/example2.yaml");
         assertNotNull(model2);
-        ConfigurationModel model3 = ConfigurationModel.loadFromFile(new File("src/test/resources/example3.yaml"));
+        ConfigurationModel model3 = ConfigurationModel.load("src/test/resources/example3.yaml");
         assertNotNull(model3);
     }
 
@@ -83,12 +82,11 @@ public class RunnerTest {
     private void testScenario(final int scenarioNumber, int expectedResultSize) throws Exception {
         Log.info("\n Running testScenario " + scenarioNumber + "\n");
         ConfigurationModel model = ConfigurationModel
-                .loadFromFile(new File("src/test/resources/example" + scenarioNumber + ".yaml"));
-        runner.setModel(model);
-        factory.registerResultCollector(model);
-        final ResultCollector resultCollector = factory.getResultCollector();
+                .load("src/test/resources/example" + scenarioNumber + ".yaml");
+       
 
-        Future<?> future = runner.run();
+        Future<?> future = api.executeClientAndServer(model);
+        final ResultCollector resultCollector = factory.getResultCollector();
 
         synchronized (obj) {
             future.onComplete(h -> {

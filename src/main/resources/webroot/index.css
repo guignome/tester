@@ -51,7 +51,7 @@ h4 {
     background-color: silver;
 }
 
-.step:hover {
+.selectable:hover {
     background-color: lightblue;
 }
 
@@ -93,7 +93,6 @@ legend {
 
 
 }
-
 
 .resultset {
     background-color: gray;

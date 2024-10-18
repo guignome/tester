@@ -1,5 +1,5 @@
 #Maven
-results/
+/results/
 target/
 pom.xml.tag
 pom.xml.releaseBackup

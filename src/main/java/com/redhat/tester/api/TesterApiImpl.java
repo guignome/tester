@@ -25,6 +25,7 @@ public class TesterApiImpl extends RunningBase implements TesterApi {
 
     @Inject
     Factory factory;
+    private ConfigurationModel commandLineModel;
 
     public TesterApiImpl() {
 
@@ -74,21 +75,13 @@ public class TesterApiImpl extends RunningBase implements TesterApi {
                 Log.debug("Server startup Completed.");
                 // start clients.
                 clientFutures.addAll(startClients(clients, model.client));
-                if (clientFutures.size() > 0) {
                     Future.join(clientFutures).onComplete(v -> {
                         promise.complete();});
-                } else {
-                    Log.info("Running in Server mode, Press CTRL-C to stop.");
-                }
             });
         } else {
             clientFutures.addAll(startClients(clients, model.client));
-            if (clientFutures.size() > 0) {
                 Future.join(clientFutures).onComplete(v -> {
                     promise.complete();});
-            } else {
-                Log.info("Running in Server mode, Press CTRL-C to stop.");
-            }
         }
         
         return promise.future();
@@ -100,6 +93,16 @@ public class TesterApiImpl extends RunningBase implements TesterApi {
         servers.forEach(s -> s.stop());
         setRunning(false);
         return null;
+    }
+
+    @Override
+    public void registerCommandLineModel(ConfigurationModel model) {
+        this.commandLineModel = model;
+    }
+
+    @Override
+    public ConfigurationModel getCommandLineModel() {
+        return commandLineModel;
     }
 
     private List<Future<?>> startClients(List<ClientRunner> clients, ClientConfiguration config) {

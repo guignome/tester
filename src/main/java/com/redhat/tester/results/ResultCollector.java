@@ -4,10 +4,13 @@ import com.redhat.tester.ConfigurationModel;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import io.quarkus.logging.Log;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
-import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 public interface ResultCollector {
@@ -16,7 +19,7 @@ public interface ResultCollector {
     static String FORMAT_TPS = "tps";
     static String FORMAT_JSON = "json";
 
-    static File DEFAULT_RESULT_REPOSITORY_FOLDER=new File("results");
+    static Path DEFAULT_RESULT_REPOSITORY_FOLDER=Paths.get("results");
 
     String getFormat();
 
@@ -36,30 +39,37 @@ public interface ResultCollector {
 
     ResultSummary getCurrentResultSummary();
 
-    default File createResultFile(String fileName) {
+    default Path createResultFile(String fileName) {
         //Create the result folder if it doesn't exist.
-        if(!DEFAULT_RESULT_REPOSITORY_FOLDER.exists()) {
-            DEFAULT_RESULT_REPOSITORY_FOLDER.mkdirs();
+        if(!Files.exists(DEFAULT_RESULT_REPOSITORY_FOLDER)) {
+            try {
+                Files.createDirectories(DEFAULT_RESULT_REPOSITORY_FOLDER);
+            } catch (IOException e) {
+                Log.error("Unable to create Result file " + fileName, e);
+            }
         }
-        File result = null;
+        Path result = null;
         if (fileName == null || fileName.isEmpty()) {
             try {
-                result = File.createTempFile("results", "." + getFormat(),DEFAULT_RESULT_REPOSITORY_FOLDER);
+                result = Files.createTempFile(DEFAULT_RESULT_REPOSITORY_FOLDER,"results", "." + getFormat());
             } catch (IOException e) {
                 Log.error("Can't create temp file.", e);
             }
         } else {
-            result = new File(DEFAULT_RESULT_REPOSITORY_FOLDER,fileName);
+            result = DEFAULT_RESULT_REPOSITORY_FOLDER.resolve(fileName);
         }
         return result;
     }
     String getResultFileName();
 
+    @RegisterForReflection
     public static class ResultSummary {
-        public LocalDateTime startTime;
-        public LocalDateTime endTime;
-        public int numberOfTestsPassed;
-        public int numberOfTestsFailed;
-        public int numberOfSteps;
+        public Map<Integer, Integer> statusCodesCount;
+        public int size = 0;
+        public ZonedDateTime startTime;
+        public ZonedDateTime endTime;
+        long minDuration = Long.MAX_VALUE;
+        long maxDuration = 0;
+        float averageDuration =0;
     }
 }

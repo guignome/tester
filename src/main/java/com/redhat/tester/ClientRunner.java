@@ -37,17 +37,17 @@ public class ClientRunner extends RunningBase {
     private Map<Endpoint,WebClient> clients = new HashMap<>();
     private ContextMap ctx = new ContextMap();
     private StepIterator it;
-    public static final String CLIENT_ID_VAR = "clientId";
+    public static final String CLIENT_ID_VAR = "client_id";
     public static final String RESULT_VAR = "result";
-    private static int idCounter = 0;
+    private static AtomicInteger idCounter = new AtomicInteger(0);
     private String id;
     private AtomicInteger requestCounter = new AtomicInteger(0);
-    public static final String REQUEST_ID = "request_id";
+    public static final String REQUEST_ID_VAR = "request_id";
     private ResultCollector resultCollector;
     private ClientConfiguration config;
 
     public ClientRunner(Vertx vertx, ResultCollector resultCollector,TemplateRenderer renderer) {
-        id = String.valueOf(idCounter++);
+        id = String.valueOf(idCounter.getAndIncrement());
         this.vertx = vertx;
         this.resultCollector = resultCollector;
         this.renderer = renderer;
@@ -68,7 +68,7 @@ public class ClientRunner extends RunningBase {
         // Initialize the context with model.variables and a clientId.
         Variable clientId = new Variable();
         clientId.name = CLIENT_ID_VAR;
-        clientId.value = String.valueOf(id);
+        clientId.value = id;
         List<Variable> init = new ArrayList<>();
         init.addAll(variables);
         init.add(clientId);
@@ -103,7 +103,7 @@ public class ClientRunner extends RunningBase {
 
     private Future<HttpResponse<Buffer>> execute(Step step) {
         Endpoint targetEndpoint = config.getEndpoint(step.endpoint);
-        ctx.put(REQUEST_ID, requestCounter.getAndIncrement());
+        ctx.put(REQUEST_ID_VAR, String.valueOf(requestCounter.getAndIncrement()));
         if (targetEndpoint == null) {
             Log.error("Refering to non-existent endpoint: " + step.endpoint);
         }

@@ -6,17 +6,14 @@ import com.redhat.tester.ConfigurationModel.Variable;
 import io.quarkus.logging.Log;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.client.HttpRequest;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,11 +57,9 @@ public class ServerRunner {
             context.request().path());
         renderFullRequest(context.request());
         if (handler.delay == 0) {
-          context.response().setStatusCode(handler.status).end(
-              renderer.extrapolate(handler.response, ctx));
+          handleResponse(context, handler);
         } else {
-          context.vertx().setTimer(handler.delay, tid -> context.response().setStatusCode(handler.status).end(
-              renderer.extrapolate(handler.response, ctx)));
+          context.vertx().setTimer(handler.delay, tid -> handleResponse(context, handler));
         }
         Log.info("Response sent.");
       });
@@ -100,6 +95,20 @@ public class ServerRunner {
     return future;
   }
 
+  private void handleResponse(io.vertx.ext.web.RoutingContext context,Handler handler) {
+    context.response().setStatusCode(handler.status);
+    if(handler.response.generatedBodySize != 0) {
+      context.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(handler.response.generatedBodySize));
+      for(int i=0;i<handler.response.generatedBodySize;i++) {
+        context.response().write("a");
+      }
+    } else if (handler.response.body != null) {
+      context.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(handler.response.body.length()));
+      context.response().write(renderer.extrapolate(handler.response.body, ctx));
+    }
+    context.response().end();
+  }
+
   /**
    * Stops the running server
    * 
@@ -128,5 +137,4 @@ public class ServerRunner {
       Log.info(sb.toString());
     });
   }
-
 }

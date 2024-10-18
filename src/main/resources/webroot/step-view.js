@@ -11,13 +11,14 @@ export default {
     },
     methods: {
         selected() {
+            this.step.kind='step';
             this.$emit('selected',this.step);
         }
     },
     mounted() { },
     props: ['step'],
     template: `
-    <div @click="selected">
+    <div @click="selected" class="selectable">
         <a>{{step.name}} (<b>{{step.method}}</b> {{step.path}})</a>
     </div>`
 }

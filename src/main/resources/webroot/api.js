@@ -124,10 +124,6 @@ const api = {
     }
 }
 
-api.registerHandler("init", (msg) => {
-    console.log("Received init message: " + msg);
-})
-
 api.registerHandler("clientStatus", (msg) => {
     console.log("Received clientStatus message: " + msg);
 })

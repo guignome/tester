@@ -5,10 +5,10 @@ import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import io.quarkus.logging.Log;
 import io.vertx.core.Vertx;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -66,10 +66,10 @@ public class TpsResultCollector implements ResultCollector{
             currentBucketTPS.set(0);
         });
 
-        File result = createResultFile(fileName);
+        Path result = createResultFile(fileName);
         //Prepare the result output
         try  {
-            this.writer = new FileWriter(result);
+            this.writer = Files.newBufferedWriter(result);
         } catch (IOException e) {
             Log.error("Not able to create Output result file.", e);
         }

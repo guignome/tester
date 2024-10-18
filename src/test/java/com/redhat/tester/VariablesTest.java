@@ -11,8 +11,8 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.impl.HttpResponseImpl;
 import jakarta.inject.Inject;
-import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +30,11 @@ public class VariablesTest {
     TemplateRenderer renderer;
 
     @Test
-    public void testLoadYaml() throws StreamReadException, DatabindException, IOException {
+    public void testLoadYaml() throws StreamReadException, DatabindException, IOException, URISyntaxException {
         Log.info("Running testLoadYaml test.\n");
-        File[] files = new File[1];
-        files[0] = new File("src/test/resources/example6.yaml");
-        ConfigurationModel model = ConfigurationModel.loadFromFile(files);
+        String[] paths = new String[1];
+        paths[0] = "src/test/resources/example6.yaml";
+        ConfigurationModel model = ConfigurationModel.load(paths);
         assertNotNull(model);
         assertEquals(3, model.variables.size());
     }

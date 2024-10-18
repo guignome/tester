@@ -6,19 +6,21 @@ import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import io.quarkus.logging.Log;
 import io.vertx.ext.web.client.HttpResponse;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import static com.redhat.tester.ClientRunner.REQUEST_ID_VAR;
+import static com.redhat.tester.ClientRunner.CLIENT_ID_VAR;
+
 
 public class CsvResultCollector implements ResultCollector {
-    private ArrayList<Result> results = new ArrayList<>();
+    private Map<String,Result> results = new HashMap<>();
     private Writer writer;
     private String fileName;
 
@@ -26,12 +28,12 @@ public class CsvResultCollector implements ResultCollector {
     static final SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
 
     private static class Result {
-        int requestId;
+        String requestId;
         Date sentTime;
         Date receivedTime;
         HttpResponse<?> response;
 
-        Result(int requestId, Date sentTime) {
+        Result(String requestId, Date sentTime) {
             this.requestId = requestId;
             this.sentTime = sentTime;
         }
@@ -53,12 +55,12 @@ public class CsvResultCollector implements ResultCollector {
     public void init(ConfigurationModel model) {
         Log.debug("Initializing CsvResultCollector.");
         this.fileName = model.results.filename;
-        results = new ArrayList<>();
-        File result = createResultFile(fileName);
+        results = new HashMap<>();
+        Path result = createResultFile(fileName);
 
         // Prepare the result output
         try {
-            this.writer = new FileWriter(result);
+            this.writer = Files.newBufferedWriter(result);
         } catch (IOException e) {
             Log.error("Not able to create Output result file.", e);
         }
@@ -70,42 +72,44 @@ public class CsvResultCollector implements ResultCollector {
     }
 
     public long minDuration() {
-        return results.stream()
+        return results.values().stream()
         .filter(r -> r.receivedTime != null && r.sentTime != null)
         .mapToLong(r -> r.duration()).summaryStatistics().getMin();
     }
 
     public long maxDuration() {
-        return results.stream()
+        return results.values().stream()
         .filter(r -> r.receivedTime != null && r.sentTime != null)
         .mapToLong(r -> r.duration()).summaryStatistics().getMax();
     }
 
     public double averageDuration() {
-        return results.stream()
+        return results.values().stream()
         .filter(r -> r.receivedTime != null && r.sentTime != null)
         .mapToLong(r -> r.duration()).summaryStatistics().getAverage();
     }
 
-    public static final String REQUEST_ID = "request_id";
+    private static String requestKey(String clientId, String requestId) {
+        return clientId + '_' + requestId;
+    }
 
     @Override
     public void beforeStep(Step step, Map<String, Object> ctx) {
-        int requestId = (int) ctx.get(REQUEST_ID);
-        Log.debug("Request " + requestId);
-        results.add(requestId, new Result(requestId, new Date()));
+        String resultKey = requestKey((String) ctx.get(CLIENT_ID_VAR),(String) ctx.get(REQUEST_ID_VAR));
+        Log.debug("Request " + resultKey);
+        results.put(resultKey, new Result(resultKey, new Date()));
     }
 
     @Override
     public void afterStep(Step step, Map<String, Object> ctx) {
-        int requestId = (int) ctx.get(REQUEST_ID);
-        Log.debug("Response " + requestId);
-        results.get(requestId).receivedTime = new Date();
+        String resultKey = requestKey((String) ctx.get(CLIENT_ID_VAR),(String) ctx.get(REQUEST_ID_VAR));
+        Log.debug("Response " + resultKey);
+        results.get(resultKey).receivedTime = new Date();
         Object response = ctx.get(ClientRunner.RESULT_VAR);
         if(response instanceof HttpResponse) {
-            results.get(requestId).response = (HttpResponse<?>) response;
+            results.get(resultKey).response = (HttpResponse<?>) response;
         } else {
-            results.get(requestId).response = null;
+            results.get(resultKey).response = null;
         }
     }
 
@@ -121,7 +125,7 @@ public class CsvResultCollector implements ResultCollector {
                 .append("Duration (ms),")
                 .append("Response code,")
                 .append("Received Body\n");
-        for (Result r : results) {
+        for (Result r : results.values()) {
             w.append(String.valueOf(r.requestId)).append(',')
                     .append(dateFormat.format(r.sentTime)).append(',');
             if (r.receivedTime != null) {
@@ -150,7 +154,7 @@ public class CsvResultCollector implements ResultCollector {
         // key is http code, value is the count
         Map<Integer, Integer> statusCodesCount = new HashMap<>();
 
-        results.forEach(r -> {
+        results.values().forEach(r -> {
             // Increment the count in the map ( 400: i++, )
             statusCodesCount.put(r.statusCode(), statusCodesCount.getOrDefault(r.statusCode(), 0) + 1);
         });

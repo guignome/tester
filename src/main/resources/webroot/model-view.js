@@ -1,4 +1,9 @@
 import StepView from './step-view.js'
+import EndpointsView from './endpoints-view.js';
+import ServersView from './servers-view.js';
+import VariablesView from './variables-view.js';
+import SuitesView from './suites-view.js';
+
 import api from './api.js'
 /**
  * @ty
@@ -18,8 +23,11 @@ export default {
                     this.$emit('newReport',this.runningReportName);
                 }
             });
+        api.registerHandler("init", (msg) => {
+            this.model = initModel(msg.data);
+        })
     },
-    components: { StepView },
+    components: { StepView, EndpointsView,ServersView,VariablesView,SuitesView },
     data() {
         return {
             model: {
@@ -39,7 +47,8 @@ export default {
              */
             running: false,
             reportType: {},
-            runningReportName: null
+            runningReportName: null,
+            modelUri: null
         };
     },
     computed: {
@@ -67,114 +76,42 @@ export default {
                 api.stopModel();
             } else {
                 this.running = true;
+                if(this.model?.results?.filename === undefined || this.model?.results?.filename == null) {
+                    this.model.results.filename = "report.json"
+                }
                 api.startModel(this.model);
             }
         },
         selected(element) {
             this.$emit('selected',element);
         },
-        addVariable() {
-            this.model.variables.push({name: "name", value:"value"});
-        },
-        deleteVariable() {
-
-        }
     },
     mounted() { },
     props: [],
     template: `
 <div>
-            <fieldset>
-            <legend>Load Model</legend>
-                <input type="file" ref="doc" @change="readFile()" />
-            </fieldset>
     <fieldset>
-    <legend>Client</legend>
-    <fieldset>
-    <legend>Suites</legend>
-    <div v-for="suite in model?.client?.suites">
-        <h4>{{suite.name}}</h4>
-        <div v-for="step in suite?.steps">
-            <StepView :step="step" @selected="selected"/>
-        </div>
-        <div style="float: right;">
-            <button>Add Step</button>
-            <button>Delete Step</button>
-        </div>
-    </div>
-    <div style="float: right;">
-            <button>Add Suite</button>
-            <button>Delete Suite</button>
-        </div>
+    <legend>Load Model</legend>
+        <input type="file" ref="doc" @change="readFile()" />
+        <label for="modelUri">Load from uri:</label>
+        <input type="uri" id="modelUri" name="modelUri" v-model="modelUri"/>
+        <button @click="load()">Load</button>
+        
     </fieldset>
+    
+    <SuitesView :suites="model?.client?.suites"
+        @selected="selected"/>
 
-    <fieldset>
-    <legend>Endpoints</legend>
-    <div id="endpoints">
-        <table v-if="model?.client?.endpoints">
-            <tr>
-                <th>Name</th>
-                <th>Protocol</th>
-                <th>Host</th>
-                <th>Port</th>
-                <th>Prefix</th>
-                <th>Default</th>
-            </tr>
-            <tr v-for="endpoint in model.client.endpoints">
-                <td>{{endpoint.name}}</td>
-                <td>{{endpoint.protocol}}</td>
-                <td>{{endpoint.host}}</td>
-                <td>{{endpoint.port}}</td>
-                <td>{{endpoint.prefix}}</td>
-                <td>{{endpoint.isdefault}}</td>
-            </tr>
-        </table>
-        <div style="float: right;">
-            <button>Add Endpoint</button>
-            <button>Delete Endpoint</button>
-        </div>
-    </div>
-    </fieldset>
-    </fieldset>
+    <EndpointsView :endpoints="model?.client?.endpoints"
+      @selected="selected"/>
 
-<fieldset>
-    <legend>Servers</legend>
-    <div v-for="server in model.servers">
-    <h3 class="">{{server.name}} ({{server.host}}:{{server.port}})</h3>
-    <div v-for="handler in server.handlers">
-      <b>{{handler.method}}</b> {{handler.path}} -> {{handler.response}} 
-    </div>
-    <div style="float: right;">
-            <button>Add Handler</button>
-            <button>Delete Handler</button>
-        </div>
-  
-  
-  </div>
-  <div style="float: right;">
-            <button>Add Server</button>
-            <button>Delete Server</button>
-        </div>
-</fieldset>
-<fieldset>
-    <legend>Variables</legend>
-  <div id="variables">
-      <table id="variables-table" class="w3-table-all">
-          <tr>
-              <th>Name</th>
-              <th>Value</th>
-          </tr>
-          <tr v-for="variable in model.variables">
-              <td contenteditable="true">{{variable.name}}</td>
-              <td contenteditable="true">{{variable.value}}</td>
-          </tr>
-      </table>
-      <div style="float: right;">
-            <button @click="addVariable">Add Variable</button>
-            <button @click="deleteVariable">Delete Variable</button>
-        </div>
-  </div>
-  </fieldset>
+    <ServersView 
+      :servers="model.servers"
+      @selected="selected" />
+
+    <VariablesView
+      :variables="model.variables"
+      @selected="selected" />
 
   <fieldset>
     <legend>Runtime</legend>
@@ -204,14 +141,16 @@ export default {
 }
 
 function initModel(m) {
-    if (m.client === undefined) {
+    if (m.client == null) {
         m.client = {
             topology: {
                 local: {
                     parallel: 1,
                     repeat: 1
                 }
-            }
+            },
+            endpoints: [],
+            suites: []
         };
     } else if (m.client.topology === undefined) {
         m.client.topology = {

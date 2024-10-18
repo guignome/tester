@@ -9,15 +9,18 @@ import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import com.redhat.tester.api.TesterApi;
 import com.redhat.tester.api.UIServer;
 import com.redhat.tester.ConfigurationModel.ServerConfiguration;
+import com.redhat.tester.ConfigurationModel.ServerConfiguration.Response;
 import com.redhat.tester.results.ResultCollector;
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.Quarkus;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import jakarta.inject.Inject;
-import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +47,7 @@ class EntryCommand implements Runnable {
     // File mode
     @Option(names = { "-f",
             "--file" }, description = "Files to load from. If a directory is specified, all the yaml files in it will be loaded.", defaultValue = "${TESTER_FILE}")
-    File[] files;
+    URI[] uris;
 
     @Option(names = { "-t",
             "--result" }, description = "The file name where to save the results in the format specified by -o .")
@@ -55,8 +58,8 @@ class EntryCommand implements Runnable {
     String resultFolder;
 
     @Option(names = { "-o",
-            "--format" }, description = "The format of the result collector. Can be CSV, TPS, or JSON.", defaultValue = ResultCollector.FORMAT_CSV)
-    String format = ResultCollector.FORMAT_CSV;
+            "--format" }, description = "The format of the result collector. Can be CSV, TPS, or JSON.", defaultValue = ResultCollector.FORMAT_JSON)
+    String format = ResultCollector.FORMAT_JSON;
 
     @Option(names = { "-v",
             "--verbose" }, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
@@ -111,9 +114,6 @@ class EntryCommand implements Runnable {
     @Inject
     Vertx vertx;
 
-    @Inject
-    Runner runner;
-
     @Spec
     CommandSpec spec;
 
@@ -121,6 +121,7 @@ class EntryCommand implements Runnable {
     TesterApi api;
 
     private ConfigurationModel model = null;
+    private static final String SERVER_MODE_MESSAGE="Running in Server mode, Press CTRL-C to stop.";
 
     public EntryCommand() throws IOException {
 
@@ -128,14 +129,13 @@ class EntryCommand implements Runnable {
 
     @Override
     public void run() {
-        
+        serverMode = serverMode || ui;
         try {
             loadModelFromOptions();
         } catch (Exception e) {
             Log.error("Couldn't initialize model: ", e);
         }
-
-        factory.registerResultCollector(model);
+        api.registerCommandLineModel(model);
 
         // Endpoint list
         if (endpointLists) {
@@ -158,22 +158,28 @@ class EntryCommand implements Runnable {
             Quarkus.asyncExit(0);
             return;
         }
-        runner.setModel(model);
         //UI
         if(ui) {
             UIServer uiserver = new UIServer(vertx, api);
             uiserver.init();
         }
 
-        Future<?> appFuture = runner.run();
+        Future<?> appFuture = api.executeClientAndServer(model);
         appFuture.onSuccess(h -> {
-            Log.debug("All clients succeeded, exiting.");
-            factory.getResultCollector().close();
-            Quarkus.asyncExit(0);
+            Log.debug("All clients succeeded.");
+            if(!serverMode) {
+                Quarkus.asyncExit(0);
+            } else {
+                Log.info(SERVER_MODE_MESSAGE);
+            }
         }).onFailure(h -> {
-            Log.debug("All clients failed, exiting.");
+            Log.debug("All clients failed.");
             factory.getResultCollector().close();
-            Quarkus.asyncExit(1);
+            if(!serverMode) {
+                Quarkus.asyncExit(1);
+            } else {
+                Log.info(SERVER_MODE_MESSAGE);
+            }
         });
 
         Log.debug("Waiting For Exit.");
@@ -182,12 +188,12 @@ class EntryCommand implements Runnable {
         Log.debug("Exiting now.");
     }
 
-    void loadModelFromOptions() throws StreamReadException, DatabindException, IOException {
+    void loadModelFromOptions() throws StreamReadException, DatabindException, IOException, URISyntaxException {
         ParseResult pr = spec.commandLine().getParseResult();
 
-        if (files != null) {
+        if (uris != null) {
             // load files first
-            this.model = ConfigurationModel.loadFromFile(files);
+            this.model = ConfigurationModel.load(uris);
             // Then override with extra options
             // override url
             if (pr.hasMatchedPositional(0)) {
@@ -231,7 +237,8 @@ class EntryCommand implements Runnable {
             modelFromOptions.servers.get(0).host = host;
             ServerConfiguration.Handler handler = new ServerConfiguration.Handler();
             handler.delay = delay;
-            handler.response = response;
+            handler.response = new Response();
+            handler.response.body = response;
             handler.method = "GET";
             handler.path = "/*";
             modelFromOptions.servers.get(0).handlers.add(handler);
