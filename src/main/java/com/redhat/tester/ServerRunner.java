@@ -1,5 +1,6 @@
 package com.redhat.tester;
 
+import com.redhat.tester.ConfigurationModel.Header;
 import com.redhat.tester.ConfigurationModel.ServerConfiguration;
 import com.redhat.tester.ConfigurationModel.ServerConfiguration.Handler;
 import com.redhat.tester.ConfigurationModel.Variable;
@@ -97,6 +98,10 @@ public class ServerRunner {
 
   private void handleResponse(io.vertx.ext.web.RoutingContext context,Handler handler) {
     context.response().setStatusCode(handler.status);
+    //Add headers to response.
+    for(Header header: handler.response.headers) {
+      context.response().putHeader(header.name, header.value);
+    }
     if(handler.response.generatedBodySize != 0) {
       context.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(handler.response.generatedBodySize));
       for(int i=0;i<handler.response.generatedBodySize;i++) {
@@ -106,6 +111,7 @@ public class ServerRunner {
       context.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(handler.response.body.length()));
       context.response().write(renderer.extrapolate(handler.response.body, ctx));
     }
+    
     context.response().end();
   }
 
@@ -134,7 +140,7 @@ public class ServerRunner {
     req.body().onComplete(a -> {
       sb.append(a.result().toString())
           .append("\n└──────────────────────────────────────────────────────────────┘\n");
-      Log.info(sb.toString());
+      Log.debug(sb.toString());
     });
   }
 }

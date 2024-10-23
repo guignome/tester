@@ -135,7 +135,7 @@ public class ClientRunner extends RunningBase {
                     }
                     resultCollector.afterStep(step, ctx);
                     Log.info(renderRequest(request));
-                    Log.info(renderResponse(r));
+                    Log.debug(renderResponse(r));
 
                     // Process the following step
                     if (it.hasNext()) {

@@ -20,10 +20,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -129,12 +132,15 @@ class EntryCommand implements Runnable {
 
     @Override
     public void run() {
-        serverMode = serverMode || ui;
         try {
             loadModelFromOptions();
         } catch (Exception e) {
             Log.error("Couldn't initialize model: ", e);
         }
+
+        setLogLevel();
+        serverMode = serverMode || ui || model.client == null;
+
         api.registerCommandLineModel(model);
 
         // Endpoint list
@@ -289,5 +295,32 @@ class EntryCommand implements Runnable {
 
     public ConfigurationModel getModel() {
         return this.model;
+    }
+
+    private void setLogLevel() {
+        Logger rootLogger = LogManager.getLogManager().getLogger("com.redhat.tester");
+        int level = verbose == null?0: verbose.length;
+
+        switch (level) {
+            case 0:
+                rootLogger.setLevel(Level.INFO);
+                break;
+            case 1:
+                rootLogger.setLevel(Level.FINE);
+                break;
+            case 2:
+                rootLogger.setLevel(Level.FINER);
+                break;
+            case 3:
+                rootLogger.setLevel(Level.FINEST);
+                break;  
+            case 4:
+                rootLogger.setLevel(Level.ALL);
+                break;      
+            default:
+                rootLogger.setLevel(Level.INFO);
+                break;
+        }
+        Log.debugf("Setting loglevel to %s", rootLogger.getLevel());
     }
 }

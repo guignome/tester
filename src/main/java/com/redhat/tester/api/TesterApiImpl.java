@@ -33,9 +33,7 @@ public class TesterApiImpl extends RunningBase implements TesterApi {
 
     @Override
     public Future<?> executeClientAndServer(ConfigurationModel model) {
-        //create resultcollector
-        factory.registerResultCollector(model);
-        
+        factory.getResultCollector().init(model);
         setRunning(true);
         clients = new ArrayList<ClientRunner>();
         servers = new ArrayList<ServerRunner>();

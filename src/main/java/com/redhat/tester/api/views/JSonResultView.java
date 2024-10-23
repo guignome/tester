@@ -1,8 +1,6 @@
 package com.redhat.tester.api.views;
 
 import java.io.BufferedInputStream;
-import java.nio.file.Paths;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;

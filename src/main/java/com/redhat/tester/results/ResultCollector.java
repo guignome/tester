@@ -65,11 +65,18 @@ public interface ResultCollector {
     @RegisterForReflection
     public static class ResultSummary {
         public Map<Integer, Integer> statusCodesCount;
-        public int size = 0;
+        public int size =0;
+
         public ZonedDateTime startTime;
         public ZonedDateTime endTime;
-        long minDuration = Long.MAX_VALUE;
-        long maxDuration = 0;
-        float averageDuration =0;
+        public long minDuration = Long.MAX_VALUE;
+        public long maxDuration = 0;
+        public float averageDuration =0;
+
+        //For TPS
+        public  int lastTPS = 0;
+        public int currentBucketTPS = 0;
+
+        public int requestCounter = 0;
     }
 }

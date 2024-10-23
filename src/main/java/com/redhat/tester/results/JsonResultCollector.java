@@ -13,6 +13,7 @@ import com.redhat.tester.TemplateRenderer;
 
 import io.quarkus.logging.Log;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.HttpResponse;
 
 import java.io.BufferedWriter;
@@ -21,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,11 +37,13 @@ public class JsonResultCollector implements ResultCollector {
     ConfigurationModel model;
     String fileName;
     ResultSummary summary;
+    Vertx vertx;
 
     Map<String,StepResult> inflight = new HashMap<>();
 
-    public JsonResultCollector(TemplateRenderer renderer) {
+    public JsonResultCollector(TemplateRenderer renderer,Vertx vertx) {
         this.renderer = renderer;
+        this.vertx = vertx;
     }
 
     @Override
@@ -53,6 +57,9 @@ public class JsonResultCollector implements ResultCollector {
 
     @Override
     public void init(ConfigurationModel model) {
+        if(model.client == null) {
+            return;
+        }
         Log.debug("Initializing JSONResultCollector.");
         //initialize the summary
         this.summary = new ResultSummary();
@@ -64,7 +71,6 @@ public class JsonResultCollector implements ResultCollector {
         Path result = createResultFile(fileName);
 
         try {
-
             w = Files.newBufferedWriter(result);
 
             // Create and configure an ObjectMapper instance
@@ -86,6 +92,18 @@ public class JsonResultCollector implements ResultCollector {
         } catch (IOException e) {
             Log.error("Error initializing JSON Factory", e);
         }
+        //TPS
+        summary.requestCounter = 0;
+        summary.lastTPS=0;
+        summary.currentBucketTPS=0;
+        summary.size = 0;
+        vertx.setPeriodic(1000,1000,(id)-> {
+            Log.debug("Moving to next bucket.");
+            Log.info(renderSummary());
+            summary.lastTPS = summary.currentBucketTPS;
+            summary.currentBucketTPS = 0;
+        });
+
     }
 
     @Override
@@ -96,6 +114,9 @@ public class JsonResultCollector implements ResultCollector {
     @Override
     public void close() {
         Log.debug("Closing JsonResultCollector.");
+        if(summary == null) {
+            return;
+        }
         summary.endTime = ZonedDateTime.now();
         try {
             jsonGenerator.writeEndArray();
@@ -120,6 +141,7 @@ public class JsonResultCollector implements ResultCollector {
         String clientId =(String) ctx.get(ClientRunner.CLIENT_ID_VAR);
         stepResult.clientId = clientId;
         inflight.put(clientId, stepResult);
+        summary.requestCounter++;
      }
 
     @Override
@@ -149,19 +171,23 @@ public class JsonResultCollector implements ResultCollector {
         }
         
         //update the summary
+        synchronized(summary) {
+            long duration = ChronoUnit.MILLIS.between(stepResult.startTime,stepResult.endTime);
+            if(duration>summary.maxDuration) {
+                summary.maxDuration = duration;
+            }
+            if(duration<summary.minDuration) {
+                summary.minDuration = duration;
+            }
+            summary.averageDuration = (summary.size * summary.averageDuration + duration) / (summary.size + 1);
+            summary.size++;
+            // Increment the count in the map ( 400: i++, )
+            summary.statusCodesCount.put(stepResult.statusCode, summary.statusCodesCount.getOrDefault(stepResult.statusCode, 0) + 1);
         
-        long duration = ChronoUnit.MILLIS.between(stepResult.startTime,stepResult.endTime);
-        if(duration>summary.maxDuration) {
-            summary.maxDuration = duration;
+            //update TPS
+            summary.currentBucketTPS++;
+        
         }
-        if(duration<summary.minDuration) {
-            summary.minDuration = duration;
-        }
-        summary.averageDuration = (summary.size * summary.averageDuration + duration) / (summary.size + 1);
-        summary.size++;
-        // Increment the count in the map ( 400: i++, )
-        summary.statusCodesCount.put(stepResult.statusCode, summary.statusCodesCount.getOrDefault(stepResult.statusCode, 0) + 1);
-
     }
 
     @Override
@@ -170,11 +196,16 @@ public class JsonResultCollector implements ResultCollector {
     @Override
     public String renderSummary() {
         //Open the Json file, calculate statusCodesCount and duration stats
-
+        long duration = summary.startTime.until(ZonedDateTime.now(), ChronoUnit.SECONDS);
+        double totalTPS = (float) summary.size / duration;
 
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%s Requests sent. Duration (ms): min=%d, max=%d, avg=%.3f",
-                summary.size,summary.minDuration, summary.maxDuration,
+        sb.append(String.format("%,d Requests sent in %s sec (%,.2f TPS). Duration (ms): min=%,d, max=%,d, avg=%,.3f",
+                summary.size,
+                duration,
+                totalTPS,
+                summary.minDuration, 
+                summary.maxDuration,
                 summary.averageDuration))
                 .append("\n")
                 .append("HTTP Return Codes: { ");
@@ -188,7 +219,6 @@ public class JsonResultCollector implements ResultCollector {
     }
 
     //JSON Object
-
     @RegisterForReflection
     public static class TestExecution {
         public ZonedDateTime creationTime;
@@ -214,9 +244,6 @@ public class JsonResultCollector implements ResultCollector {
     }
 
     // Result Summary
-
-    
-
     @Override
     public ResultSummary getCurrentResultSummary() {
         return summary;
