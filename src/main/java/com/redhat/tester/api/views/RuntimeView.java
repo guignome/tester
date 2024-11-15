@@ -8,21 +8,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.tester.api.TesterApi;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.http.ServerWebSocket;
+import jakarta.websocket.RemoteEndpoint.Async;
 
-public class RuntimeView implements PropertyChangeListener{
-    private ServerWebSocket ws;
+public class RuntimeView implements View{
+    private Async ws;
     private TesterApi api;
     private Vertx vertx;
-    
-    public RuntimeView(Vertx vertx, ServerWebSocket ws, TesterApi api) {
+
+    public RuntimeView(Vertx vertx, Async ws, TesterApi api) {
         this.ws = ws;
         this.api = api;
         this.vertx = vertx;
-        // vertx.setPeriodic(5000, l->{
-        //     sendViewUpdate();
-        // });
-        api.addPropertyChangeListener(this);
         
     }
 
@@ -41,11 +37,24 @@ public class RuntimeView implements PropertyChangeListener{
 
     void sendViewUpdate() {
         String msg = render().toString();
-        ws.writeTextMessage(msg);
+        ws.sendText(msg);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         sendViewUpdate();
+    }
+
+    @Override
+    public void start() {
+        // vertx.setPeriodic(5000, l->{
+        //     sendViewUpdate();
+        // });
+        api.addPropertyChangeListener(this);
+    }
+
+    @Override
+    public void stop() {
+        api.removePropertyChangeListener(this);
     }
 }

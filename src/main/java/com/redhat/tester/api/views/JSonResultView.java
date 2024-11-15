@@ -1,5 +1,6 @@
 package com.redhat.tester.api.views;
 
+import java.beans.PropertyChangeEvent;
 import java.io.BufferedInputStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -9,23 +10,20 @@ import com.redhat.tester.results.ResultCollector;
 
 import io.quarkus.logging.Log;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.ServerWebSocket;
+import jakarta.websocket.RemoteEndpoint.Async;
 
-public class JSonResultView implements Stoppable{
-    private ServerWebSocket ws;
+public class JSonResultView implements View{
     private String filename;
     BufferedInputStream reader = null;
     Vertx vertx;
     long timerid;
+    Async ws;
 
-    public JSonResultView(Vertx vertx, ServerWebSocket ws, String filename) {
+    public JSonResultView(Vertx vertx, Async ws, String filename) {
         this.ws = ws;
         this.filename = filename;
         this.vertx = vertx;
-        sendViewUpdate();
-        timerid = vertx.setPeriodic(5000, l->{
-             sendViewUpdate();
-        });
+        
     }
 
     void sendViewUpdate() {
@@ -51,8 +49,22 @@ public class JSonResultView implements Stoppable{
                         .set("data",
                             filejson
                         );
-                    ws.writeTextMessage(fulljson.toString());
+                    ws.sendText(fulljson.toString());
                 });
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'propertyChange'");
+    }
+
+    @Override
+    public void start() {
+        sendViewUpdate();
+        timerid = vertx.setPeriodic(5000, l->{
+             sendViewUpdate();
+        });
     }
 
     @Override

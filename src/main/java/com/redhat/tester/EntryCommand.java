@@ -7,7 +7,7 @@ import com.redhat.tester.ConfigurationModel.ClientConfiguration.Endpoint;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite;
 import com.redhat.tester.ConfigurationModel.ClientConfiguration.Suite.Step;
 import com.redhat.tester.api.TesterApi;
-import com.redhat.tester.api.UIServer;
+import com.redhat.tester.api.UISocket;
 import com.redhat.tester.ConfigurationModel.ServerConfiguration;
 import com.redhat.tester.ConfigurationModel.ServerConfiguration.Response;
 import com.redhat.tester.results.ResultCollector;
@@ -15,6 +15,7 @@ import io.quarkus.logging.Log;
 import io.quarkus.runtime.Quarkus;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import jakarta.enterprise.inject.spi.CDI;
 import jakarta.inject.Inject;
 import java.io.IOException;
 import java.net.URI;
@@ -166,8 +167,8 @@ class EntryCommand implements Runnable {
         }
         //UI
         if(ui) {
-            UIServer uiserver = new UIServer(vertx, api);
-            uiserver.init();
+            UISocket ui = CDI.current().select(UISocket.class).get();
+            ui.init();
         }
 
         Future<?> appFuture = api.executeClientAndServer(model);

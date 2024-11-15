@@ -38,6 +38,7 @@ public class JsonResultCollector implements ResultCollector {
     String fileName;
     ResultSummary summary;
     Vertx vertx;
+    long timerId;
 
     Map<String,StepResult> inflight = new HashMap<>();
 
@@ -97,7 +98,7 @@ public class JsonResultCollector implements ResultCollector {
         summary.lastTPS=0;
         summary.currentBucketTPS=0;
         summary.size = 0;
-        vertx.setPeriodic(1000,1000,(id)-> {
+        timerId = vertx.setPeriodic(1000,1000,(id)-> {
             Log.debug("Moving to next bucket.");
             Log.info(renderSummary());
             summary.lastTPS = summary.currentBucketTPS;
@@ -127,6 +128,7 @@ public class JsonResultCollector implements ResultCollector {
         } catch (IOException e) {
             Log.error(e);
         }
+        vertx.cancelTimer(timerId);
     }
 
      // Events

@@ -1,14 +1,18 @@
 package com.redhat.tester.api.views;
 
+import java.beans.PropertyChangeEvent;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.vertx.core.http.ServerWebSocket;
+import jakarta.websocket.RemoteEndpoint.Async;
 
-public class ResultsView {
+public class ResultsView implements View{
     
-    public ResultsView(ServerWebSocket ws) {
-        //TODO Auto-generated constructor stub
+    Async ws;
+
+    public ResultsView(Async ws) {
+       this.ws = ws;
     }
 
     public JsonNode render() {
@@ -20,5 +24,23 @@ public class ResultsView {
                 .put("running",true)
                 .put("reportName", "result123.json")
             );
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'propertyChange'");
+    }
+
+    @Override
+    public void start() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'start'");
+    }
+
+    @Override
+    public void stop() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'stop'");
     }
 }
