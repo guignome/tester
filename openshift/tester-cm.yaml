@@ -33,4 +33,5 @@ data:
       - path: /*
         method: GET
         delay: 2000
-        response: This is a sample response
+        response: 
+          body: This is a response with prefix.

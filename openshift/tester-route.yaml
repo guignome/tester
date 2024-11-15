@@ -10,7 +10,7 @@ metadata:
   name: tester
 spec:
   port:
-    targetPort: 8081-tcp
+    targetPort: 8080-tcp
   tls:
     insecureEdgeTerminationPolicy: Redirect
     termination: edge
