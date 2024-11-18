@@ -5,16 +5,18 @@ import type { Endpoint } from '@/api';
 export default defineComponent({
   data() {
     return {
-      selectedEndpoint: {}
+      selectedEndpoint: {} as Endpoint
     }
   },
   props: {
     endpoints: { type: Object as PropType<Endpoint[]>, required: true }
   },
-  emits: ['selected'],
+  emits: {
+    selected: (e: Endpoint) =>{}
+  },
 
   methods: {
-    selected(endpoint) {
+    selected(endpoint: Endpoint) {
       endpoint.kind = 'endpoint';
       this.$emit('selected', endpoint);
     },
@@ -39,11 +41,10 @@ export default defineComponent({
 <!-- Template -->
 <template>
   <Fieldset legend="Endpoints" :toggleable="true">
-    <DataTable :value="endpoints" selectionMode="single"
-      v-model:selection="selectedEndpoint" @rowSelect="onRowSelect">
+    <DataTable :value="endpoints" selectionMode="single" v-model:selection="selectedEndpoint" @rowSelect="onRowSelect">
       <Column field="name" header="Name"></Column>
       <Column field="protocol" header="Protocol"></Column>
-      <Column field="host" header="Host" ></Column>
+      <Column field="host" header="Host"></Column>
       <Column field="port" header="Port"></Column>
       <Column field="prefix" header="Prefix"></Column>
       <Column field="isdefault" header="Default" dataType="boolean"></Column>
@@ -59,6 +60,4 @@ export default defineComponent({
 
 
 <!-- Style -->
-<style scoped>
-
-</style>
+<style scoped></style>

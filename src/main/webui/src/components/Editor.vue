@@ -4,8 +4,7 @@ import { defineComponent } from 'vue'
 export default defineComponent({
   data() {
     return {
-      myvar: "hi",
-      
+       
     }
   },
   methods: {
@@ -14,7 +13,10 @@ export default defineComponent({
     },
     
   },
-  props: ['initialElement']
+  props: {initialElement: {
+    type: Object,
+    required: true
+  }}
 })
 </script>
 

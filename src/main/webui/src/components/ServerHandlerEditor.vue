@@ -1,6 +1,6 @@
 <script lang="ts">
-import { defineComponent } from 'vue'
-import { http_methods } from '@/api';
+import { defineComponent, type PropType } from 'vue'
+import { http_methods, type Handler } from '@/api';
 
 export default defineComponent({
   created() {
@@ -39,7 +39,12 @@ export default defineComponent({
 
   },
   mounted() { },
-  props: ['initialElement'],
+  props: {
+    initialElement: {
+      type: Object as PropType<Handler>,
+      required: true
+    }
+  },
 })
 </script>
 

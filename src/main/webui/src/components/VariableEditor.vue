@@ -1,5 +1,6 @@
 <script lang="ts">
-import { defineComponent } from 'vue'
+import type { Variable } from '@/api';
+import { defineComponent, type PropType } from 'vue'
 
 export default defineComponent({
   data() {
@@ -19,7 +20,12 @@ export default defineComponent({
     }
   },
   mounted() { },
-  props: ['initialElement'],
+  props: {
+    initialElement: {
+      type: Object as PropType<Variable>,
+      required: true
+    }
+  }
 })
 </script>
 
@@ -29,7 +35,6 @@ export default defineComponent({
     <div style="display: grid; grid-template-columns: auto auto auto auto;" class="form">
       <label for="name">Name:</label>
       <InputText id="name" v-model="variable.name" />
-
 
       <label for="value">Value:</label>
       <InputText id="value" v-model="variable.value" />

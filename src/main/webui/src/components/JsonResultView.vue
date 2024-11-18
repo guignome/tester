@@ -1,6 +1,6 @@
 <script lang="ts">
-import { defineComponent } from 'vue'
-import api, { ResourceType, type AssertionResult } from '../api'
+import { defineComponent, type PropType } from 'vue'
+import api, { ResourceType, type AssertionResult, type Results, type ResultSet } from '../api'
 
 const options: Intl.DateTimeFormatOptions = {
     hour: "numeric",
@@ -23,13 +23,16 @@ export default defineComponent({
                 this.$emit('updateResult', msg.data);
             }
         });
-
     },
     unmounted() {
         api.stopWatch(ResourceType.JSONResult, this.result.name);
     },
-    props: ['result'],
-    emits: ['updateResult'],
+    props: {
+        result: { required: true, type: Object as PropType<ResultSet> }
+    },
+    emits: {
+        updateResult: (r: ResultSet) => { }
+    },
     methods: {
         formatStartTime(start) {
             const time = new Date(start);
@@ -66,14 +69,21 @@ export default defineComponent({
 <!-- Template -->
 <template>
     <div class="jsonResultsView">
-        <div>
-            <p><b>Name:</b> {{ result.name }}</p>
-            <p><b>Creation Time:</b> {{ result.creationTime }}</p>
-            <p><b>Total Duration:</b> {{ formatDuration(result?.summary?.startTime, result?.summary?.endTime) }}</p>
-            <p><b>Total Size:</b> {{ result?.summary?.size }}</p>
-
+        <div class="row">
+            <div class="column">
+                <p><b>Name:</b> {{ result.name }}</p>
+                <p><b>Creation Time:</b> {{ result.creationTime }}</p>
+                <p><b>Total Duration:</b> {{ formatDuration(result?.summary?.startTime, result?.summary?.endTime) }}</p>
+            </div>
+            <div class="column">
+                <p><b>Total Size:</b> {{ result?.summary?.size }}</p>
+                <p><b>Duration (min/max/avg ms):</b>{{ result?.summary?.minDuration }}/{{ result?.summary?.maxDuration
+                    }}/{{ result?.summary?.averageDuration }}</p>
+                <p><b>TPS:</b>{{ result?.summary?.lastTPS }}</p>
+            </div>
         </div>
-        <DataTable :value="result.results" paginator :rows="20" :rowsPerPageOptions="[5, 10, 20, 50, 100]" tableStyle="min-width: 50rem">
+        <DataTable :value="result.results" paginator :rows="20" :rowsPerPageOptions="[5, 10, 20, 50, 100]"
+            tableStyle="min-width: 50rem">
             <Column field="clientId" header="Client ID"></Column>
             <Column field="stepName" header="Step Name"></Column>
             <Column header="Start Time">
@@ -90,7 +100,7 @@ export default defineComponent({
             <Column header="Assertions (Passed/Total)">
                 <template #body="slotProps">
                     <div :style="styleAssertions(slotProps.data.assertions)">
-                    {{ formatAssertions(slotProps.data.assertions) }}
+                        {{ formatAssertions(slotProps.data.assertions) }}
                     </div>
                 </template>
             </Column>
@@ -100,4 +110,12 @@ export default defineComponent({
 
 
 <!-- Style -->
-<style scoped></style>
+<style scoped>
+.row {
+    display: flex;
+}
+
+.column {
+    flex: 50%;
+}
+</style>

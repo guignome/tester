@@ -65,8 +65,10 @@ export default defineComponent({
     <SplitterPanel :size="50">
       <Splitter layout="vertical">
         <SplitterPanel :size="50">
-          <ResultsView @updateResult="newResult => updateResult(newResult)" @closeResult="r => closeResult(r)"
-            :resultsets="resultsets" v-model:activeResultName=activeResultName>
+          <ResultsView @updateResult="newResult => updateResult(newResult)" 
+            @closeResult="r => closeResult(r)"
+            :resultsets="resultsets" 
+            v-model:activeResultName=activeResultName>
           </ResultsView>
         </SplitterPanel>
         <SplitterPanel :size="50">

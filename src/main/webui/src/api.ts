@@ -1,4 +1,4 @@
-export type MessageHandler=  (msg:ClientMessage) => void
+export type MessageHandler = (msg: ClientMessage) => void
 
 /**
  * A JSON message Server->Client
@@ -21,7 +21,7 @@ export interface ServerMessage {
 }
 
 export const enum ServerMessageKind {
-    StopWatch= "stopWatch",
+    StopWatch = "stopWatch",
     Watch = "watch",
     Init = "init",
     StartModel = "startModel",
@@ -67,7 +67,8 @@ export interface Endpoint {
     port: number
     protocol?: string
     prefix?: string
-    isdefault? :boolean
+    isdefault?: boolean
+    kind?: string
 }
 
 export interface Suite {
@@ -113,7 +114,9 @@ export interface Handler {
 }
 
 export interface Response {
-    body: string
+    body?: string | null
+    generatedBodySize?: number
+    headers?: Header[]
 }
 
 export interface Variable {
@@ -131,6 +134,20 @@ export interface ResultSet {
     name: string
     model: Model
     results: TestResult[]
+    summary?: Summary
+}
+
+export interface Summary {
+    statuscodesCount: Map<String, number>
+    size: number
+    startTime: Date
+    endTime: Date
+    minDuration: number
+    maxDuration: number
+    averageDuration: number
+    lastTPS: number
+    currentBucketTPS: number
+    requestCounter: number
 }
 export interface TestResult {
     startTime: Date
@@ -145,12 +162,12 @@ export interface AssertionResult {
     passed: boolean
 }
 
-export const http_methods = ["GET","HEAD","POST","PUT","DELETE","CONNECT","OPTIONS","TRACE","PATCH"];
+export const http_methods = ["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"];
 
 //Start the websocket
 const wsprotocol = location.protocol === "http:" ? "ws:" : "wss:";
 const ws = new WebSocket(wsprotocol + "//" + location.host);
-const handlers = new Map<ClientMessageKind,MessageHandler>();
+const handlers = new Map<ClientMessageKind, MessageHandler>();
 const views = new Map();
 
 ws.onopen = function () {

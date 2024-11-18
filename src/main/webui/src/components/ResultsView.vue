@@ -1,13 +1,19 @@
 <script lang="ts">
-import { defineComponent, type InputHTMLAttributes } from 'vue'
+import type { Results, ResultSet } from '@/api';
+import { defineComponent, type InputHTMLAttributes, type PropType } from 'vue'
 
 export default defineComponent({
   data() {
     return {
     }
   },
-  props: ['resultsets', 'activeResultName'],
-  emits: ['updateResult', 'update:activeResultName', 'closeResult', 'update:resultsets'],
+  props: {
+    resultsets: {type: Object as PropType<ResultSet[]>, required: true, },
+    activeResultName: {type: String, required: true, }
+  },
+  emits: {updateResult:(r: Results) =>{},
+    closeResult: (r: Results) =>{},
+  },
   methods: {
     readFile() {
       console.log("Reading file");
@@ -15,7 +21,6 @@ export default defineComponent({
       fr.onload = (res) => {
         const content = res.target!.result as string;
         this.resultsets.push(JSON.parse(content));
-        this.$emit('update:resultsets', this.resultsets);
       }
       // @ts-ignore
       fr.readAsText(this.$refs.doc as InputHTMLAttributes.files[0]);
@@ -44,7 +49,7 @@ export default defineComponent({
     </TabList>
     <TabPanels>
       <TabPanel v-for="r in resultsets" :value="r.name" :key="r.name">
-        <JSONResultView @updateResult="newResult => $emit('updateResult', newResult)" :result="r" :key="r.name">
+        <JSONResultView @updateResult="(newResult: Results) => $emit('updateResult', newResult)" :result="r" :key="r.name">
         </JSONResultView>
       </TabPanel>
     </TabPanels>

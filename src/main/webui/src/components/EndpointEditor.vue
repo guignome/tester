@@ -1,10 +1,11 @@
 <script lang="ts">
-import { defineComponent } from 'vue'
+import type { Endpoint } from '@/api';
+import { defineComponent, type PropType } from 'vue'
 
 export default defineComponent({
   data() {
     return {
-      protocols: ["http","https"]
+      protocols: ["http", "https"]
     }
   },
   computed: {
@@ -12,7 +13,12 @@ export default defineComponent({
       return this.initialElement;
     }
   },
-  props: ['initialElement'],
+  props: {
+    initialElement: {
+      type: Object as PropType<Endpoint>,
+      required: true
+    }
+  },
   methods: {
     save() {
 
@@ -33,7 +39,7 @@ export default defineComponent({
       <InputText id="name" v-model="endpoint.name" />
 
       <label for="protocol">Protocol:</label>
-      <Select id="protocol" :options="protocols" v-model="endpoint.protocol"/>
+      <Select id="protocol" :options="protocols" v-model="endpoint.protocol" />
 
       <label for="host">Host:</label>
       <InputText id="host" v-model="endpoint.host" />
