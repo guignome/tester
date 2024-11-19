@@ -36,7 +36,8 @@ export const enum ClientMessageKind {
 
 export const enum ResourceType {
     JSONResult = "jsonResult",
-    Runtime = "runtime"
+    Runtime = "runtime",
+    ResultFiles = "resultFiles"
 }
 
 export interface Model {

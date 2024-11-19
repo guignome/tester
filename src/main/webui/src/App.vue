@@ -1,18 +1,13 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import samples from './sample-model'
 import type { ResultSet } from './api';
 
-const sample1: ResultSet = { ...samples.sampleResult };
-const sample2: ResultSet = { ...samples.sampleResult };
-sample1.name = "sample1.json";
-sample2.name = "sample2.json";
 
 export default defineComponent({
   data() {
     return {
-      resultsets: [sample1, sample2],
-      activeResultName: sample1.name,
+      resultsets: [] as ResultSet[],
+      activeResultName: "",
       selection: { name: "Not initialized" }
     }
   },
@@ -49,6 +44,9 @@ export default defineComponent({
         }
       });
       this.resultsets[foundindex] = newResult;
+    },
+    loadResult(f: string) {
+      this.resultsets.push({name: f} as ResultSet);
     }
   }
 })
@@ -65,8 +63,9 @@ export default defineComponent({
     <SplitterPanel :size="50">
       <Splitter layout="vertical">
         <SplitterPanel :size="50">
-          <ResultsView @updateResult="newResult => updateResult(newResult)" 
-            @closeResult="r => closeResult(r)"
+          <ResultsView @updateResult="updateResult" 
+            @closeResult="closeResult"
+            @loadResult="loadResult"
             :resultsets="resultsets" 
             v-model:activeResultName=activeResultName>
           </ResultsView>

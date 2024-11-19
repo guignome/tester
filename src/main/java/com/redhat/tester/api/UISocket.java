@@ -66,42 +66,45 @@ public class UISocket {
             JsonNode data = jsonMsg.get("data");
 
             // switch(msg.kind) {
-            switch (kind) {
-                case "init":
+            switch (ServerMessageKind.valueOf(kind)) {
+                case init:
                     Log.info("Received init message.");
                     JsonObject json = new JsonObject()
                             .put("kind", "init")
                             .put("data", api.getCommandLineModel());
                     ws.sendText(json.encode());
                     break;
-                case "startModel":
+                case startModel:
                     ConfigurationModel model = mapper.readValue(data.get("model").toString(),
                             ConfigurationModel.class);
                     var future = api.executeClientAndServer(model);
                     break;
-                case "stopModel":
+                case stopModel:
                     api.stop();
                     break;
-                case "watch":
+                case watch:
                     String resourceType = jsonMsg.get("resourceType").asText();
                     String instance = jsonMsg.get("resourceInstance").asText();
                     View view = null;
-                    switch (resourceType) {
-                        case "runtime":
+                    switch (ResourceType.valueOf(resourceType)) {
+                        case runtime:
                             view = new RuntimeView(vertx, ws, api);
                             break;
-                        case "results":
+                        case results:
                             view = new ResultsView(ws);
                             break;
-                        case "jsonResult":
+                        case jsonResult:
                             view = new JSonResultView(vertx, ws, instance);
+                            break;
+                        case resultFiles:
+                            view = new ResultFilesView(vertx,ws);
                             break;
                         default:
                             Log.errorf("Unknown message resource type: %s", resourceType);
                     }
                     sessions.get(session.getId()).watch(resourceType, instance, view);
                     break;
-                case "stopWatch":
+                case stopWatch:
                     String resourceType2 = jsonMsg.get("resourceType").asText();
                     String instance2 = jsonMsg.get("resourceInstance").asText();
                     sessions.get(session.getId()).stopWatching(resourceType2, instance2);
@@ -111,6 +114,43 @@ public class UISocket {
             }
         } catch (JsonProcessingException e) {
             Log.error(e);
+        }
+    }
+
+    public static enum ServerMessageKind {
+        stopWatch("stopWatch"),
+        watch("watch"),
+        init("init"),
+        startModel("startModel"),
+        stopModel("stopModel");
+        private String value;
+    
+        ServerMessageKind(String value) {
+            this.value = value;
+        }
+    }
+    
+    public static enum ClientMessageKind {
+        clientStatus("clientStatus"),
+        viewUpdate("viewUpdate"),
+        init("init");
+
+        private String value;
+    
+        ClientMessageKind(String value) {
+            this.value = value;
+        }
+    }
+    
+    public static enum ResourceType {
+        jsonResult("jsonResult"),
+        runtime("runtime"),
+        results("results"),
+        resultFiles("resultFiles");
+        private String value;
+    
+        ResourceType(String value) {
+            this.value = value;
         }
     }
 
