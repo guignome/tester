@@ -1,15 +1,19 @@
 <script lang="ts">
-import { defineComponent } from 'vue'
+import type { Handler } from '@/api';
+import { defineComponent, type PropType } from 'vue'
 
 export default defineComponent({
   data() {
     return {
       myvar: "hi",
-
     }
   },
-  emits: ['selected'],
-  props: ['serverhandler'],
+  emits: {
+    selected: (h: Handler) =>true
+  },
+  props: {
+    serverhandler: {type: Object as PropType<Handler>, required: true}
+  },
   methods: {
     selected() {
 

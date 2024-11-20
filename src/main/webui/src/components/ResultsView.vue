@@ -27,9 +27,9 @@ export default defineComponent({
     activeResultName: { type: String, required: true, }
   },
   emits: {
-    updateResult: (r: Results) => { },
-    closeResult: (r: Results) => { },
-    loadResult: (f: String) => { },
+    updateResult: (r: Results) => true,
+    closeResult: (r: Results) => true,
+    loadResult: (f: String) => true,
   },
   methods: {
     readFile() {

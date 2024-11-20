@@ -1,22 +1,22 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue'
-import type { Step } from '@/api';
+import { SelectionKind, type Step } from '@/api';
 
 export default defineComponent({
   data() {
     return {
-      myvar: "hi",
 
     }
   },
   props: {
     step: { type: Object as PropType<Step>, required: true }
   },
-  emits: ['selected'],
+  emits: {
+    selected: (s: Step,kind: SelectionKind) =>true
+  },
   methods: {
     selected() {
-      this.step!.kind = 'step';
-      this.$emit('selected', this.step);
+      this.$emit('selected', this.step, SelectionKind.step);
     },
 
   }

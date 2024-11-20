@@ -39,6 +39,14 @@ export const enum ResourceType {
     Runtime = "runtime",
     ResultFiles = "resultFiles"
 }
+export const enum SelectionKind {
+    step="step",
+    suite="suite",
+    endpoint="endpoint",
+    server="server",
+    handler="handler",
+    variable="variable"
+}
 
 export interface Model {
     client: Client
@@ -69,11 +77,15 @@ export interface Endpoint {
     protocol?: string
     prefix?: string
     isdefault?: boolean
-    kind?: string
+    httpOptions?: HttpOption[]
+}
+
+export interface HttpOption {
+    trustAll: boolean,
+    protocolVersion: String
 }
 
 export interface Suite {
-    kind?: string;
     name: string
     steps: Step[]
     variables?: Variable[]
@@ -88,7 +100,6 @@ export interface Step {
     register?: string
     headers: Header[]
     assertions: Assertion[]
-    kind?: string
 }
 
 export interface Header {

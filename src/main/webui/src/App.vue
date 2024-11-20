@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import type { ResultSet } from './api';
+import { SelectionKind, type ResultSet } from './api';
 
 
 export default defineComponent({
@@ -8,13 +8,15 @@ export default defineComponent({
     return {
       resultsets: [] as ResultSet[],
       activeResultName: "",
-      selection: { name: "Not initialized" }
+      selection: { name: "Not initialized" },
+      kind: SelectionKind.step
     }
   },
   computed: {},
   methods: {
-    selected(element) {
+    selected(element,kind: SelectionKind) {
       this.selection = element;
+      this.kind= kind;
     },
     /**
      * Method called when a new report is created.
@@ -57,12 +59,12 @@ export default defineComponent({
     <h1>Tester</h1>
   </div>
   <Splitter>
-    <SplitterPanel :size="50">
+    <SplitterPanel :size="40">
       <ModelView @newReport="onNewReport" @selected="selected"></ModelView>
     </SplitterPanel>
-    <SplitterPanel :size="50">
+    <SplitterPanel :size="60">
       <Splitter layout="vertical">
-        <SplitterPanel :size="50">
+        <SplitterPanel :size="70">
           <ResultsView @updateResult="updateResult" 
             @closeResult="closeResult"
             @loadResult="loadResult"
@@ -70,8 +72,8 @@ export default defineComponent({
             v-model:activeResultName=activeResultName>
           </ResultsView>
         </SplitterPanel>
-        <SplitterPanel :size="50">
-          <editor :initialElement="selection" />
+        <SplitterPanel :size="30">
+          <editor :initialElement="selection" :kind="kind" />
         </SplitterPanel>
       </Splitter>
     </SplitterPanel>

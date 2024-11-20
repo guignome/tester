@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue'
-import type { Endpoint } from '@/api';
+import { SelectionKind, type Endpoint } from '@/api';
 
 export default defineComponent({
   data() {
@@ -12,14 +12,10 @@ export default defineComponent({
     endpoints: { type: Object as PropType<Endpoint[]>, required: true }
   },
   emits: {
-    selected: (e: Endpoint) =>{}
+    selected: (e: Endpoint, kind: SelectionKind) => true
   },
 
   methods: {
-    selected(endpoint: Endpoint) {
-      endpoint.kind = 'endpoint';
-      this.$emit('selected', endpoint);
-    },
     addEndpoint() {
       this.endpoints.push({
         name: "myapp", protocol: "http", host: "localhost",
@@ -30,9 +26,7 @@ export default defineComponent({
 
     },
     onRowSelect(event) {
-      //@ts-ignore
-      this.selectedEndpoint.kind = 'endpoint';
-      this.$emit('selected', this.selectedEndpoint);
+      this.$emit('selected', event.data, SelectionKind.endpoint);
     }
   }
 })

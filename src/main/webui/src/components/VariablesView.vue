@@ -1,33 +1,32 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue'
-import type { Variable } from '@/api';
+import { SelectionKind, type Variable } from '@/api';
 
 export default defineComponent({
   data() {
     return {
-      selectedVariable: {}
+      selectedVariable: {} as Variable
     }
   },
   props: {
-    variables: {type: Object as PropType<Variable[]>, required: true}
+    variables: { type: Object as PropType<Variable[]>, required: true }
   },
-  emits: ['selected'],
+  emits: {
+    selected: (v: Variable, kind: SelectionKind) => true
+  },
   methods: {
-    selected(variable) {
-           variable.kind='variable';
-            this.$emit('selected',variable);
-        },
-        addVariable() {
-            this.variables.push({name: "name", value:"value"});
-        },
-        deleteVariable() {
+    selected(variable: Variable) {
+      this.$emit('selected', variable, SelectionKind.variable);
+    },
+    addVariable() {
+      this.variables.push({ name: "name", value: "value" });
+    },
+    deleteVariable() {
 
-        },
-        onRowSelect(event) {
-            //@ts-ignore
-            this.selectedVariable.kind='variable';
-            this.$emit('selected',this.selectedVariable);
-        }
+    },
+    onRowSelect(event) {
+      this.$emit('selected', this.selectedVariable, SelectionKind.variable);
+    }
   }
 })
 </script>
@@ -35,25 +34,20 @@ export default defineComponent({
 <!-- Template -->
 <template>
   <Fieldset legend="Variables" :toggleable="true">
-    
-    <DataTable :value="variables" 
-              selectionMode="single"
-              v-model:selection="selectedVariable"
-              @rowSelect="onRowSelect">
+
+    <DataTable :value="variables" selectionMode="single" v-model:selection="selectedVariable" @rowSelect="onRowSelect">
       <Column field="name" header="Name"></Column>
       <Column field="value" header="Value"></Column>
-    
+
     </DataTable>
-        
-            <ButtonGroup style="float: right;">
-                <Button @click="addVariable" v-tooltip="'Add Variable'" icon="pi pi-plus" size="small"/>
-                <Button @click="deleteVariable" v-tooltip="'Delete Variable'" icon="pi pi-minus" size="small"/>
-              </ButtonGroup>
-    </Fieldset>
+
+    <ButtonGroup style="float: right;">
+      <Button @click="addVariable" v-tooltip="'Add Variable'" icon="pi pi-plus" size="small" />
+      <Button @click="deleteVariable" v-tooltip="'Delete Variable'" icon="pi pi-minus" size="small" />
+    </ButtonGroup>
+  </Fieldset>
 </template>
 
 
 <!-- Style -->
-<style scoped>
-
-</style>
+<style scoped></style>

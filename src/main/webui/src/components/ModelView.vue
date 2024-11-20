@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
-import api, { ClientMessageKind, ResourceType, type ClientMessage, type Model } from '@/api';
+import api, { ClientMessageKind, ResourceType, SelectionKind, type ClientMessage, type Endpoint, type Model, type Server, type Suite } from '@/api';
 import * as jsyaml from 'js-yaml';
 import samples from '@/sample-model';
 
@@ -58,7 +58,7 @@ export default defineComponent({
        */
       running: false,
       reportType: {},
-      runningReportName: null,
+      runningReportName: "",
       modelUri: null,
       reportTypes: ["TPS","JSON","CSV"]
     };
@@ -71,7 +71,10 @@ export default defineComponent({
       return this.running ? "Running: " + this.runningReportName : "Stopped";
     }
   },
-  emits: ['newReport', 'selected'],
+  emits: {
+    newReport: (r:String) =>true,
+    selected: (a: any, kind: SelectionKind) =>true
+  },
   methods: {
     readFile() {
       console.log("Reading file");
@@ -94,8 +97,8 @@ export default defineComponent({
         api.startModel(this.model);
       }
     },
-    selected(element) {
-      this.$emit('selected', element);
+    selected(element, kind: SelectionKind) {
+      this.$emit('selected',element,kind);
     },
     load() {
 

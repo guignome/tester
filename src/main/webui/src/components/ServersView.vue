@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { Server } from '@/api';
+import { SelectionKind, type Handler, type Server } from '@/api';
 import type { TreeNode } from 'primevue/treenode';
 import { defineComponent, type PropType } from 'vue'
 
@@ -9,7 +9,9 @@ export default defineComponent({
       selectedKey: undefined,
     }
   },
-  emits: ['selected'],
+  emits: {
+    selected: (s: Server|Handler,kind: SelectionKind) =>true
+  },
   computed: {
     nodes() {
       let tree: TreeNode[] = [];
@@ -32,11 +34,10 @@ export default defineComponent({
 
   methods: {
     selected(server) {
-      server.kind = 'server';
-      this.$emit('selected', server);
+      this.$emit('selected', server,SelectionKind.server);
     },
     handlerselected(handler) {
-      this.$emit('selected', handler);
+      this.$emit('selected', handler, SelectionKind.handler);
     },
     addHandler(server: Server) {
       server.handlers.push({ method: "GET", path: "/", response: { body: "Body" } });
@@ -53,12 +54,10 @@ export default defineComponent({
     onNodeSelect(node: TreeNode) {
       if (node.type == "server") {
         let server = node.data;
-        server.kind = 'server';
-        this.$emit('selected', server);
+        this.$emit('selected', server,SelectionKind.server);
       } else if (node.type == "handler") {
         let handler = node.data;
-        handler.kind = 'handler';
-        this.$emit('selected', handler);
+        this.$emit('selected', handler,SelectionKind.handler);
       }
     }
   }

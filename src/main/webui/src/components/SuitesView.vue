@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue'
-import type { Suite } from '../api';
+import { SelectionKind, type Suite } from '../api';
 import type { TreeNode } from 'primevue/treenode';
 
 export default defineComponent({
@@ -29,7 +29,9 @@ export default defineComponent({
       required: true
     }
   },
-  emits: ['selected'],
+  emits: {
+    selected: (s: Suite,kind: SelectionKind) =>true
+  },
   methods: {
     addSuite() {
       if (this.suites)
@@ -45,12 +47,10 @@ export default defineComponent({
     onNodeSelect(node: TreeNode) {
       if(node.type == "suite") {
         let suite = node.data;
-        suite.kind = 'suite';
-        this.$emit('selected', suite);
+        this.$emit('selected', suite, SelectionKind.suite);
       } else if (node.type == "step") {
         let step = node.data;
-        step.kind = 'step';
-        this.$emit('selected', step);
+        this.$emit('selected', step,SelectionKind.step);
       }
     }
   }
